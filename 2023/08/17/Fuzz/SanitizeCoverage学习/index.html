@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.1.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"guoxb.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":true},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="SanitizerCoverage官方文档翻译IntroductionLLVM内置了一个简单的代码覆盖率插桩工具（SanitizerCoverage）。它在函数、基本块和边界级别上插入对用户定义函数的调用。提供了这些回调的默认实现，用于简单的覆盖率报告和可视化。然而，如果您只需要覆盖率的可视化，可能更适合使用SourceBasedCodeCoverage。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SanitizeCoverage学习">
+<meta property="og:url" content="http://guoxb.top/2023/08/17/Fuzz/SanitizeCoverage%E5%AD%A6%E4%B9%A0/index.html">
+<meta property="og:site_name" content="GuoXB&#39;s Blog">
+<meta property="og:description" content="SanitizerCoverage官方文档翻译IntroductionLLVM内置了一个简单的代码覆盖率插桩工具（SanitizerCoverage）。它在函数、基本块和边界级别上插入对用户定义函数的调用。提供了这些回调的默认实现，用于简单的覆盖率报告和可视化。然而，如果您只需要覆盖率的可视化，可能更适合使用SourceBasedCodeCoverage。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230711151728638.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230711151942269.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230711152954140.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230711183229378.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230711183304926.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230711183454366.png">
+<meta property="article:published_time" content="2023-08-17T15:13:06.000Z">
+<meta property="article:modified_time" content="2023-10-03T13:06:17.280Z">
+<meta property="article:author" content="郭小白QAQ">
+<meta property="article:tag" content="普通人">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230711151728638.png">
+
+<link rel="canonical" href="http://guoxb.top/2023/08/17/Fuzz/SanitizeCoverage%E5%AD%A6%E4%B9%A0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>SanitizeCoverage学习 | GuoXB's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">GuoXB's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2023/08/17/Fuzz/SanitizeCoverage%E5%AD%A6%E4%B9%A0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+      <meta itemprop="name" content="郭小白QAQ">
+      <meta itemprop="description" content="精彩不亮丽，起落是无常">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GuoXB's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          SanitizeCoverage学习
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-08-17 23:13:06" itemprop="dateCreated datePublished" datetime="2023-08-17T23:13:06+08:00">2023-08-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-03 21:06:17" itemprop="dateModified" datetime="2023-10-03T21:06:17+08:00">2023-10-03</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/SanitizeCoverage/" itemprop="url" rel="index"><span itemprop="name">SanitizeCoverage</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>7 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="SanitizerCoverage官方文档翻译"><a href="#SanitizerCoverage官方文档翻译" class="headerlink" title="SanitizerCoverage官方文档翻译"></a>SanitizerCoverage官方文档翻译</h2><h3 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h3><p>LLVM内置了一个简单的代码覆盖率插桩工具（SanitizerCoverage）。它在函数、基本块和边界级别上插入对用户定义函数的调用。提供了这些回调的默认实现，用于简单的覆盖率报告和可视化。然而，如果您只需要覆盖率的可视化，可能更适合使用SourceBasedCodeCoverage。</p>
+<span id="more"></span>
+
+<h3 id="Tracing-PCs-with-guards"><a href="#Tracing-PCs-with-guards" class="headerlink" title="Tracing PCs with guards"></a>Tracing PCs with guards</h3><p>通过<code>-fsanitize-coverage=trace-pc-guard</code>设置，编译器将会在每一条边edge插入下面的代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">__sanitizer_cov_trace_pc_guard(&amp;guard_variable)</span><br></pre></td></tr></table></figure>
+
+<p>每一条边edge有他自己的 <em>guard_variable(uint32_t)</em></p>
+<p>编译器还将插入对模块构造函数的调用：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// The guards are [start, stop).</span></span><br><span class="line"><span class="comment">// This function will be called at least once per DSO and may be called</span></span><br><span class="line"><span class="comment">// more than once with the same values of start/stop.</span></span><br><span class="line">__sanitizer_cov_trace_pc_guard_init(<span class="type">uint32_t</span> *start, <span class="type">uint32_t</span> *stop);</span><br></pre></td></tr></table></figure>
+
+<p>通过额外的flag设置  <code>...=trace-pc,indirect-calls</code> ，<code>__sanitizer_cov_trace_pc_indirect(void *callee)</code>函数将会在每一个间接调用时插入。</p>
+<p>下列函数  <code>__sanitizer_cov_trace_pc_*</code> 应该由用户定义。</p>
+<p>Example：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// trace-pc-guard-cb.cc</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdint.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sanitizer/coverage_interface.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// This callback is inserted by the compiler as a module constructor</span></span><br><span class="line"><span class="comment">// into every DSO. &#x27;start&#x27; and &#x27;stop&#x27; correspond to the</span></span><br><span class="line"><span class="comment">// beginning and end of the section with the guards for the entire</span></span><br><span class="line"><span class="comment">// binary (executable or DSO). The callback will be called at least</span></span><br><span class="line"><span class="comment">// once per DSO and may be called multiple times with the same parameters.</span></span><br><span class="line"><span class="keyword">extern</span> <span class="string">&quot;C&quot;</span> <span class="type">void</span> __sanitizer_cov_trace_pc_guard_init(<span class="type">uint32_t</span> *start,</span><br><span class="line">                                                    <span class="type">uint32_t</span> *stop) &#123;</span><br><span class="line">  <span class="type">static</span> <span class="type">uint64_t</span> N;  <span class="comment">// Counter for the guards.</span></span><br><span class="line">  <span class="keyword">if</span> (start == stop || *start) <span class="keyword">return</span>;  <span class="comment">// Initialize only once.</span></span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;INIT: %p %p\n&quot;</span>, start, stop);</span><br><span class="line">  <span class="keyword">for</span> (<span class="type">uint32_t</span> *x = start; x &lt; stop; x++)</span><br><span class="line">    *x = ++N;  <span class="comment">// Guards should start from 1.</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// This callback is inserted by the compiler on every edge in the</span></span><br><span class="line"><span class="comment">// control flow (some optimizations apply).</span></span><br><span class="line"><span class="comment">// Typically, the compiler will emit the code like this:</span></span><br><span class="line"><span class="comment">//    if(*guard)</span></span><br><span class="line"><span class="comment">//      __sanitizer_cov_trace_pc_guard(guard);</span></span><br><span class="line"><span class="comment">// But for large functions it will emit a simple call:</span></span><br><span class="line"><span class="comment">//    __sanitizer_cov_trace_pc_guard(guard);</span></span><br><span class="line"><span class="keyword">extern</span> <span class="string">&quot;C&quot;</span> <span class="type">void</span> __sanitizer_cov_trace_pc_guard(<span class="type">uint32_t</span> *guard) &#123;</span><br><span class="line">  <span class="keyword">if</span> (!*guard) <span class="keyword">return</span>;  <span class="comment">// Duplicate the guard check.</span></span><br><span class="line">  <span class="comment">// If you set *guard to 0 this code will not be called again for this edge.</span></span><br><span class="line">  <span class="comment">// Now you can get the PC and do whatever you want:</span></span><br><span class="line">  <span class="comment">//   store it somewhere or symbolize it and print right away.</span></span><br><span class="line">  <span class="comment">// The values of `*guard` are as you set them in</span></span><br><span class="line">  <span class="comment">// __sanitizer_cov_trace_pc_guard_init and so you can make them consecutive</span></span><br><span class="line">  <span class="comment">// and use them to dereference an array or a bit vector.</span></span><br><span class="line">  <span class="type">void</span> *PC = __builtin_return_address(<span class="number">0</span>);</span><br><span class="line">  <span class="type">char</span> PcDescr[<span class="number">1024</span>];</span><br><span class="line">  <span class="comment">// This function is a part of the sanitizer run-time.</span></span><br><span class="line">  <span class="comment">// To use it, link with AddressSanitizer or other sanitizer.</span></span><br><span class="line">  __sanitizer_symbolize_pc(PC, <span class="string">&quot;%p %F %L&quot;</span>, PcDescr, <span class="keyword">sizeof</span>(PcDescr));</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;guard: %p %x PC %s\n&quot;</span>, guard, *guard, PcDescr);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h2 id="疑问"><a href="#疑问" class="headerlink" title="疑问"></a>疑问</h2><h3 id="1-SanitizeCoverage中，Tracing-PCs-with-guards是什么意思，作用是什么？"><a href="#1-SanitizeCoverage中，Tracing-PCs-with-guards是什么意思，作用是什么？" class="headerlink" title="1. SanitizeCoverage中，Tracing PCs with guards是什么意思，作用是什么？"></a>1. <strong>SanitizeCoverage中，Tracing PCs with guards是什么意思，作用是什么？</strong></h3><p>答：在SanitizeCoverage中，”Tracing PCs with guards”是指通过对程序中的特定代码块进行跟踪，并在其执行路径上添加条件检查来实现代码覆盖率的收集。</p>
+<p>作用是为了确定测试用例是否能够触发程序中的所有代码路径。当程序中存在条件分支、循环或其他控制结构时，使用条件检查可以追踪和记录每个可能的执行路径。这样做可以帮助开发人员识别未被覆盖的代码区域，从而进行调试、优化和改进代码。</p>
+<p>具体来说，”Tracing PCs with guards”的过程涉及以下步骤：</p>
+<ol>
+<li>选择一个代码块（通常是函数或方法）作为目标。</li>
+<li>在代码块的入口处插入条件检查。</li>
+<li>当满足条件时，记录该代码块的执行路径。</li>
+<li>在执行路径中的每个条件分支点，重复步骤2-3直到覆盖所有可能的执行路径。</li>
+<li>收集并分析代码覆盖率信息，以确定哪些路径已经被触发，哪些还没有。</li>
+</ol>
+<p>通过”Tracing PCs with guards”的技术，开发人员可以更全面地了解他们的代码在不同输入下的行为，从而提高软件的质量和可靠性。</p>
+<h3 id="2-guard是什么，-guard是什么？"><a href="#2-guard是什么，-guard是什么？" class="headerlink" title="2. guard是什么，*guard是什么？"></a>2. <strong>guard是什么，*guard是什么？</strong></h3><p>答：</p>
+<p>guard指的是guard变量的地址，大小为32bit。其实插桩相当于是给每一个基本块（或边，根据细粒度具体来说）分配一个guard变量，每一个guard变量存储其对应的基本块的ID值。当执行该基本块时，调用__sanitizer_cov_trace_pc_guard函数，通过传入guard参数来识别当前是在处理哪一个基本块。</p>
+<p>*guard 里存储的是插桩函数__sanitizer_cov_trace_pc_guard的ID序号，根据源代码中的基本块顺序来分配，验证如下：</p>
+<p>以LLVM官网文档中的例子举例，对于以下代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">foo</span><span class="params">()</span>&#123;&#125;</span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (argc &gt; <span class="number">1</span>) foo();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>编译执行后结果如下：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230711151728638.png" alt="image-20230711151728638"></p>
+<p>将代码做下简单修改：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">foo</span><span class="params">()</span>&#123;&#125;</span><br><span class="line"><span class="type">void</span> <span class="title function_">foo2</span><span class="params">()</span>&#123;&#125;</span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (argc &gt; <span class="number">1</span>) foo();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230711151942269.png" alt="image-20230711151942269"></p>
+<p>可以看到，中间新添加了一个函数，除了第三行仍然是1之外，前两行的值都 +1，可以说明我们插入了一个函数导致main函数中基本块位置后移1位，所以ID值加1。</p>
+<h3 id="3-start和stop如何理解？-start-stop"><a href="#3-start和stop如何理解？-start-stop" class="headerlink" title="3. start和stop如何理解？[start,stop)"></a>3. start和stop如何理解？[start,stop)</h3><p>答：以LLVM官方文档中的tarce-pc-guard中的例子为例，按照命令编译执行后得到结果如下：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230711152954140.png" alt="image-20230711152954140"></p>
+<p>根据结果可以看到 start 为 0x6f9c70 , stop 为 0x6f9c80 。</p>
+<p>start所指的地址正好是结果中最后一行，foo() 函数中 插入的插桩函数的地址，并且guard的ID值刚好为1。</p>
+<p>注意到注释中说，guards的范围为 [start,stop) ，前闭后开，所以 stop 所指的并不是最后一个guard的位置（0x6f9c7c , 4），而是该位置的下一个位置，即 0x6f9c7c+0x4(一个guard4字节) &#x3D; 0x6f9c80</p>
+<p>[start, stop)这个内存区域里存储的是插桩的edges的ID表，guards列表</p>
+<p>在__sanitizer_cov_trace_pc_guard_init函数中，对该区域进行ID表的初始化。</p>
+<p>在我们对该函数进行自定义时，要加上对该区域的初始化过程，如果不加，则__sanitizer_cov_trace_pc_guard函数不会产生输出，如下：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230711183229378.png" alt="image-20230711183229378"></p>
+<p>注释掉初始化代码以后，程序运行结果如图：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230711183304926.png" alt="image-20230711183304926"></p>
+<p>注：此处的代码示例参见<a target="_blank" rel="noopener" href="https://github.com/lcatro/Source-and-Fuzzing/blob/master/12.%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90libfuzzer%E4%B8%8Easan.md">https://github.com/lcatro/Source-and-Fuzzing/blob/master/12.%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90libfuzzer%E4%B8%8Easan.md</a></p>
+<p>如果未注释，即存在对该区域的初始化操作，则运行结果如下：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230711183454366.png" alt="image-20230711183454366"></p>
+<h3 id="4-每个边执行的次数在哪里统计？"><a href="#4-每个边执行的次数在哪里统计？" class="headerlink" title="4. 每个边执行的次数在哪里统计？"></a>4. 每个边执行的次数在哪里统计？</h3><p>libfuzzer没有对边的执行次数的计数？</p>
+<p>答，计数了，似乎是通过一个全局变量数组来计数的，通过pc来定位是哪一个edge，并作为下标，</p>
+<p>libfuzzer覆盖率如何统计？到底有没有统计path coverage</p>
+<h3 id="5-如何根据边的覆盖率得到path-coverage？"><a href="#5-如何根据边的覆盖率得到path-coverage？" class="headerlink" title="5. 如何根据边的覆盖率得到path coverage？"></a>5. 如何根据边的覆盖率得到path coverage？</h3><p>path具体是什么样子的？</p>
+<h3 id="ASAN-OPTIONS-coverage有哪些取值？"><a href="#ASAN-OPTIONS-coverage有哪些取值？" class="headerlink" title="ASAN_OPTIONS&#x3D;coverage有哪些取值？"></a>ASAN_OPTIONS&#x3D;coverage有哪些取值？</h3><p>除了使用coverage&#x3D;1之外，ASAN_OPTIONS环境变量中的coverage选项还可以设置其他值来启用不同的代码覆盖率收集模式。以下是几个常用的选项：</p>
+<p>coverage&#x3D;0：禁用代码覆盖率检测。这是默认设置。<br>coverage&#x3D;1：启用基本块（basic block）级别的代码覆盖率检测。基本块是源代码中连续的一段指令，以及在控制流程中可能跳转到的位置。<br>coverage&#x3D;2：启用PC表（PC-table）级别的代码覆盖率检测。PC表是记录代码中每个指令地址是否被执行的数据结构。<br>coverage&#x3D;3：启用函数级别的代码覆盖率检测。它会计算每个函数被调用的次数和覆盖率。<br>coverage&#x3D;4：启用BB-depth级别的代码覆盖率检测。它会记录每个基本块在执行时的深度信息。<br>请注意，具体可用的coverage取值可能因使用的编译器、操作系统和工具版本而有所差异，以上列出的选项仅为常见示例。可以参考相关文档或工具的官方说明以获取更多详细信息。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/08/02/%E9%9A%8F%E7%AC%94/%E5%9B%BD%E9%98%B2%E7%A7%91%E5%A4%A7%E6%9A%91%E6%9C%9F%E5%AD%A6%E6%A0%A1%E7%AE%80%E8%AE%B0/" rel="prev" title="国防科大暑期学校简记">
+      <i class="fa fa-chevron-left"></i> 国防科大暑期学校简记
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/09/11/Fuzz/AFLQemu%E6%A8%A1%E5%BC%8F/" rel="next" title="AFLQemu模式">
+      AFLQemu模式 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#SanitizerCoverage%E5%AE%98%E6%96%B9%E6%96%87%E6%A1%A3%E7%BF%BB%E8%AF%91"><span class="nav-number">1.</span> <span class="nav-text">SanitizerCoverage官方文档翻译</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Introduction"><span class="nav-number">1.1.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Tracing-PCs-with-guards"><span class="nav-number">1.2.</span> <span class="nav-text">Tracing PCs with guards</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%96%91%E9%97%AE"><span class="nav-number">2.</span> <span class="nav-text">疑问</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-SanitizeCoverage%E4%B8%AD%EF%BC%8CTracing-PCs-with-guards%E6%98%AF%E4%BB%80%E4%B9%88%E6%84%8F%E6%80%9D%EF%BC%8C%E4%BD%9C%E7%94%A8%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.1.</span> <span class="nav-text">1. SanitizeCoverage中，Tracing PCs with guards是什么意思，作用是什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-guard%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%8C-guard%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.2.</span> <span class="nav-text">2. guard是什么，*guard是什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-start%E5%92%8Cstop%E5%A6%82%E4%BD%95%E7%90%86%E8%A7%A3%EF%BC%9F-start-stop"><span class="nav-number">2.3.</span> <span class="nav-text">3. start和stop如何理解？[start,stop)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E6%AF%8F%E4%B8%AA%E8%BE%B9%E6%89%A7%E8%A1%8C%E7%9A%84%E6%AC%A1%E6%95%B0%E5%9C%A8%E5%93%AA%E9%87%8C%E7%BB%9F%E8%AE%A1%EF%BC%9F"><span class="nav-number">2.4.</span> <span class="nav-text">4. 每个边执行的次数在哪里统计？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-%E5%A6%82%E4%BD%95%E6%A0%B9%E6%8D%AE%E8%BE%B9%E7%9A%84%E8%A6%86%E7%9B%96%E7%8E%87%E5%BE%97%E5%88%B0path-coverage%EF%BC%9F"><span class="nav-number">2.5.</span> <span class="nav-text">5. 如何根据边的覆盖率得到path coverage？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ASAN-OPTIONS-coverage%E6%9C%89%E5%93%AA%E4%BA%9B%E5%8F%96%E5%80%BC%EF%BC%9F"><span class="nav-number">2.6.</span> <span class="nav-text">ASAN_OPTIONS&#x3D;coverage有哪些取值？</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="郭小白QAQ"
+      src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+  <p class="site-author-name" itemprop="name">郭小白QAQ</p>
+  <div class="site-description" itemprop="description">精彩不亮丽，起落是无常</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">57</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/guoxb0_0@qq.com" title="E-Mail → guoxb0_0@qq.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">郭小白QAQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">105k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:21</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+<script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
+
+<script>
+var options = {
+  bottom: '64px',
+  right: 'unset',
+  left: '32px',
+  time: '0.5s',
+  mixColor: 'transparent',
+  backgroundColor: 'transparent',
+  buttonColorDark: '#100f2c',
+  buttonColorLight: '#fff',
+  saveInCookies: true,
+  label: '🌓',
+  autoMatchOsTheme: true
+}
+const darkmode = new Darkmode(options);
+window.darkmode = darkmode;
+darkmode.showWidget();
+</script>
+
+</body>
+</html>

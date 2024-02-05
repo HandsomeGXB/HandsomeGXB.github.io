@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.1.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"guoxb.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":true},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="浅浅记录一下平时搜集到的一些网站">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PWN&amp;RE学习网站整理">
+<meta property="og:url" content="http://guoxb.top/2023/03/15/PWN-RE%E5%AD%A6%E4%B9%A0%E7%BD%91%E7%AB%99%E6%95%B4%E7%90%86/index.html">
+<meta property="og:site_name" content="GuoXB&#39;s Blog">
+<meta property="og:description" content="浅浅记录一下平时搜集到的一些网站">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-03-15T12:48:12.000Z">
+<meta property="article:modified_time" content="2023-10-03T12:42:14.801Z">
+<meta property="article:author" content="郭小白QAQ">
+<meta property="article:tag" content="普通人">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://guoxb.top/2023/03/15/PWN-RE%E5%AD%A6%E4%B9%A0%E7%BD%91%E7%AB%99%E6%95%B4%E7%90%86/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>PWN&RE学习网站整理 | GuoXB's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">GuoXB's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2023/03/15/PWN-RE%E5%AD%A6%E4%B9%A0%E7%BD%91%E7%AB%99%E6%95%B4%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+      <meta itemprop="name" content="郭小白QAQ">
+      <meta itemprop="description" content="精彩不亮丽，起落是无常">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GuoXB's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          PWN&RE学习网站整理
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-03-15 20:48:12" itemprop="dateCreated datePublished" datetime="2023-03-15T20:48:12+08:00">2023-03-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-03 20:42:14" itemprop="dateModified" datetime="2023-10-03T20:42:14+08:00">2023-10-03</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>745</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>浅浅记录一下平时搜集到的一些网站</p>
+<span id="more"></span>
+
+<h2 id="CTF平台"><a href="#CTF平台" class="headerlink" title="CTF平台"></a>CTF平台</h2><ol>
+<li><p><a target="_blank" rel="noopener" href="https://zaratec.io/ctf-practice/">https://zaratec.io/ctf-practice/</a></p>
+<p>国外某个大佬总结的ctf的练习资源网站，下面列举的网站有些也包含在这个里边</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://ctftime.org/">https://ctftime.org/</a></p>
+<p>国外CTF赛事日程表</p>
+</li>
+<li><p>CTF-all-in-one<a target="_blank" rel="noopener" href="https://firmianay.gitbooks.io/ctf-all-in-one/content/">https://firmianay.gitbooks.io/ctf-all-in-one/content/</a></p>
+<p>西电整理的CTF相关的系统性知识，各个方面都有，包含一些二进制分析工具的使用</p>
+</li>
+<li><p>合天网安：<a target="_blank" rel="noopener" href="https://tools.hetianlab.com/">https://tools.hetianlab.com/</a></p>
+<p>合天网安的一个实验平台，但是要钱，emmm，感觉看看就好。</p>
+</li>
+<li><p>CTF wiki：<a target="_blank" rel="noopener" href="https://ctf-wiki.org/">https://ctf-wiki.org/</a></p>
+<p>简直是万物起源！！！</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1854y1y7Ro/?spm_id_from=333.337.search-card.all.click">https://www.bilibili.com/video/BV1854y1y7Ro/?spm_id_from=333.337.search-card.all.click</a></p>
+<p>一个基于ctfwiki讲解的pwn入门教程，看评论评价挺好的</p>
+</li>
+</ol>
+<h2 id="PWN做题练习网站"><a href="#PWN做题练习网站" class="headerlink" title="PWN做题练习网站"></a>PWN做题练习网站</h2><ol>
+<li><p>ROP技术练习：<a target="_blank" rel="noopener" href="https://ropemporium.com/index.html">https://ropemporium.com/index.html</a></p>
+<p>里面有不同类型的挑战习题来掌握不同的ROP姿势</p>
+</li>
+<li><p>PWN.colloge:<a target="_blank" rel="noopener" href="https://pwn.college/">https://pwn.college/</a></p>
+<p>pwn.colloge比较出名的pwn入门学习资源网站，在youtube跟Twitch上有直播讲解。</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://pwnable.tw/">https://pwnable.tw/</a></p>
+<p>老牌的pwn做题网站</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://pwnable.kr/">https://pwnable.kr/</a></p>
+<p>同上</p>
+</li>
+<li><p>Nightmare：<a target="_blank" rel="noopener" href="https://guyinatuxedo.github.io/index.html">https://guyinatuxedo.github.io/index.html</a></p>
+<p>一个比较有名的gitbook，以例题的形式来讲解各种漏洞</p>
+</li>
+<li><p>Wargames：<a target="_blank" rel="noopener" href="https://overthewire.org/wargames/">https://overthewire.org/wargames/</a></p>
+<p>也是一个比较出名的联系网站，包含linux基础命令，也有pwn、逆向和密码学等相关练习</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://zerosum0x0.blogspot.com/2016/11/overflow-exploit-pattern-generator.html">https://zerosum0x0.blogspot.com/2016/11/overflow-exploit-pattern-generator.html</a></p>
+<p>一个在线计算缓冲区溢出偏移的网站，感觉不如cyclic好用，主要是有点不方便</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://docs.pwntools.com/en/stable/index.html">https://docs.pwntools.com/en/stable/index.html</a></p>
+<p>pwntools的官网文档（emm，还是先看别人的博客吧）</p>
+</li>
+<li><p>CS6265实验室：<a target="_blank" rel="noopener" href="https://tc.gts3.org/cs6265/2019/tut/tut01-warmup1.html">https://tc.gts3.org/cs6265/2019/tut/tut01-warmup1.html</a></p>
+<p>CS6265实验室写的比较系统的二进制安全教程，基本涵盖了常见的所有方面内容。</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://pwnhub.cn/index">https://pwnhub.cn/index</a></p>
+<p>长亭的一个pwn练习网站，但是注册要邀请码，格局小了</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://libc.blukat.me/">https://libc.blukat.me/</a></p>
+<p>在线查找libc版本的网站</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://www.yuque.com/cyberangel/rg9gdm">https://www.yuque.com/cyberangel/rg9gdm</a></p>
+<p>pwn群里一个大佬整理的知识库（有一些是ctfwiki上的内容）</p>
+</li>
+<li><p>蒸米：一步一步学ROP</p>
+<p><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000005888964">https://segmentfault.com/a/1190000005888964</a></p>
+<p><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000007406442?utm_source=sf-similar-article">https://segmentfault.com/a/1190000007406442?utm_source=sf-similar-article</a></p>
+</li>
+</ol>
+<h2 id="逆向"><a href="#逆向" class="headerlink" title="逆向"></a>逆向</h2><ol>
+<li><p>Arm处理器：<a target="_blank" rel="noopener" href="https://azeria-labs.com/">https://azeria-labs.com/</a></p>
+<p>一个关于arm架构的逆向和其他漏洞学习网站</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="http://reversing.kr/">http://reversing.kr/</a></p>
+<p>老牌的逆向做题网站</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://www.bookstack.cn/read/reverse-engineering-for-beginners-zh/README.md">https://www.bookstack.cn/read/reverse-engineering-for-beginners-zh/README.md</a></p>
+<p>在线版的RE4B</p>
+</li>
+<li><p>非常出名的滴水逆向三期：(但是有点老了)</p>
+<p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1w54y1y7Di/?spm_id_from=333.337.search-card.all.click&vd_source=a53efc064df022698f188d04686d6ae5">https://www.bilibili.com/video/BV1w54y1y7Di/?spm_id_from=333.337.search-card.all.click&amp;vd_source=a53efc064df022698f188d04686d6ae5</a></p>
+</li>
+<li></li>
+</ol>
+<p>一篇关于符号执行技术的博客：</p>
+<p><a target="_blank" rel="noopener" href="https://www.k0rz3n.com/2019/02/28/%E7%AE%80%E5%8D%95%E7%90%86%E8%A7%A3%E7%AC%A6%E5%8F%B7%E6%89%A7%E8%A1%8C%E6%8A%80%E6%9C%AF/">https://www.k0rz3n.com/2019/02/28/%E7%AE%80%E5%8D%95%E7%90%86%E8%A7%A3%E7%AC%A6%E5%8F%B7%E6%89%A7%E8%A1%8C%E6%8A%80%E6%9C%AF/</a></p>
+<p>一篇关于污点分析技术的博客：</p>
+<p><a target="_blank" rel="noopener" href="https://www.k0rz3n.com/2019/03/01/%E7%AE%80%E5%8D%95%E7%90%86%E8%A7%A3%E6%B1%A1%E7%82%B9%E5%88%86%E6%9E%90%E6%8A%80%E6%9C%AF/">https://www.k0rz3n.com/2019/03/01/%E7%AE%80%E5%8D%95%E7%90%86%E8%A7%A3%E6%B1%A1%E7%82%B9%E5%88%86%E6%9E%90%E6%8A%80%E6%9C%AF/</a></p>
+<h2 id="UP主"><a href="#UP主" class="headerlink" title="UP主"></a>UP主</h2><p>B站：<a target="_blank" rel="noopener" href="https://space.bilibili.com/97139894?spm_id_from=333.337.0.0">逆风微笑的代码狗</a></p>
+<p>会时不时从Youtube搬运一些比较不错的安全相关的视频</p>
+<h2 id="公众号"><a href="#公众号" class="headerlink" title="公众号"></a>公众号</h2>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/09/20/Linux%E5%92%8C%E5%91%BD%E4%BB%A4%E6%8F%90%E7%A4%BA%E7%AC%A6/" rel="prev" title="Linux和命令提示符">
+      <i class="fa fa-chevron-left"></i> Linux和命令提示符
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/03/15/ROP_Emporium/Challenge1_ret2win/" rel="next" title="Challenge1_ret2win">
+      Challenge1_ret2win <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#CTF%E5%B9%B3%E5%8F%B0"><span class="nav-number">1.</span> <span class="nav-text">CTF平台</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PWN%E5%81%9A%E9%A2%98%E7%BB%83%E4%B9%A0%E7%BD%91%E7%AB%99"><span class="nav-number">2.</span> <span class="nav-text">PWN做题练习网站</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%86%E5%90%91"><span class="nav-number">3.</span> <span class="nav-text">逆向</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#UP%E4%B8%BB"><span class="nav-number">4.</span> <span class="nav-text">UP主</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AC%E4%BC%97%E5%8F%B7"><span class="nav-number">5.</span> <span class="nav-text">公众号</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="郭小白QAQ"
+      src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+  <p class="site-author-name" itemprop="name">郭小白QAQ</p>
+  <div class="site-description" itemprop="description">精彩不亮丽，起落是无常</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">57</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/guoxb0_0@qq.com" title="E-Mail → guoxb0_0@qq.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">郭小白QAQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">105k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:21</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+<script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
+
+<script>
+var options = {
+  bottom: '64px',
+  right: 'unset',
+  left: '32px',
+  time: '0.5s',
+  mixColor: 'transparent',
+  backgroundColor: 'transparent',
+  buttonColorDark: '#100f2c',
+  buttonColorLight: '#fff',
+  saveInCookies: true,
+  label: '🌓',
+  autoMatchOsTheme: true
+}
+const darkmode = new Darkmode(options);
+window.darkmode = darkmode;
+darkmode.showWidget();
+</script>
+
+</body>
+</html>

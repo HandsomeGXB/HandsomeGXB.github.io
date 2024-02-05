@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.1.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"guoxb.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":true},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="关于 AFL 与 AFLNet 中对代码功能的一些理解，未完。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Fuzz源码理解">
+<meta property="og:url" content="http://guoxb.top/2023/07/06/Fuzz/Fuzz%E6%BA%90%E7%A0%81%E7%90%86%E8%A7%A3/index.html">
+<meta property="og:site_name" content="GuoXB&#39;s Blog">
+<meta property="og:description" content="关于 AFL 与 AFLNet 中对代码功能的一些理解，未完。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230706204811073.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230706205049246.png">
+<meta property="article:published_time" content="2023-07-06T12:59:34.000Z">
+<meta property="article:modified_time" content="2023-10-10T15:40:29.234Z">
+<meta property="article:author" content="郭小白QAQ">
+<meta property="article:tag" content="普通人">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230706204811073.png">
+
+<link rel="canonical" href="http://guoxb.top/2023/07/06/Fuzz/Fuzz%E6%BA%90%E7%A0%81%E7%90%86%E8%A7%A3/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Fuzz源码理解 | GuoXB's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">GuoXB's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2023/07/06/Fuzz/Fuzz%E6%BA%90%E7%A0%81%E7%90%86%E8%A7%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+      <meta itemprop="name" content="郭小白QAQ">
+      <meta itemprop="description" content="精彩不亮丽，起落是无常">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GuoXB's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Fuzz源码理解
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-07-06 20:59:34" itemprop="dateCreated datePublished" datetime="2023-07-06T20:59:34+08:00">2023-07-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-10 23:40:29" itemprop="dateModified" datetime="2023-10-10T23:40:29+08:00">2023-10-10</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/FUZZ/" itemprop="url" rel="index"><span itemprop="name">FUZZ</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>7 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>关于 AFL 与 AFLNet 中对代码功能的一些理解，未完。</p>
+<span id="more"></span>
+
+<h1 id="AFL"><a href="#AFL" class="headerlink" title="AFL"></a>AFL</h1><p><code>run_target</code>函数功能</p>
+<p>首先将<code>tarce_bits</code>置0，用于记录本次运行的命中的路径及其数量，然后进行pipe设置执行程序，在之后对<code>tarce_bits</code>进行规整，搜集信息，判断返回状态并返回。</p>
+<p><code>top_rated[]</code>结构体数组，<code>top_rated[i]</code>是一个结构体，包含了关于第 i 个测试用例的覆盖率和评分情况。</p>
+<p>这里的i表示的是每一条路径，top_rated[i]的意思是对于当前这条路径 i，top_rated[i]位置指向的测试用例是最优的一个</p>
+<hr>
+<p>判断条件的理解：</p>
+<p><code>MAP_SIZE</code>大小为 65535 .表示路径数。<code>MAP_SIZE&gt;&gt;3</code> 表示按8个路径为一组进行划分，每 1 bit代表一条路径，所以需要<code>MAP_SIZE&gt;&gt;3</code>个byte来存储这些路径，每 1 byte存储8条路径。</p>
+<p><code>(i&amp;7)</code> 相当于是 <code>i</code>对 7 取模，相当于 i 除以 8 的余数，写成位来看就比较好理解了。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">假设i从0到8</span><br><span class="line">i = 0 :</span><br><span class="line">   000     i</span><br><span class="line">&amp;  111     7</span><br><span class="line">------------</span><br><span class="line">   000     0</span><br><span class="line"></span><br><span class="line">i = 1 :</span><br><span class="line">   001     i</span><br><span class="line">&amp;  111     7</span><br><span class="line">------------</span><br><span class="line">   00      1</span><br><span class="line">   ···</span><br><span class="line">i = 8 :</span><br><span class="line">   1000     i</span><br><span class="line">&amp;  0111     7</span><br><span class="line">------------</span><br><span class="line">   0000     0</span><br></pre></td></tr></table></figure>
+
+<p>因为 <code>MAP_SIZE&gt;&gt;3</code>后，每 1 bit来表示一条路径，所以在对每个字节的检查中，需要检查的是各个位的位置，范围是0到7之间。</p>
+<p><code>1&lt;&lt;(i&amp;7)</code>也就是，1分别左移0，1，2，3，···，7位，同样，换成位来看：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">i = 0: 1&lt;&lt;0 00000001 </span><br><span class="line">i = 1: 1&lt;&lt;1 00000010</span><br><span class="line">i = 2: 1&lt;&lt;2 00000100</span><br><span class="line">i = 3: 1&lt;&lt;3 00001000</span><br><span class="line">···</span><br><span class="line">i = 7: 1&lt;&lt;7 10000000</span><br></pre></td></tr></table></figure>
+
+<p>这样就是依次检查该字节的各个位（bit）的情况</p>
+<p><code>calibrate_case</code>函数中调用到的关键函数和主要流程：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">calibrate_case()&#123;</span><br><span class="line">	init_forkserver();</span><br><span class="line">	<span class="keyword">for</span>()&#123;</span><br><span class="line">        write_to_testcase();<span class="comment">//写入.cur_input</span></span><br><span class="line"></span><br><span class="line">        run_target();</span><br><span class="line"></span><br><span class="line">        判断hash得到的cksum&#123;</span><br><span class="line">            has_new_bits();</span><br><span class="line">        &#125;</span><br><span class="line">	&#125;</span><br><span class="line">	update_bitmap_score()；</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>run_target</code>函数关键流程：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">run_target()&#123;</span><br><span class="line">	</span><br><span class="line">    <span class="built_in">memset</span>(trace_bits, <span class="number">0</span>, MAP_SIZE);</span><br><span class="line">    </span><br><span class="line">    对pipe进行设置;</span><br><span class="line">    </span><br><span class="line">    通知forkserver执行程序,j或调用execvp执行程序;</span><br><span class="line">    </span><br><span class="line">    classify_counts();对tarce_bits进行规整</span><br><span class="line">    </span><br><span class="line">    判断程序执行结果，返回对应的错误值;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>common_fuzz_stuff</code>函数中调用的关键函数和主要流程：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">common_fuzz_stuff()&#123;</span><br><span class="line">	</span><br><span class="line">	write_to_testcase(out_buf, len);</span><br><span class="line">	</span><br><span class="line">	fault = run_target(argv, exec_tmout);</span><br><span class="line">	</span><br><span class="line">	save_if_interesting(out_buf, len, fault);</span><br><span class="line">	</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>save_if_interesting</code>函数中调用的关键函数和主要流程：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">save_if_interesting()&#123;</span><br><span class="line">	if(!has_new_bits)&#123;</span><br><span class="line">		return</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	add_to_queue();</span><br><span class="line">	</span><br><span class="line">	fault = calibrate_case();</span><br><span class="line">	</span><br><span class="line">	保存到本地文件;</span><br><span class="line">	</span><br><span class="line">	switch(fault)&#123;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<p>下面是次一级重要的函数：</p>
+<p><code>trim_case</code>函数：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h2 id="疑问"><a href="#疑问" class="headerlink" title="疑问"></a>疑问</h2><p>1.关于forkserver插桩的代码部分：在第一次执行桩代码时的，__afl_fork_wait_loop这个函数内，会不断执行fork？还是只执行一次，这个循环是什么？<br>对于每一个测试用例，或重新fork一次？还是重新execvp一次？<br>答：对于每一个测试用例会重新fork一次，生成一个新的子进程，如果未设置forkserver则会重新execvp（）</p>
+<p>2.forkserver，父子进程进行通信，通信的内容是什么？<br>写入管道内的__afl_temp 4字节大小的信息是什么？</p>
+<p>3.如何给进程传递testcase中的输入？<br>答：在试运行过程中，通过read函数读取文件内容到use_mem变量中，然后作为参数传递给calibrate_case函数<br>追问：在calibrate_case函数内，通过write_to_testcase函数将文件内容use_mem写入到out_file(.cur_input)文件，但是fork得到的进程如何获取输入，在源码哪里体现出来？</p>
+<p>4.resume模式，多次提到的resuming_fuzz变量</p>
+<p>5.跟踪字节引用计数，tc_ref变量的作用</p>
+<ol start="6">
+<li>extras的作用</li>
+</ol>
+<p>7.timeout_given，超时时间是谁的超时时间？<br>答：target程序运行的超时时间</p>
+<p>8.cur_depth，max_depth，和q-&gt;depth，这些变量里的depth指的是什么？如何理解？</p>
+<p>9.路径数，是不是应该叫测试用例数更符合，这里的path理解成路径的话，这个路径是指的什么路径？</p>
+<p>10：q-&gt;handicap这个变量的作用？</p>
+<p>几个模块：反馈收集、种子筛选、种子变异、种子调度。</p>
+<h1 id="AFLNET"><a href="#AFLNET" class="headerlink" title="AFLNET"></a>AFLNET</h1><h2 id="源码理解"><a href="#源码理解" class="headerlink" title="源码理解"></a>源码理解</h2><p>AFLNET主要在AFL的基础上实现了：</p>
+<ol>
+<li>socket 通信发送测试用例</li>
+<li>一套与代码覆盖率并行的状态机引导机制</li>
+<li>增加了消息序列级别的变异策略</li>
+</ol>
+<h2 id="klib库"><a href="#klib库" class="headerlink" title="klib库"></a>klib库</h2><h3 id="khint-t"><a href="#khint-t" class="headerlink" title="khint_t"></a><code>khint_t</code></h3><p>在 klib 库中，<code>khint_t</code> 是一个无符号整数类型，用于表示哈希表中的键、值和哈希函数的返回值等。</p>
+<p><code>khint_t</code> 的实现可能会因不同的编译器和平台而异，通常会被定义为 <code>size_t</code> 或 <code>unsigned int</code>。在 klib 库中，<code>khint_t</code> 通常用于表示哈希表中键值对的索引或哈希值，它是哈希表中的关键类型之一。</p>
+<p>例如，在使用 klib 库中的哈希表时，可以使用 <code>khint_t</code> 类型来表示键、值和哈希函数的返回值。在向哈希表中添加、删除、查找或更新键值对时，需要使用 <code>khint_t</code> 类型来指定相应的操作。<code>khint_t</code> 可以保证足够大，以便在大多数哈希表中存储索引或哈希值。</p>
+<h3 id="kh-get"><a href="#kh-get" class="headerlink" title="kh_get()"></a><code>kh_get()</code></h3><p><code>kh_get</code> 是 klib 库中哈希表操作的一个函数之一，用于获取指定键的值。</p>
+<p>该函数的原型为：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">khint_t</span> <span class="title function_">kh_get</span><span class="params">(<span class="type">kh_t</span>, <span class="type">khkey_t</span> key)</span>;</span><br></pre></td></tr></table></figure>
+
+<p>其中，<code>kh_t</code> 表示哈希表的类型，<code>khkey_t</code> 表示键的类型，<code>khint_t</code> 表示哈希表索引的类型。该函数的返回值为哈希表中与指定键相关联的索引，如果指定键不存在，则返回哈希表的结束位置。</p>
+<p><code>kh_get</code> 函数的作用是从哈希表中查找指定键的值，并返回该键对应的索引。在哈希表中，每个键都会被哈希成一个索引，而该索引通常用于查找存储在哈希表中的值。<code>kh_get</code> 函数通过查找指定键的索引来获取该键对应的值。</p>
+<h3 id="kh-end"><a href="#kh-end" class="headerlink" title="kh_end()"></a><code>kh_end()</code></h3><p><code>kh_end</code> 是 klib 库中哈希表操作的一个函数之一，用于获取哈希表的结束位置。</p>
+<p>该函数的原型为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">khint_t kh_end(kh_t);</span><br></pre></td></tr></table></figure>
+
+<p>其中，<code>kh_t</code> 表示哈希表的类型，<code>khint_t</code> 表示哈希表索引的类型。该函数的返回值为哈希表的结束位置，即哈希表中最后一个键值对的后一个位置。</p>
+<p><code>kh_end</code> 函数的作用是获取哈希表中最后一个键值对的后一个位置。在 klib 库中，哈希表中的键值对是按照哈希值存储的，而哈希表的大小通常是事先确定的。因此，可以通过 <code>kh_end</code> 函数来获取哈希表的结束位置，并遍历哈希表中的所有键值对。</p>
+<h3 id="kh-val"><a href="#kh-val" class="headerlink" title="kh_val()"></a><code>kh_val()</code></h3><p><code>kh_val</code> 是 klib 库中哈希表操作的一个函数之一，用于获取与指定索引相关联的值。</p>
+<p>该函数的原型为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">khval_t kh_val(kh_t, khint_t);</span><br></pre></td></tr></table></figure>
+
+<p>其中，<code>kh_t</code> 表示哈希表的类型，<code>khint_t</code> 表示哈希表索引的类型，<code>khval_t</code> 表示值的类型。该函数的返回值为与指定索引相关联的值。</p>
+<p><code>kh_val</code> 函数的作用是获取与指定索引相关联的值。在哈希表中，每个键都会被哈希成一个索引，而该索引通常用于查找存储在哈希表中的值。<code>kh_val</code> 函数通过指定索引来获取该索引对应的值。</p>
+<h2 id="疑问-1"><a href="#疑问-1" class="headerlink" title="疑问"></a>疑问</h2><p>Target State Selector 目标状态选择器，什么是state？初始状态从哪里获取?</p>
+<p>下一个状态？如何选择下一个状态？如何根据hash表存储状态并索引</p>
+<p>send_over_network函数中最后HANDLE_REPONSES:为什么要 while（1）if {has_new_bits&#x3D;&#x3D;2} break;</p>
+<p>种子的region是什么？</p>
+<p>答：先看一下add_to_queue函数时，写入到文件保存下来的内容：</p>
+<p>在save_regions_to_file函数中，每一个region格式为：<code>Region %d - Start: %d, End: %d\n</code></p>
+<p>我们再来看下生成的文件的内容:</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230706204811073.png" alt="image-20230706204811073"></p>
+<p>可以看到，rtsp_requests_aac.raw对应的regions的数量是3，即有三个region，</p>
+<p>第一个region从0开始，在157（0x9D处结束）。</p>
+<p>我们看一下rtsp_requests_aac.raw内容：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230706205049246.png" alt="image-20230706205049246"></p>
+<p>红色竖线刚好是0x9D的位置，我们可以看到，region的起止范围正好是第一条请求的全部内容</p>
+<p>所以，regions就是该种子中请求的数量，一个region对应一个请求</p>
+<p>was_fuzzed_map二维数组是如何标记states和qentries的</p>
+<p>qentries又指的是states里的什么？</p>
+<p>这里的states的seed指的是什么，kl_message</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/07/05/C-socket%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1/" rel="prev" title="C socket网络通信">
+      <i class="fa fa-chevron-left"></i> C socket网络通信
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/08/02/%E9%9A%8F%E7%AC%94/%E5%9B%BD%E9%98%B2%E7%A7%91%E5%A4%A7%E6%9A%91%E6%9C%9F%E5%AD%A6%E6%A0%A1%E7%AE%80%E8%AE%B0/" rel="next" title="国防科大暑期学校简记">
+      国防科大暑期学校简记 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#AFL"><span class="nav-number">1.</span> <span class="nav-text">AFL</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%96%91%E9%97%AE"><span class="nav-number">1.1.</span> <span class="nav-text">疑问</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#AFLNET"><span class="nav-number">2.</span> <span class="nav-text">AFLNET</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BA%90%E7%A0%81%E7%90%86%E8%A7%A3"><span class="nav-number">2.1.</span> <span class="nav-text">源码理解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#klib%E5%BA%93"><span class="nav-number">2.2.</span> <span class="nav-text">klib库</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#khint-t"><span class="nav-number">2.2.1.</span> <span class="nav-text">khint_t</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#kh-get"><span class="nav-number">2.2.2.</span> <span class="nav-text">kh_get()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#kh-end"><span class="nav-number">2.2.3.</span> <span class="nav-text">kh_end()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#kh-val"><span class="nav-number">2.2.4.</span> <span class="nav-text">kh_val()</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%96%91%E9%97%AE-1"><span class="nav-number">2.3.</span> <span class="nav-text">疑问</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="郭小白QAQ"
+      src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+  <p class="site-author-name" itemprop="name">郭小白QAQ</p>
+  <div class="site-description" itemprop="description">精彩不亮丽，起落是无常</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">57</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/guoxb0_0@qq.com" title="E-Mail → guoxb0_0@qq.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">郭小白QAQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">105k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:21</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+<script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
+
+<script>
+var options = {
+  bottom: '64px',
+  right: 'unset',
+  left: '32px',
+  time: '0.5s',
+  mixColor: 'transparent',
+  backgroundColor: 'transparent',
+  buttonColorDark: '#100f2c',
+  buttonColorLight: '#fff',
+  saveInCookies: true,
+  label: '🌓',
+  autoMatchOsTheme: true
+}
+const darkmode = new Darkmode(options);
+window.darkmode = darkmode;
+darkmode.showWidget();
+</script>
+
+</body>
+</html>

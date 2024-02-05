@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.1.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"guoxb.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":true},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="第四章 物联网固件层安全讲解0x01 文件系统详解1. 文件系统简介1.1 文件系统简介文件系统是操作系统用于明确存储设备（常见是磁盘，也有基于NAND Flash的固态硬盘）或分区上的文件的方法和数据结构；即在存储设备上组织文件的方法。操作系统中负责管理和存储文件信息的软件机构称为文件管理系统，简称文件系统。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="IoT安全入门04">
+<meta property="og:url" content="http://guoxb.top/2023/03/28/%E7%89%A9%E8%81%94%E7%BD%91%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A8/IoT%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A804/index.html">
+<meta property="og:site_name" content="GuoXB&#39;s Blog">
+<meta property="og:description" content="第四章 物联网固件层安全讲解0x01 文件系统详解1. 文件系统简介1.1 文件系统简介文件系统是操作系统用于明确存储设备（常见是磁盘，也有基于NAND Flash的固态硬盘）或分区上的文件的方法和数据结构；即在存储设备上组织文件的方法。操作系统中负责管理和存储文件信息的软件机构称为文件管理系统，简称文件系统。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220823155713987.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220823155921906.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202011101111_K2FTZ5TCAPTZHWP.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202011101111_TN7XJ9KW3UM335E.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202011101112_E68KJQ3FZH9HJ6H.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220823160521074.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220823160831338.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220827101854708.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220827102615587.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220827102748745.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220827102813726.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220827102833128.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220827102901055.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220827102928902.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220827103426742.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220827103729222.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220827103747683.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220827103801538.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220827103816747.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828150716964.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828150923916.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828150955042.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151010530.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151024701.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151139212.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151224948.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151238625.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151303726.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151311354.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151321716.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151515084.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151534059.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151553278.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151606502.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151622479.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151656506.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151711011.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151719780.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151730855.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151748526.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151906926.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151956270.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828152010114.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828152029875.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828152213894.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316162638310.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316163251842.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316164337031.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316164629299.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316164732373.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316165002908.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316165248154.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316165322693.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316170304582.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316171022481.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230317153108851.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316171208266.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230317101454236.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230317101435568.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230317101530509.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230317161003457.png">
+<meta property="article:published_time" content="2023-03-28T14:03:54.000Z">
+<meta property="article:modified_time" content="2023-03-28T15:32:45.099Z">
+<meta property="article:author" content="郭小白QAQ">
+<meta property="article:tag" content="学习笔记">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220823155713987.png">
+
+<link rel="canonical" href="http://guoxb.top/2023/03/28/%E7%89%A9%E8%81%94%E7%BD%91%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A8/IoT%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A804/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>IoT安全入门04 | GuoXB's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">GuoXB's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2023/03/28/%E7%89%A9%E8%81%94%E7%BD%91%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A8/IoT%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A804/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+      <meta itemprop="name" content="郭小白QAQ">
+      <meta itemprop="description" content="精彩不亮丽，起落是无常">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GuoXB's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          IoT安全入门04
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-03-28 22:03:54 / 修改时间：23:32:45" itemprop="dateCreated datePublished" datetime="2023-03-28T22:03:54+08:00">2023-03-28</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/IoT%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A8/" itemprop="url" rel="index"><span itemprop="name">IoT安全入门</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>21 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="第四章-物联网固件层安全讲解"><a href="#第四章-物联网固件层安全讲解" class="headerlink" title="第四章 物联网固件层安全讲解"></a>第四章 物联网固件层安全讲解</h1><h2 id="0x01-文件系统详解"><a href="#0x01-文件系统详解" class="headerlink" title="0x01 文件系统详解"></a>0x01 文件系统详解</h2><h3 id="1-文件系统简介"><a href="#1-文件系统简介" class="headerlink" title="1. 文件系统简介"></a>1. 文件系统简介</h3><h4 id="1-1-文件系统简介"><a href="#1-1-文件系统简介" class="headerlink" title="1.1 文件系统简介"></a>1.1 文件系统简介</h4><p>文件系统是操作系统用于明确存储设备（常见是磁盘，也有基于NAND Flash的固态硬盘）或分区上的文件的方法和数据结构；即在存储设备上组织文件的方法。操作系统中负责管理和存储文件信息的软件机构称为文件管理系统，简称文件系统。</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220823155713987.png" alt="image-20220823155713987"></p>
+<span id="more"></span>
+
+<p><strong>根文件系统简介</strong></p>
+<p>根文件系统首先是内核启动时所mount的第一个文件系统，内核代码影像文件保存在根文件系统中，而系统引导启动程序会在跟文件系统挂在之后从中把一些基本的初始化脚本和服务等加载到内存中去运行。</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220823155921906.png" alt="image-20220823155921906"></p>
+<p><strong>文件系统实现</strong></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202011101111_K2FTZ5TCAPTZHWP.png" alt="FileSystem"></p>
+<p><strong>常见嵌入式文件系统</strong></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202011101111_TN7XJ9KW3UM335E.png" alt="FileSystemCom"></p>
+<p><code>df -ahT</code>：查看当前系统的所有文件系统</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202011101112_E68KJQ3FZH9HJ6H.png" alt="LinuxVFS"></p>
+<h3 id="2-常见的文件系统"><a href="#2-常见的文件系统" class="headerlink" title="2. 常见的文件系统"></a>2. 常见的文件系统</h3><h4 id="2-1-常见的文件系统-Flash"><a href="#2-1-常见的文件系统-Flash" class="headerlink" title="2.1 常见的文件系统-Flash"></a>2.1 常见的文件系统-Flash</h4><p><strong>jffs&#x2F;jffs2：</strong></p>
+<ul>
+<li>JFFS文件系统最早是由瑞典Axis Communications 公司基于Linux2.0的内核为嵌入式系统开发的文件系统。JFFS2是RedHat公司基于JFFS开发的闪存文件系统，最初是针对RedHat公司的嵌入式产品eCos开发的嵌入式文件系统。</li>
+<li>Jffs2：日志闪存文件系统版本2 (Journalling Flash FileSystem v2)<br>主要用于NOR型闪存，基于MTD驱动层，特点是：可读写的、支持数据压缩的、基于哈希表的日志型文件系统，并提供了崩溃&#x2F;掉电安全保护，提供“写平衡”支持等</li>
+<li>缺点:当文件系统已满或接近满时，因为垃圾收集的关系而使jffs2的运行速度大大放慢</li>
+</ul>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220823160521074.png" alt="image-20220823160521074"></p>
+<p><strong>yaffs&#x2F;yaffs2：</strong>Yet Another Flash File System</p>
+<ul>
+<li>yaffs&#x2F;yaffs2是专为嵌入式系统使用NAND型闪存而设计的一种日志型文件系统。</li>
+<li>与jffs2相比，它减少了一些功能（例如不支持数据压缩），所以速度更快，挂载时间很短，对内存的占用较小。</li>
+<li>yaffs&#x2F;yaffs2自带NAND芯片的驱动，并且为嵌入式系统提供了直接访问文件系统的API，用户可以不使用Linux中的MTD与VFS，直接对文件系统操作。当然，yaffs也可与MTD驱动程序配合使用</li>
+<li>yaffs与yaffs2的主要区别在于，前者仅支持小页（512 Bytes）NAND闪存，后者则可支持大页（2KB）NAND闪存。同时，yaffs2在内存空间占用、垃圾回收速度、读&#x2F;写速度等方面均有大幅提升</li>
+</ul>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220823160831338.png" alt="image-20220823160831338"></p>
+<p><strong>Cramfs：</strong>Compressed ROM File System</p>
+<ul>
+<li>Cramfs是Linux的创始人Linus Torvalds参与开发的一种只读的压缩文件系统。它基于MTD驱动程序。</li>
+<li>在cramfs文件系统中，每一页(4KB)被单独压缩，可以随机页访问，其压缩比高达2:1，为嵌入式系统节省大量的Flash存储空间，使系统可通过更低容量的FLASH存储相同的文件，从而降低系统成本。</li>
+<li>Cramfs文件系统以压缩方式存储，在运行时解压缩，所以不支持应用程序以XIP（eXecute In Place，芯片内执行）方式运行，所有的应用程序要求被拷到RAM里去运行。</li>
+<li>它的速度快，效率高，其只读的特点有利于保护文件系统免受破坏，提高了系统的可靠性。</li>
+<li>缺陷：它的只读属性同时又是它的一大缺陷，使得用户无法对其内容对进扩充</li>
+</ul>
+<p><strong>squashfs：</strong></p>
+<ul>
+<li>squashfs可以将整个文件系统或者某个单一的目录压缩在一起，存放在某个设备，某个分区或者普通的文件中。如果你将其压缩到一个设备中，那么你可以将其直接mount起来使用；而如果它仅仅是个文件，你可以将其当为一个loopback设备使用。</li>
+<li>特点:<ul>
+<li>数据(data)，节点(inode)和目录(directories )都被压缩。</li>
+<li>保存了全部的32位UID&#x2F;GIDS和文件的创建时间. (注: cramfs是8位，没有创建时间)。</li>
+<li>支持多达4G的文件系统. (cramfs是16M)。</li>
+<li>节点和目录都是高度压缩，而且都是存储在字节边界(packed on byte boundaries)</li>
+<li>squashfs可以允许块大小(block size)达32Kb(1. x)和64kb(2.x), 这样可以达到比4K块大小更大的压缩率。</li>
+<li>squashfs 2引进了碎片块(fragment blocks)的概念: 一种将许多比块size小的文件存储在一个块中，以达到更大的压缩率</li>
+</ul>
+</li>
+</ul>
+<p><strong>UBIFS</strong></p>
+<ul>
+<li>nokiaI程师在the university of Szeged大学帮助下开发的新的Flash<br>filesystem。UBIFS可以认为是JFFS2文件系统的下一代。UBIFS文件系统是专门为大容量FLASH嵌入式移动设备设计的，挂载UBIFS文件系统必须有mtd接口，而普通的PC机通常都不用mtd管理磁盘。</li>
+<li>UBIFS通过子系统UBI处理与MTD device之间的动作。与JFFS2一样，UBIFS建构于MTD device之上，因而与一般的block device不兼容。</li>
+<li>UBIFS及其使用的UBI子系统，是一种用在大容量flash，上的文件系统。</li>
+<li>特点：可扩展性，快速mount，write-back支持，异常unmount适应度，快速I&#x2F;0，on-the_ flight compression，可恢复性，完整性</li>
+</ul>
+<h4 id="2-2-常见的文件系统-内存"><a href="#2-2-常见的文件系统-内存" class="headerlink" title="2.2 常见的文件系统-内存"></a>2.2 常见的文件系统-内存</h4><p><strong>Ramdisk</strong></p>
+<ul>
+<li>Ramdisk是将一部分固定大小的内存当作分区来使用。它并非一个实际的文件系统，而是一种将实际的文件系统装入内存的机制，并且可以作为根文件系统。将一些经常被访问而又不会更改的文件(如只读的根文件系统)通过Randisk放在内存中，可以明显地提高系统的性能。</li>
+<li>在Linux的启动阶段，initrd提供了一套机制，可以将内核映像和根文件系统一起载入内存。</li>
+</ul>
+<p><strong>ramfs&#x2F;tmpfs</strong></p>
+<ul>
+<li>Ramfs是Linus Torvalds开发的一种基于内存的文件系统，工作于虚拟文件系统(VFS)层，不能格式化，可以创建多个，在创建时可以指定其最大能使用的内存大小。</li>
+<li>Ramfs&#x2F;tmpfs文件系统把所有的文件都放在RAM中，所以读&#x2F;写操作发生在RAM中，可以用ramfs&#x2F; tmpfs来存储一些临时性或经常要修改的数据，例如&#x2F; tmp和&#x2F;var目录，这样既避免了对Flash存储器的读写损耗，也提高了数据读写速度。</li>
+<li>Ramfs&#x2F; tmpfs相对于传统的Ramdisk的不同之处主要在于：不能格式化，文件系统大小可随所含文件内容大小变化。</li>
+<li>Tmpfs的一个缺点是当系统重新引导时会丢失所有数据。</li>
+</ul>
+<h4 id="2-3-常见的文件系统-网络文件系统"><a href="#2-3-常见的文件系统-网络文件系统" class="headerlink" title="2.3 常见的文件系统-网络文件系统"></a>2.3 常见的文件系统-网络文件系统</h4><p>网络文件系统NFS（Network File System）</p>
+<ul>
+<li>NFS是由Sun开发并发展起来的一项在不同机器、不同操作系统之间通过网络共享文件的技术。在嵌入式Linux系统的开发调试阶段，可以利用该技术在主机上建立基于NFS的根文件系统，挂载到嵌入式设备，可以很方便地修改根文件系统的内容。</li>
+</ul>
+<h4 id="2-4-常见的文件系统-虚拟文件系统"><a href="#2-4-常见的文件系统-虚拟文件系统" class="headerlink" title="2.4 常见的文件系统-虚拟文件系统"></a>2.4 常见的文件系统-虚拟文件系统</h4><p><strong>procfs</strong></p>
+<p><strong>&#x2F;proc</strong> 文件系统是一个虚拟文件系统，通过它可以使用一种新的方法在Linux内核空间和用户间之间进行通信。在**&#x2F;proc** 文件系统中，我们可以将对虚拟文件的读写作为与内核中实体进行通信的一种手段，但是与普通文件不同的是，这些虚拟文件的内容都是动态创建的。</p>
+<p>#  -t 是指定文件系统类型，第二个参数是挂载设备，因为是内核设备，所以写none，第三个参数是挂载目录</p>
+<p><code>mount -t proc none /proc </code></p>
+<p># 或者在 &#x2F;etc&#x2F;fstab条目下添加</p>
+<p><code>none /proc proc defaults 0 0</code></p>
+<p>在fstab下添加会在开机以后自动挂载 </p>
+<p><strong>tmpfs</strong></p>
+<ul>
+<li>tmpfs ( temporary filesystem )是Linux特有的文件系统，标准挂载点是&#x2F;dev&#x2F;shm，默认大小是实际内存的一半，如下图所示。当然，用户也可以将tmpfs挂载在其他地方。tmpfs可以使用物理内存，也可以使用swap交换空间。</li>
+<li>tmpfs有些像虚拟磁盘( ramdisk)，但ramdisk是一个块设备，而且需要一个mkfs之类的命令格式化后才能使用。而tmpfs是一个独立的文件系统，不是块设备，只要挂载，就可以立即使用。</li>
+<li>tmpfs特点: <ul>
+<li>临时性</li>
+<li>快速读写能力</li>
+<li>动态收缩</li>
+</ul>
+</li>
+</ul>
+<h2 id="0x02-常见嵌入式操作系统详解"><a href="#0x02-常见嵌入式操作系统详解" class="headerlink" title="0x02 常见嵌入式操作系统详解"></a>0x02 常见嵌入式操作系统详解</h2><h3 id="1-操作系统简介"><a href="#1-操作系统简介" class="headerlink" title="1. 操作系统简介"></a>1. 操作系统简介</h3><h4 id="1-1-操作系统简介"><a href="#1-1-操作系统简介" class="headerlink" title="1.1 操作系统简介"></a>1.1 操作系统简介</h4><p>操作系统(英语: Operating System,，缩写: OS)是一组主管并控制计算机操作、运用和运行硬件、软件资源和提供公共服务来组织用户交互的相互关联的系统软件程序，同时也是计算机系统的内核与基石。操作系统需要处理如管理与配置内存、决定系统资源供需的优先次序、控制输入与输出设备、操作网络与管理文件系统等基本事务。操作系统也提供一个让用户与系统交互的操作界面。</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220827101854708.png" alt="image-20220827101854708"></p>
+<h4 id="1-2-操作系统的作用"><a href="#1-2-操作系统的作用" class="headerlink" title="1.2 操作系统的作用"></a>1.2 操作系统的作用</h4><ul>
+<li>用户界面（GUI）</li>
+<li>进程管理</li>
+<li>内存管理</li>
+<li>文件系统</li>
+<li>网络通信</li>
+<li>设备管理</li>
+<li>······</li>
+</ul>
+<h4 id="1-3-操作系统的分类"><a href="#1-3-操作系统的分类" class="headerlink" title="1.3 操作系统的分类"></a>1.3 操作系统的分类</h4><p>根据<strong>内核结构</strong>划分：</p>
+<ul>
+<li>微内核（Windows）</li>
+<li>宏内核（Linux）</li>
+</ul>
+<p>根据<strong>用途</strong>划分：</p>
+<ul>
+<li>通用操作系统（PC等）</li>
+<li>嵌入式操作系统（物联网设备等）</li>
+<li>专用操作系统（军事、医疗等）</li>
+</ul>
+<p>根据<strong>信号处理的实时性</strong>划分：</p>
+<ul>
+<li>实时操作系统（RTOS，Vxworks等）</li>
+<li>分时操作系统（Linux等）</li>
+</ul>
+<h3 id="2-嵌入式操作系统"><a href="#2-嵌入式操作系统" class="headerlink" title="2. 嵌入式操作系统"></a>2. 嵌入式操作系统</h3><h4 id="2-1-分时操作系统"><a href="#2-1-分时操作系统" class="headerlink" title="2.1 分时操作系统"></a>2.1 分时操作系统</h4><p><strong>分时操作系统（time-sharing）：</strong></p>
+<ul>
+<li>计算机科学中对资源的一种共享方式，利用多道程序与多任务处理使多个用户可以同时使用一台计算机。</li>
+<li>把计算机与许多终端用户连接起来，分时操作系统将系统处理机时间与内存空间按一定的时间间隔，轮流地切换给各终端用户的程序使用。由于时间间隔很短，每个用户的感觉就像他独占计算机一样。分时操作系统的特点是可有效增加资源的使用率。</li>
+<li>时间片：是把计算机的系统资源(尤其是CPU时间)进行时间，上的分割，每个时间段称为一个时间片，每个用户依次轮流使用时间片。</li>
+<li>分时技术：把处理机的运行时间分为很短的时间片，按时间片轮流把处理机分给各联机作业使用。</li>
+</ul>
+<p><strong>Linux</strong></p>
+<p>Linux内核(英语: Linux kernel )，是一种开源个类Unix操作系统宏内核。整个Linux操作系统家族基于该内核部署拉传统计算机平台（如个人计算机搭服务器，以Linux发行版个形式）搭各种嵌入式平台，如路由器、无线接入点、专用小交换机、机顶盒、FTA接收器、智能电视、数字视频录像机、网络附加存储(NAS)等。 工作拉平板电脑、智能手机搭智能手表个Android操作系统同样通过Linux内核提供个服务完成自身功能。</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220827102615587.png" alt="image-20220827102615587"></p>
+<p><strong>Linux目录结构</strong></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220827102748745.png" alt="image-20220827102748745"></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220827102813726.png" alt="image-20220827102813726"></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220827102833128.png" alt="image-20220827102833128"></p>
+<p><strong>Linux Kernel</strong></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220827102901055.png" alt="image-20220827102901055"></p>
+<p><strong>Linux镜像</strong></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220827102928902.png" alt="image-20220827102928902"></p>
+<h4 id="2-2-RTOS"><a href="#2-2-RTOS" class="headerlink" title="2.2 RTOS"></a>2.2 RTOS</h4><ul>
+<li><p>实时操作系统( Real-time operating system, RTOS ) ，又称即时操作系统，它会按照排序运行、管理系统资源,并为开发应用程序提供一致的基础。</p>
+</li>
+<li><p>实时操作系统与一般的操作系统相比,最大的特色就是“实时性”，如果有一个任务需要执行，实时操作系统会马上(在较短时间内)执行该任务，不会有较长的延时。这种特性保证了各个任务的及时执行。</p>
+</li>
+<li><p>设计实时操作系统的首要目标不是高的吞吐量，而是保证任务在特定时间内完成，因此衡量一个实时操作系统坚固性的重要指标，是系统从接收一个任务，到完成该任务所需的时间，其时间的变化称为抖动。可以依抖动将实时操作系统分为两种：硬实时操作系统及软实时操作系统，硬实时操作系统比软实时操作系统有更少的抖<br>动：</p>
+<ul>
+<li>硬实时操作系统必须使任务在确定的时间内完成。</li>
+<li>软实时操作系统能让绝大多数任务在确定时间内完成。</li>
+</ul>
+</li>
+<li><p>实时操作系统与一般的操作系统有着不同的调度算法。普通的操作系统的调度器对于线程优先级等方面的处理更加灵活;而实时操作系统追求最小的中断延时和线程切换延时。</p>
+</li>
+<li><p>通常都会有最基础的内核，以及外加上去的模块，像是文件系统、网络协议堆栈和应用、设备驱动程序等模块。</p>
+</li>
+</ul>
+<p><strong>常见RTOS</strong></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220827103426742.png" alt="image-20220827103426742"></p>
+<p><strong>Vxworks</strong></p>
+<p>特点：</p>
+<ul>
+<li>Vxworks既是一个操作系统，又是一个可以运行的最小基本程序</li>
+<li>Vxworks有BSP（可以认为是一种低层驱动），可以减小驱动程序的编写过程</li>
+<li>Vxworks具有强大的调试能力，可以在没有仿真器的情况下，通过串口调试</li>
+<li>Vxworks具有软件DEBUG功能，可以对软件部分进行模拟调试</li>
+<li>Vxworks具有丰富的函数库</li>
+<li>同时Vxworks自带TCP&#x2F;IP协议栈</li>
+</ul>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220827103729222.png" alt="image-20220827103729222"></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220827103747683.png" alt="image-20220827103747683"></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220827103801538.png" alt="image-20220827103801538"></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220827103816747.png" alt="image-20220827103816747"></p>
+<h2 id="0x03-固件分析环境搭建-常用分析工具详解"><a href="#0x03-固件分析环境搭建-常用分析工具详解" class="headerlink" title="0x03 固件分析环境搭建&amp;&amp;常用分析工具详解"></a>0x03 固件分析环境搭建&amp;&amp;常用分析工具详解</h2><h3 id="1-固件分析环境搭建"><a href="#1-固件分析环境搭建" class="headerlink" title="1. 固件分析环境搭建"></a>1. 固件分析环境搭建</h3><h4 id="1-1-系统选择"><a href="#1-1-系统选择" class="headerlink" title="1.1 系统选择"></a>1.1 系统选择</h4><p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828150716964.png" alt="image-20220828150716964"></p>
+<p>这里视频里建议用低版本的ubuntu，但是由于自己部署低版本出问题稍微有亿点多，所以这里我用的是Attify安全团队他们部署好的专用于物联网渗透测试和安全分析的一个虚拟机镜像AttifyOS，最新版是基于ubuntu18.04，上边已经提前安装好了很多常用的软件，比较节省时间，当然也可以选择自己部署环境。</p>
+<p>Github仓库地址如下：<a target="_blank" rel="noopener" href="https://github.com/adi0x90/attifyos">https://github.com/adi0x90/attifyos</a></p>
+<h4 id="1-2-固件提取"><a href="#1-2-固件提取" class="headerlink" title="1.2 固件提取"></a>1.2 固件提取</h4><p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828150923916.png" alt="image-20220828150923916"></p>
+<p><strong>dd：</strong></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828150955042.png" alt="image-20220828150955042"></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151010530.png" alt="image-20220828151010530"></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151024701.png" alt="image-20220828151024701"></p>
+<p><strong>binwalk：</strong></p>
+<p>项目地址：<a target="_blank" rel="noopener" href="https://github.com/ReFirmLabs/binwalk">https://github.com/ReFirmLabs/binwalk</a></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151139212.png" alt="image-20220828151139212"></p>
+<p>如果熵为0则未加密，否则，基本上是加密的。(这句好像是错的，请自己查证下)</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151224948.png" alt="image-20220828151224948"></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151238625.png" alt="image-20220828151238625"></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151303726.png" alt="image-20220828151303726"></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151311354.png" alt="image-20220828151311354"></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151321716.png" alt="image-20220828151321716"></p>
+<h4 id="1-2-二进制应用分析"><a href="#1-2-二进制应用分析" class="headerlink" title="1.2 二进制应用分析"></a>1.2 二进制应用分析</h4><ol>
+<li>angr</li>
+<li>IDA</li>
+<li>Ghidra</li>
+<li>Gdb(gef&#x2F;pwndbg&#x2F;peda)</li>
+</ol>
+<p><strong>angr:</strong></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151515084.png" alt="image-20220828151515084"></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151534059.png" alt="image-20220828151534059"></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151553278.png" alt="image-20220828151553278"></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151606502.png" alt="image-20220828151606502"></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151622479.png" alt="image-20220828151622479"></p>
+<h4 id="1-4-固件模拟"><a href="#1-4-固件模拟" class="headerlink" title="1.4 固件模拟"></a>1.4 固件模拟</h4><p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151656506.png" alt="image-20220828151656506"></p>
+<p><strong>Qemu</strong></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151711011.png" alt="image-20220828151711011"></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151719780.png" alt="image-20220828151719780"></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151730855.png" alt="image-20220828151730855"></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151748526.png" alt="image-20220828151748526"></p>
+<p><strong>Firmadyne</strong></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151906926.png" alt="image-20220828151906926"></p>
+<p>Firmadyne依赖Binwalk和Qemu</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828151956270.png" alt="image-20220828151956270"></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828152010114.png" alt="image-20220828152010114"></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828152029875.png" alt="image-20220828152029875"></p>
+<p><strong>Firmware Analysis Toolkit</strong></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220828152213894.png" alt="image-20220828152213894"></p>
+<p>提供一些敏感文件查找等等插件</p>
+<h2 id="0x04-固件提取详解"><a href="#0x04-固件提取详解" class="headerlink" title="0x04 固件提取详解"></a>0x04 固件提取详解</h2><h3 id="1-固件获取"><a href="#1-固件获取" class="headerlink" title="1. 固件获取"></a>1. 固件获取</h3><p>固件获取是指：手中没有固件，如何获取.bin等类型的固件</p>
+<h4 id="1-1-固件"><a href="#1-1-固件" class="headerlink" title="1.1 固件"></a>1.1 固件</h4><ul>
+<li><p>固件（firmware），是一种嵌入在硬件设备中的软件（可简单理解为嵌入式设备的操作系统）。通常它是位于特殊应用集成电路（ASIC）或可变成逻辑器件（PLD）之中的内存或EEPROM或PROM里，有的可以让用户更新。可以应用在非常广泛的电子产品中，从遥控器，计算器到电脑中的键盘、硬盘，甚至工业机器人中都可以看见它的身影。</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316162638310.png" alt="image-20230316162638310"></p>
+</li>
+</ul>
+<h4 id="1-2-固件获取"><a href="#1-2-固件获取" class="headerlink" title="1.2 固件获取"></a>1.2 固件获取</h4><ul>
+<li>官方或售后获取固件</li>
+<li>从第三方网站或者专门的人获取固件</li>
+<li>抓取升级包的地址</li>
+<li>逆向升级软件获取升级接口</li>
+<li>使用编程器从Flash中读取固件</li>
+<li>通过调试接口，进入设备提取固件</li>
+<li>用逻辑分析仪获取信息</li>
+</ul>
+<ol>
+<li><p>从官网、FTP服务器下载固件或售后处获取固件</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316163251842.png" alt="image-20230316163251842"></p>
+<p><strong>缺点：</strong>官方提供的版本不完整；固件加密或者官网不提供</p>
+</li>
+<li><p>从第三方网站下载固件或找专门的人购买</p>
+<p><strong>缺点：</strong>提供的型号不完整；需要花钱</p>
+</li>
+<li><p>抓取升级包的地址</p>
+<p><strong>工具：</strong>HUB&#x2F;Wireshark&#x2F;ettercap</p>
+<p><strong>在线升级：</strong>抓包，分析固件地址，下载固件</p>
+<p><strong>新老固件通吃：</strong></p>
+<ul>
+<li>升级前记录下固件版本和名称</li>
+<li>升级后，根据命名规则拼接老固件地址</li>
+</ul>
+</li>
+<li><p>逆向升级软件获取升级接口</p>
+<p>厂家提供上位机升级软件（例如：手机端APP），升级软件在升级前，现在上位机解密固件，在传输不加密的固件到设备升级的方式</p>
+<p>逆向分析，解密升级固件部分：抓取数据包</p>
+</li>
+<li><p>使用编程器从Flash中读取固件</p>
+<p>将芯片的引脚连接到编程器对应的引脚进行读取</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316164337031.png" alt="image-20230316164337031"></p>
+<p>步骤：1.拆下芯片；2.使用编程器进行提取；3.将Flash焊回电路板</p>
+<p>在未拆解芯片的情况下提取固件：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316164629299.png" alt="image-20230316164629299"></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316164732373.png" alt="image-20230316164732373"></p>
+</li>
+<li><p>通过调试接口，进入U-BOOT提取固件</p>
+<p>获取U-BOOT交互式shell</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316165002908.png" alt="image-20230316165002908"></p>
+</li>
+<li><p>利用逻辑分析仪获取信息</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316165248154.png" alt="image-20230316165248154"></p>
+<p> <img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316165322693.png" alt="image-20230316165322693"></p>
+</li>
+</ol>
+<h3 id="2-固件提取"><a href="#2-固件提取" class="headerlink" title="2. 固件提取"></a>2. 固件提取</h3><p>固件提取是指：已经有固件，如何从.bin等类型的固件中提取数据、文件系统等。</p>
+<ul>
+<li>strings</li>
+<li>hexdump</li>
+<li>file</li>
+<li>binwalk</li>
+<li>fdisk</li>
+<li>dd</li>
+<li>GUI hex</li>
+</ul>
+<ol>
+<li><p><strong>strings</strong></p>
+<p><strong>strings</strong>命令在对象文件或者二进制文件中查找可打印的字符串。字符串是4个或更多可打印字符的任意序列，以换行符或空字符结束。<strong>strings</strong>命令对识别随机对象文件很有用。命令参数如下所示：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316170304582.png" alt="image-20230316170304582"></p>
+<p>示例：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">strings test.bin | <span class="built_in">head</span> -n 20</span></span><br><span class="line">signature=wrgac43s_dlink.2015_dir822c1</span><br><span class="line">dev=/dev/mtdblock/1</span><br><span class="line">type=firmware</span><br><span class="line">cs6b</span><br><span class="line"> @!!</span><br><span class="line"><span class="meta prompt_">@$</span><span class="language-bash">&lt;</span>	</span><br><span class="line"><span class="meta prompt_">@$</span><span class="language-bash">&lt;</span>	</span><br><span class="line">@8!$</span><br><span class="line">···</span><br></pre></td></tr></table></figure>
+
+
+</li>
+<li><p><strong>hexdump</strong></p>
+<p><strong>hexdump</strong>命令一般用来查看二进制文件的十六进制编码，但实际上他能查看任何文件，而不只限于二进制文件。命令参数如下所示：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316171022481.png" alt="image-20230316171022481"></p>
+<p>示例：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230317153108851.png" alt="image-20230317153108851"></p>
+</li>
+<li><p><strong>file</strong>命令用来探测给定文件类型。file命令对文件的检查分为文件系统、魔法幻数检查和语言检查3个过程。命令参数如下：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316171208266.png" alt="image-20230316171208266"></p>
+<p>示例：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">file test.bin</span> </span><br><span class="line">test.bin: data</span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">file test_firmware</span> </span><br><span class="line">test_firmware: Squashfs filesystem, little endian, version 1024.0, compressed, -3519191473859854336 bytes, 805896192 inodes, blocksize: 512 bytes, created: Thu Jun  4 12:04:42 2020</span><br></pre></td></tr></table></figure>
+
+
+</li>
+<li><p><strong>binwalk</strong>是一款快速、易用，用于分析，逆向工程和提取固件映像的工具。简单易用，完全自动化脚本，并通过自定义签名，提取规则和插件模块，很重要的一点就是可以轻松地拓展。</p>
+<p>常用参数：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">-e, --extract                Automatically extract known file types</span><br><span class="line">-M, --matryoshka             Recursively scan extracted files</span><br><span class="line">-E, --entropy                Calculate file entropy</span><br></pre></td></tr></table></figure>
+
+
+</li>
+<li><p><strong>fdisk</strong>是一个创建和维护分区表的程序，它兼容DOS类型的分区表、BSD或者SUN类型的磁盘列表。</p>
+<p><code>fdisk -l</code>或<code>fdisk -lu</code>（- u 选项指定以segment段标记分区大小，而不是默认的”cylinders(柱面)”）</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230317101454236.png" alt="image-20230317101454236"></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230317101435568.png" alt="image-20230317101435568"></p>
+</li>
+<li><p><strong>dd</strong>命令用于读取、转换并输出数据。dd可以从标准输入或文件中读取数据，根据指定的格式来转换数据，再输出到文件、设备或标准输出。</p>
+<p>示例：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">dd</span> skip=1376404 <span class="keyword">if</span>=test.bin bs=1 of=test_firmware</span></span><br><span class="line">记录了5386240+0 的读入</span><br><span class="line">记录了5386240+0 的写出</span><br><span class="line">5386240字节（5.4 MB，5.1 MiB）已复制，5.94871 s，905 kB/s</span><br></pre></td></tr></table></figure>
+
+
+</li>
+<li><p><strong>GUI hex</strong></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230317101530509.png" alt="image-20230317101530509"></p>
+</li>
+</ol>
+<h4 id="手动方式提取固件文件系统"><a href="#手动方式提取固件文件系统" class="headerlink" title="手动方式提取固件文件系统"></a>手动方式提取固件文件系统</h4><p>首先我们使用<strong>hexdump</strong>命令，对获取到的固件进行文件系统签名的检索：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">hexdump -C test.bin |grep <span class="string">&quot;sqsh\|hsqs\|sqlz\|qshs\|tqsh\|hsqt\|shsq&quot;</span></span></span><br><span class="line">00150090  00 00 00 00 68 73 71 73  30 09 00 00 5e d8 e3 5a  |....hsqs0...^..Z|</span><br></pre></td></tr></table></figure>
+
+<p>在地址00150090（16进制）处发现SquashFS文件系统的签名（即hsqs）。由此可以确定这个固件的文件系统是小端的SquashFS。</p>
+<p>接下来使用<strong>dd</strong>命令将从 00150090 地址开始的内容提取出来，需要注意的是我们要将其转化成十进制的表示形式（1376400），并且由于hsqs前面有4字节的填充，所以真正提取是，要在 00150090 的基础上加 4 （即1376404）</p>
+<p>计算好地址后，可以使用<strong>dd</strong>命令提取，其命令格式为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dd if=输入文件名 bs=读入/输出大小 skip=从文件头跳过块数 of=输出文件名</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">dd</span> skip=1376404 <span class="keyword">if</span>=test.bin bs=1 of=test_firmware</span></span><br><span class="line">记录了5386240+0 的读入</span><br><span class="line">记录了5386240+0 的写出</span><br><span class="line">5386240字节（5.4 MB，5.1 MiB）已复制，5.94871 s，905 kB/s</span><br></pre></td></tr></table></figure>
+
+<p>接下来执行<strong>file</strong>命令，查看提取出的文件系统时候正确</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">file test_firmware</span> </span><br><span class="line">test_firmware: Squashfs filesystem, little endian, version 1024.0, compressed, -3519191473859854336 bytes, 805896192 inodes, blocksize: 512 bytes, created: Thu Jun  4 12:04:42 2020</span><br></pre></td></tr></table></figure>
+
+<p>可以看到这个固件文件系统为小段的Squash FS文件系统</p>
+<p>接下来执行 <strong>unsquashfs</strong> 命令来提出整个文件系统</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">unsquashfs test_firmware</span> </span><br><span class="line">Parallel unsquashfs: Using 8 processors</span><br><span class="line">2246 inodes (2292 blocks) to write</span><br><span class="line"></span><br><span class="line">[===========================================================|  ] 2225/2292  97%</span><br><span class="line"></span><br><span class="line">created 1987 files</span><br><span class="line">created 106 directories</span><br><span class="line">created 192 symlinks</span><br><span class="line">created 0 devices</span><br><span class="line">created 0 fifos</span><br></pre></td></tr></table></figure>
+
+<p>至此，我们已经成功地提取到了Squash FS格式的固件，其中提取的文件夹名称为squash-root</p>
+<p>接下来执行 <strong>ls</strong> 命令，预览该文件夹下的各个文件。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">ls</span> -ll squashfs-root/</span></span><br><span class="line">总用量 48</span><br><span class="line">drwxrwxr-x  2 guoxb guoxb 4096 Apr 28  2018 bin</span><br><span class="line">drwxrwxr-x  9 guoxb guoxb 4096 Apr 28  2018 dev</span><br><span class="line">drwxrwxr-x 13 guoxb guoxb 4096 Apr 28  2018 etc</span><br><span class="line">lrwxrwxrwx  1 guoxb guoxb    9 Apr 28  2018 home -&gt; /var/home</span><br><span class="line">drwxrwxr-x 10 guoxb guoxb 4096 Apr 28  2018 htdocs</span><br><span class="line">drwxr-xr-x  3 guoxb guoxb 4096 Apr 28  2018 lib</span><br><span class="line">drwxrwxr-x  2 guoxb guoxb 4096 Apr 28  2018 mnt</span><br><span class="line">drwxrwxr-x  2 guoxb guoxb 4096 Apr 28  2018 proc</span><br><span class="line">drwxr-xr-x  2 guoxb guoxb 4096 Apr 28  2018 sbin</span><br><span class="line">drwxrwxr-x  2 guoxb guoxb 4096 Apr 28  2018 sys</span><br><span class="line">lrwxrwxrwx  1 guoxb guoxb    8 Apr 28  2018 tmp -&gt; /var/tmp</span><br><span class="line">drwxrwxr-x  5 guoxb guoxb 4096 Apr 28  2018 usr</span><br><span class="line">drwxrwxr-x  2 guoxb guoxb 4096 Apr 28  2018 var</span><br><span class="line">drwxrwxr-x  2 guoxb guoxb 4096 Apr 28  2018 www</span><br></pre></td></tr></table></figure>
+
+<h4 id="使用工具提取"><a href="#使用工具提取" class="headerlink" title="使用工具提取"></a>使用工具提取</h4><p>采用 <strong>binwalk</strong> 工具自动提取文件系统，命令如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">binwalk -Me test.bin</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230317161003457.png" alt="image-20230317161003457"></p>
+<p>使用 <strong>binwalk</strong> 工具提取出的文件系统以 “_固件名.extracted”命名。打开 _test.bin.extracted 文件夹，可以看到 squashfs-root 文件夹，里面存放的就是获取的文件系统。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">ls</span> -ll _test.bin.extracted/squashfs-root</span></span><br><span class="line">总用量 48</span><br><span class="line">drwxrwxr-x  2 guoxb guoxb 4096 Apr 28  2018 bin</span><br><span class="line">drwxrwxr-x  9 guoxb guoxb 4096 Apr 28  2018 dev</span><br><span class="line">drwxrwxr-x 13 guoxb guoxb 4096 Apr 28  2018 etc</span><br><span class="line">lrwxrwxrwx  1 guoxb guoxb    9 Apr 28  2018 home -&gt; /var/home</span><br><span class="line">drwxrwxr-x 10 guoxb guoxb 4096 Apr 28  2018 htdocs</span><br><span class="line">drwxr-xr-x  3 guoxb guoxb 4096 Apr 28  2018 lib</span><br><span class="line">drwxrwxr-x  2 guoxb guoxb 4096 Apr 28  2018 mnt</span><br><span class="line">drwxrwxr-x  2 guoxb guoxb 4096 Apr 28  2018 proc</span><br><span class="line">drwxr-xr-x  2 guoxb guoxb 4096 Apr 28  2018 sbin</span><br><span class="line">drwxrwxr-x  2 guoxb guoxb 4096 Apr 28  2018 sys</span><br><span class="line">lrwxrwxrwx  1 guoxb guoxb    8 Apr 28  2018 tmp -&gt; /var/tmp</span><br><span class="line">drwxrwxr-x  5 guoxb guoxb 4096 Apr 28  2018 usr</span><br><span class="line">drwxrwxr-x  2 guoxb guoxb 4096 Apr 28  2018 var</span><br><span class="line">drwxrwxr-x  2 guoxb guoxb 4096 Apr 28  2018 www</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="0x05-实际漏洞分析"><a href="#0x05-实际漏洞分析" class="headerlink" title="0x05 实际漏洞分析"></a>0x05 实际漏洞分析</h2><p>见另外的专栏 《IoT设备漏洞复现》</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" rel="tag"># 学习笔记</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/03/28/%E7%89%A9%E8%81%94%E7%BD%91%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A8/IoT%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A803/" rel="prev" title="IoT安全入门03">
+      <i class="fa fa-chevron-left"></i> IoT安全入门03
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/03/28/%E7%89%A9%E8%81%94%E7%BD%91%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A8/IoT%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A805/" rel="next" title="IoT安全入门05">
+      IoT安全入门05 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AC%AC%E5%9B%9B%E7%AB%A0-%E7%89%A9%E8%81%94%E7%BD%91%E5%9B%BA%E4%BB%B6%E5%B1%82%E5%AE%89%E5%85%A8%E8%AE%B2%E8%A7%A3"><span class="nav-number">1.</span> <span class="nav-text">第四章 物联网固件层安全讲解</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E8%AF%A6%E8%A7%A3"><span class="nav-number">1.1.</span> <span class="nav-text">0x01 文件系统详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%AE%80%E4%BB%8B"><span class="nav-number">1.1.1.</span> <span class="nav-text">1. 文件系统简介</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%AE%80%E4%BB%8B"><span class="nav-number">1.1.1.1.</span> <span class="nav-text">1.1 文件系统简介</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E5%B8%B8%E8%A7%81%E7%9A%84%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="nav-number">1.1.2.</span> <span class="nav-text">2. 常见的文件系统</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-%E5%B8%B8%E8%A7%81%E7%9A%84%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F-Flash"><span class="nav-number">1.1.2.1.</span> <span class="nav-text">2.1 常见的文件系统-Flash</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-%E5%B8%B8%E8%A7%81%E7%9A%84%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F-%E5%86%85%E5%AD%98"><span class="nav-number">1.1.2.2.</span> <span class="nav-text">2.2 常见的文件系统-内存</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-%E5%B8%B8%E8%A7%81%E7%9A%84%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F-%E7%BD%91%E7%BB%9C%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="nav-number">1.1.2.3.</span> <span class="nav-text">2.3 常见的文件系统-网络文件系统</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-4-%E5%B8%B8%E8%A7%81%E7%9A%84%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F-%E8%99%9A%E6%8B%9F%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="nav-number">1.1.2.4.</span> <span class="nav-text">2.4 常见的文件系统-虚拟文件系统</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x02-%E5%B8%B8%E8%A7%81%E5%B5%8C%E5%85%A5%E5%BC%8F%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E8%AF%A6%E8%A7%A3"><span class="nav-number">1.2.</span> <span class="nav-text">0x02 常见嵌入式操作系统详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%AE%80%E4%BB%8B"><span class="nav-number">1.2.1.</span> <span class="nav-text">1. 操作系统简介</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%AE%80%E4%BB%8B"><span class="nav-number">1.2.1.1.</span> <span class="nav-text">1.1 操作系统简介</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="nav-number">1.2.1.2.</span> <span class="nav-text">1.2 操作系统的作用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%88%86%E7%B1%BB"><span class="nav-number">1.2.1.3.</span> <span class="nav-text">1.3 操作系统的分类</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E5%B5%8C%E5%85%A5%E5%BC%8F%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F"><span class="nav-number">1.2.2.</span> <span class="nav-text">2. 嵌入式操作系统</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-%E5%88%86%E6%97%B6%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F"><span class="nav-number">1.2.2.1.</span> <span class="nav-text">2.1 分时操作系统</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-RTOS"><span class="nav-number">1.2.2.2.</span> <span class="nav-text">2.2 RTOS</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x03-%E5%9B%BA%E4%BB%B6%E5%88%86%E6%9E%90%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA-%E5%B8%B8%E7%94%A8%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7%E8%AF%A6%E8%A7%A3"><span class="nav-number">1.3.</span> <span class="nav-text">0x03 固件分析环境搭建&amp;&amp;常用分析工具详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E5%9B%BA%E4%BB%B6%E5%88%86%E6%9E%90%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA"><span class="nav-number">1.3.1.</span> <span class="nav-text">1. 固件分析环境搭建</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-%E7%B3%BB%E7%BB%9F%E9%80%89%E6%8B%A9"><span class="nav-number">1.3.1.1.</span> <span class="nav-text">1.1 系统选择</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-%E5%9B%BA%E4%BB%B6%E6%8F%90%E5%8F%96"><span class="nav-number">1.3.1.2.</span> <span class="nav-text">1.2 固件提取</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%BA%94%E7%94%A8%E5%88%86%E6%9E%90"><span class="nav-number">1.3.1.3.</span> <span class="nav-text">1.2 二进制应用分析</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-4-%E5%9B%BA%E4%BB%B6%E6%A8%A1%E6%8B%9F"><span class="nav-number">1.3.1.4.</span> <span class="nav-text">1.4 固件模拟</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x04-%E5%9B%BA%E4%BB%B6%E6%8F%90%E5%8F%96%E8%AF%A6%E8%A7%A3"><span class="nav-number">1.4.</span> <span class="nav-text">0x04 固件提取详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E5%9B%BA%E4%BB%B6%E8%8E%B7%E5%8F%96"><span class="nav-number">1.4.1.</span> <span class="nav-text">1. 固件获取</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-%E5%9B%BA%E4%BB%B6"><span class="nav-number">1.4.1.1.</span> <span class="nav-text">1.1 固件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-%E5%9B%BA%E4%BB%B6%E8%8E%B7%E5%8F%96"><span class="nav-number">1.4.1.2.</span> <span class="nav-text">1.2 固件获取</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E5%9B%BA%E4%BB%B6%E6%8F%90%E5%8F%96"><span class="nav-number">1.4.2.</span> <span class="nav-text">2. 固件提取</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%89%8B%E5%8A%A8%E6%96%B9%E5%BC%8F%E6%8F%90%E5%8F%96%E5%9B%BA%E4%BB%B6%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="nav-number">1.4.2.1.</span> <span class="nav-text">手动方式提取固件文件系统</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E5%B7%A5%E5%85%B7%E6%8F%90%E5%8F%96"><span class="nav-number">1.4.2.2.</span> <span class="nav-text">使用工具提取</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x05-%E5%AE%9E%E9%99%85%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90"><span class="nav-number">1.5.</span> <span class="nav-text">0x05 实际漏洞分析</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="郭小白QAQ"
+      src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+  <p class="site-author-name" itemprop="name">郭小白QAQ</p>
+  <div class="site-description" itemprop="description">精彩不亮丽，起落是无常</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">57</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/guoxb0_0@qq.com" title="E-Mail → guoxb0_0@qq.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">郭小白QAQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">105k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:21</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+<script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
+
+<script>
+var options = {
+  bottom: '64px',
+  right: 'unset',
+  left: '32px',
+  time: '0.5s',
+  mixColor: 'transparent',
+  backgroundColor: 'transparent',
+  buttonColorDark: '#100f2c',
+  buttonColorLight: '#fff',
+  saveInCookies: true,
+  label: '🌓',
+  autoMatchOsTheme: true
+}
+const darkmode = new Darkmode(options);
+window.darkmode = darkmode;
+darkmode.showWidget();
+</script>
+
+</body>
+</html>

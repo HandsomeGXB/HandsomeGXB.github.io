@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.1.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"guoxb.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":true},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Python Socketpython 中 socket 的通信逻辑如下图所示：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="python-socket网络编程">
+<meta property="og:url" content="http://guoxb.top/2023/04/04/python/python-socket%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/index.html">
+<meta property="og:site_name" content="GuoXB&#39;s Blog">
+<meta property="og:description" content="Python Socketpython 中 socket 的通信逻辑如下图所示：">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/python_socket.png">
+<meta property="article:published_time" content="2023-04-04T07:36:05.000Z">
+<meta property="article:modified_time" content="2023-04-17T15:50:35.414Z">
+<meta property="article:author" content="郭小白QAQ">
+<meta property="article:tag" content="学习笔记">
+<meta property="article:tag" content="python">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/python_socket.png">
+
+<link rel="canonical" href="http://guoxb.top/2023/04/04/python/python-socket%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>python-socket网络编程 | GuoXB's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">GuoXB's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2023/04/04/python/python-socket%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+      <meta itemprop="name" content="郭小白QAQ">
+      <meta itemprop="description" content="精彩不亮丽，起落是无常">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GuoXB's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          python-socket网络编程
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-04-04 15:36:05" itemprop="dateCreated datePublished" datetime="2023-04-04T15:36:05+08:00">2023-04-04</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-04-17 23:50:35" itemprop="dateModified" datetime="2023-04-17T23:50:35+08:00">2023-04-17</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>7 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Python-Socket"><a href="#Python-Socket" class="headerlink" title="Python Socket"></a>Python Socket</h1><p>python 中 socket 的通信逻辑如下图所示： </p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/python_socket.png" alt="python_socket"></p>
+<span id="more"></span>
+
+<p>在python中使用 socket 首先需要导入 socket 库</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> socket</span><br></pre></td></tr></table></figure>
+
+<p>然后使用 socket 库中的 <code>socker.socket()</code>方法来创建一个新的 socket 对象（套接字），用于与另一个设备建立网络连接，语法格式如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">socket = socket.socket([family, [<span class="built_in">type</span>, [proto]]])</span><br></pre></td></tr></table></figure>
+
+<p>参数说明：</p>
+<ul>
+<li>family：这个参数指定 socket 的地址族，取值可选 <code>AF_INET</code>（IPv4）或 <code>AF_INET6</code>(IPv6)。如果未指定，则默认为 <code>AF_INET</code></li>
+<li>type：这个参数指定 socket 的类型，取值可选 <code>SOCK_STREAM</code>（TCP）或 <code>SOCK_DGRAM</code>（UDP）。如果未指定，则默认 socket 类型为 <code>SOCK_STREAM</code></li>
+<li>proto：这个参数指定socket使用的协议，取值可选 <code>IPPROTO_TCP</code> 或 <code>IPPROTO_UDP</code>。如果未指定，则根据 family 和 type 来选择默认协议，一般不填。</li>
+</ul>
+<p>通过<code>s = socket.socket()</code>方法，我们可以获得一个 socket 对象（套接字），该对象有如下方法：</p>
+<table>
+<thead>
+<tr>
+<th>作为服务端</th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>s.bind( <strong>(IP, PORT)</strong> )</td>
+<td>该方法将 socket 绑定到特定的网络地址。参数是一个元组，包含 socket 要监听的 <strong>IP</strong> 地址和 <strong>PORT</strong> 端口号。</td>
+</tr>
+<tr>
+<td>s.listen( backlog )</td>
+<td>该方法开始在 socket 上监听传入（incomeing）的连接。backlog 参数指定 socket 可以处理的最大排队连接数。该值至少为1，大部分应用程序设置为5就可以。</td>
+</tr>
+<tr>
+<td>s.accept()</td>
+<td>该方法接受 socket 上的新传入连接（客户端连接），并返回（conn，address）二元元组，其中 conn 是一个通信对象，可以用来接收和发送数据；address 是连接客户端的地址。该方法会阻塞进程，直到收到新的连接。</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>作为客户端</th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>s.connect( <strong>(IP, PROT)</strong> )</td>
+<td>该方法启动与远程 socket 的连接，即客户端向服务端发起连接。参数是一个元组，包含 socket 要监听的 <strong>IP</strong> 地址和 <strong>PORT</strong> 端口号。如果连接出错，返回 socket.error 错误。</td>
+</tr>
+<tr>
+<td>s.connect_ex()</td>
+<td>connect() 函数的拓展版本，出错时返回出错码，而不是抛出异常</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>公共方法</th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>s.recv( <strong>bufsize</strong> )</td>
+<td>接收数据，数据以bytes类型返回，bufsize 指定要接收的最大数据量。</td>
+</tr>
+<tr>
+<td>s.recvform()</td>
+<td>接收UDP数据，与 recv() 类似，但返回值是（data，address）。其中 data 是包含接收的数据，address 是发送数据的 socket（套接字）地址。</td>
+</tr>
+<tr>
+<td>s.send()</td>
+<td>发送数据，返回值是要发送的字节数量。</td>
+</tr>
+<tr>
+<td>s.sendall()</td>
+<td>完整发送数据。将数据发送到连接的套接字，但在返回之前会尝试发送所有数据。成功返回 None，失败则抛出异常。</td>
+</tr>
+<tr>
+<td>s.sendto( <strong>data, address</strong> )</td>
+<td>发送UDP数据，将数据 data 发送给套接字，address是形式为（ IP，PORT ）的元组，指定远程地址。返回值是发送的字节数。</td>
+</tr>
+<tr>
+<td>s.close()</td>
+<td>关闭套接字，必须执行。</td>
+</tr>
+<tr>
+<td>······</td>
+<td></td>
+</tr>
+</tbody></table>
+<p><strong>注意：</strong></p>
+<ol>
+<li>使用SOCK_STREAM&#x2F;TCP 套接字才有”连接”的概念，其他一些 Socket 如：UDP、ICMP、ARP 没有连接的概念，它们是无连接通信，意味着你可以从任何人或者给任何人接收和发送数据包。</li>
+<li>Python3以后，socket传递的都是 bytes 类型的数据，字符串需要先转化一下，<code>string.encode()</code>即可；另一端接收到的 bytes 数据想转换成字符串，只要 <code>bytes.decode()</code>一下就可以。</li>
+<li>在正常通信时，<code>accept()</code>和<code>recv()</code>方法都是阻塞的。阻塞是指程序会暂停，直到等到有数据传入。</li>
+</ol>
+<h2 id="Socket-编程思路"><a href="#Socket-编程思路" class="headerlink" title="Socket 编程思路"></a>Socket 编程思路</h2><h3 id="服务端"><a href="#服务端" class="headerlink" title="服务端"></a>服务端</h3><p>常规思路即上图中 server 部分的流程：</p>
+<ol>
+<li>创建套接字</li>
+<li>绑定套接字到本地IP与端口</li>
+<li>监听连接</li>
+<li>进入循环，不断接受客户端的连接请求</li>
+<li>接受传来的数据，或者发送数据给对方</li>
+<li>传输完毕，关闭套接字</li>
+</ol>
+<h3 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h3><p>常规思路即上图中 client 部分的流程：</p>
+<ol>
+<li>创建套接字，连接服务器地址</li>
+<li>发送数据，或者接收数据</li>
+<li>传输完毕，关闭套接字</li>
+</ol>
+<p>Python的 Socket 编程通常分为 TCP 和 UDP 两种，前者是带连接的可靠传输服务，每次通信都要握手，结束传输也要挥手，数据会被检验，是使用最广的通用模式；后者是不带连接的传输服务，简单粗暴，不加控制和检查的一股脑将数据发送出去的方式，但是传输速度快，通常用于安全和可靠等级不高的业务场景，比如文件下载。</p>
+<h2 id="Socket-编程实例"><a href="#Socket-编程实例" class="headerlink" title="Socket 编程实例"></a>Socket 编程实例</h2><h3 id="TCP-编程"><a href="#TCP-编程" class="headerlink" title="TCP 编程"></a>TCP 编程</h3><h4 id="服务端-1"><a href="#服务端-1" class="headerlink" title="服务端"></a>服务端</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#  === TCP 服务端程序 server.py ===</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 导入socket 库</span></span><br><span class="line"><span class="keyword">from</span> socket <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"><span class="comment"># 主机地址为空字符串，表示绑定本机所有网络接口ip地址</span></span><br><span class="line"><span class="comment"># 等待客户端来连接</span></span><br><span class="line">IP = <span class="string">&#x27;&#x27;</span></span><br><span class="line"><span class="comment"># 端口号</span></span><br><span class="line">PORT = <span class="number">50000</span></span><br><span class="line"><span class="comment"># 定义一次从socket缓冲区最多读入512个字节数据</span></span><br><span class="line">BUFLEN = <span class="number">512</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 实例化一个socket对象</span></span><br><span class="line"><span class="comment"># 参数 AF_INET 表示该socket网络层使用IP协议</span></span><br><span class="line"><span class="comment"># 参数 SOCK_STREAM 表示该socket传输层使用TCP协议</span></span><br><span class="line">listenSocket = socket(AF_INET, SOCK_STREAM)</span><br><span class="line"></span><br><span class="line"><span class="comment"># socket绑定地址和端口</span></span><br><span class="line">listenSocket.bind((IP, PORT))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 使socket处于监听状态，等待客户端的连接请求</span></span><br><span class="line"><span class="comment"># 参数 8 表示 最多接受多少个等待连接的客户端</span></span><br><span class="line">listenSocket.listen(<span class="number">8</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&#x27;服务端启动成功，在<span class="subst">&#123;PORT&#125;</span>端口等待客户端连接...&#x27;</span>)</span><br><span class="line"></span><br><span class="line">dataSocket, addr = listenSocket.accept()</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;接受一个客户端连接:&#x27;</span>, addr)</span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    <span class="comment"># 尝试读取对方发送的消息</span></span><br><span class="line">    <span class="comment"># BUFLEN 指定从接收缓冲里最多读取多少字节</span></span><br><span class="line">    recved = dataSocket.recv(BUFLEN)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 如果返回空bytes，表示对方关闭了连接</span></span><br><span class="line">    <span class="comment"># 退出循环，结束消息收发</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> recved:</span><br><span class="line">        <span class="keyword">break</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 读取的字节数据是bytes类型，需要解码为字符串</span></span><br><span class="line">    info = recved.decode()</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&#x27;收到对方信息： <span class="subst">&#123;info&#125;</span>&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 发送的数据类型必须是bytes，所以要编码</span></span><br><span class="line">    dataSocket.send(<span class="string">f&#x27;服务端接收到了信息 <span class="subst">&#123;info&#125;</span>&#x27;</span>.encode())</span><br><span class="line"></span><br><span class="line"><span class="comment"># 服务端也调用close()关闭socket</span></span><br><span class="line">dataSocket.close()</span><br><span class="line">listenSocket.close()</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="客户端-1"><a href="#客户端-1" class="headerlink" title="客户端"></a>客户端</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#  === TCP 客户端程序 client.py ===</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> socket <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">IP = <span class="string">&#x27;127.0.0.1&#x27;</span></span><br><span class="line">SERVER_PORT = <span class="number">50000</span></span><br><span class="line">BUFLEN = <span class="number">1024</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 实例化一个socket对象，指明协议</span></span><br><span class="line">dataSocket = socket(AF_INET, SOCK_STREAM)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 连接服务端socket</span></span><br><span class="line">dataSocket.connect((IP, SERVER_PORT))</span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    <span class="comment"># 从终端读入用户输入的字符串</span></span><br><span class="line">    toSend = <span class="built_in">input</span>(<span class="string">&#x27;&gt;&gt;&gt; &#x27;</span>)</span><br><span class="line">    <span class="keyword">if</span>  toSend ==<span class="string">&#x27;exit&#x27;</span>:</span><br><span class="line">        <span class="keyword">break</span></span><br><span class="line">    <span class="comment"># 发送消息，也要编码为 bytes</span></span><br><span class="line">    dataSocket.send(toSend.encode())</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 等待接收服务端的消息</span></span><br><span class="line">    recved = dataSocket.recv(BUFLEN)</span><br><span class="line">    <span class="comment"># 如果返回空bytes，表示对方关闭了连接</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> recved:</span><br><span class="line">        <span class="keyword">break</span></span><br><span class="line">    <span class="comment"># 打印读取的信息</span></span><br><span class="line">    <span class="built_in">print</span>(recved.decode())</span><br><span class="line"></span><br><span class="line">dataSocket.close()</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="UDP-编程"><a href="#UDP-编程" class="headerlink" title="UDP 编程"></a>UDP 编程</h3><h4 id="服务端-2"><a href="#服务端-2" class="headerlink" title="服务端"></a>服务端</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> socket,json</span><br><span class="line"></span><br><span class="line">BUFF_LEN = <span class="number">400</span>    <span class="comment"># 最大报文长度</span></span><br><span class="line">ADDR     = (<span class="string">&quot;&quot;</span>, <span class="number">18000</span>)  <span class="comment"># 指明服务端地址，IP地址为空表示本机所有IP</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建 UDP Socket</span></span><br><span class="line">server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)</span><br><span class="line"><span class="comment"># 绑定地址</span></span><br><span class="line">server_socket.bind(ADDR)</span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        recvbytes, client_addr = server_socket.recvfrom(BUFF_LEN)</span><br><span class="line">    <span class="keyword">except</span> socket.timeout:</span><br><span class="line">        <span class="keyword">continue</span></span><br><span class="line">    </span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&#x27;来自 <span class="subst">&#123;client_addr&#125;</span> 的请求&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 接收到的信息是字节，所以要解码，再反序列化</span></span><br><span class="line">    message = json.loads(recvbytes.decode(<span class="string">&#x27;utf8&#x27;</span>))</span><br><span class="line">    <span class="built_in">print</span>(message)</span><br><span class="line">    <span class="keyword">if</span> message[<span class="string">&#x27;action&#x27;</span>] == <span class="string">&#x27;获取信息&#x27;</span>:</span><br><span class="line">        <span class="comment"># 可以从数据库的数据源查询 此用户的信息</span></span><br><span class="line">        username = message[<span class="string">&#x27;name&#x27;</span>]</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 要发送的信息 对象</span></span><br><span class="line">        message = &#123;</span><br><span class="line">            <span class="string">&#x27;action&#x27;</span> : <span class="string">&#x27;返回信息&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;info&#x27;</span> : <span class="string">f&#x27;<span class="subst">&#123;username&#125;</span> 的信息是:xxxxxxxx&#x27;</span></span><br><span class="line">        &#125; </span><br><span class="line">        <span class="comment"># 发送出去的信息必须是字节，所以要先序列化，再编码</span></span><br><span class="line">        sendbytes = json.dumps(message).encode(<span class="string">&#x27;utf8&#x27;</span>)</span><br><span class="line">        server_socket.sendto(sendbytes, client_addr)</span><br></pre></td></tr></table></figure>
+
+<p>与TCP不同，服务端只需要一个 socket 进行通信即可，不需要2个 socket 分别用来监听和通信。</p>
+<p>UDP 客户端的 socket 通常不需要指定绑定的端口号，操作系统会自动帮其选择一个绑定。</p>
+<p>当不需要使用 UDP Socket 时，可以通过 socket 对象的 close 方法 关闭，如下代码所示。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">server_socket.close()</span><br></pre></td></tr></table></figure>
+
+<p>关闭 socket 后，该端口绑定的 端口号 就会被释放，可以再次被本进程或者其它进程的 socket 绑定使用</p>
+<h4 id="客户端-2"><a href="#客户端-2" class="headerlink" title="客户端"></a>客户端</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> socket,json</span><br><span class="line"></span><br><span class="line">BUFF_LEN     = <span class="number">400</span>                   <span class="comment"># 最大报文长度</span></span><br><span class="line">SERVER_ADDR  = (<span class="string">&quot;127.0.0.1&quot;</span>, <span class="number">18000</span>)  <span class="comment"># 指明服务端地址</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建 UDP Socket</span></span><br><span class="line">client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)</span><br><span class="line"><span class="comment"># 设置socket超时时间，单位：秒</span></span><br><span class="line">client_socket.settimeout(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 要发送的信息 对象</span></span><br><span class="line">message = &#123;</span><br><span class="line">    <span class="string">&#x27;action&#x27;</span> : <span class="string">&#x27;获取信息&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;name&#x27;</span> : <span class="string">&#x27;白月黑羽&#x27;</span></span><br><span class="line">&#125; </span><br><span class="line"><span class="comment"># 发送出去的信息必须是字节，所以要先序列化，再编码</span></span><br><span class="line">sendbytes = json.dumps(message).encode(<span class="string">&#x27;utf8&#x27;</span>)</span><br><span class="line">client_socket.sendto(sendbytes, SERVER_ADDR)</span><br><span class="line"><span class="keyword">try</span>:</span><br><span class="line">    recvbytes, server = client_socket.recvfrom(BUFF_LEN)</span><br><span class="line">    <span class="comment"># 接收到的信息是字节，所以要解码，再反序列化</span></span><br><span class="line">    message = json.loads(recvbytes.decode(<span class="string">&#x27;utf8&#x27;</span>))</span><br><span class="line">    <span class="built_in">print</span>(message)</span><br><span class="line"><span class="keyword">except</span> socket.timeout:</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;接收消息超时&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/39982451">Python 的 Socket 编程教程 - 知乎 (zhihu.com)</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.liujiangblog.com/course/python/76">https://www.liujiangblog.com/course/python/76</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.byhy.net/tut/py/etc/socket/">https://www.byhy.net/tut/py/etc/socket/</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" rel="tag"># 学习笔记</a>
+              <a href="/tags/python/" rel="tag"># python</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/04/01/%E7%A7%91%E7%A0%94%E8%AE%B0%E5%BD%95&%E7%AC%94%E8%AE%B0/%E7%A7%91%E7%A0%94%E8%AE%B0%E5%BD%950x01/" rel="prev" title="科研记录0x01">
+      <i class="fa fa-chevron-left"></i> 科研记录0x01
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/04/04/python/python-scrapy%E7%88%AC%E8%99%AB/" rel="next" title="python-scrapy爬虫">
+      python-scrapy爬虫 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Python-Socket"><span class="nav-number">1.</span> <span class="nav-text">Python Socket</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Socket-%E7%BC%96%E7%A8%8B%E6%80%9D%E8%B7%AF"><span class="nav-number">1.1.</span> <span class="nav-text">Socket 编程思路</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E7%AB%AF"><span class="nav-number">1.1.1.</span> <span class="nav-text">服务端</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF"><span class="nav-number">1.1.2.</span> <span class="nav-text">客户端</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Socket-%E7%BC%96%E7%A8%8B%E5%AE%9E%E4%BE%8B"><span class="nav-number">1.2.</span> <span class="nav-text">Socket 编程实例</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#TCP-%E7%BC%96%E7%A8%8B"><span class="nav-number">1.2.1.</span> <span class="nav-text">TCP 编程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E7%AB%AF-1"><span class="nav-number">1.2.1.1.</span> <span class="nav-text">服务端</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF-1"><span class="nav-number">1.2.1.2.</span> <span class="nav-text">客户端</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#UDP-%E7%BC%96%E7%A8%8B"><span class="nav-number">1.2.2.</span> <span class="nav-text">UDP 编程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E7%AB%AF-2"><span class="nav-number">1.2.2.1.</span> <span class="nav-text">服务端</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF-2"><span class="nav-number">1.2.2.2.</span> <span class="nav-text">客户端</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-number">1.3.</span> <span class="nav-text">参考链接</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="郭小白QAQ"
+      src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+  <p class="site-author-name" itemprop="name">郭小白QAQ</p>
+  <div class="site-description" itemprop="description">精彩不亮丽，起落是无常</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">57</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/guoxb0_0@qq.com" title="E-Mail → guoxb0_0@qq.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">郭小白QAQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">105k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:21</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+<script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
+
+<script>
+var options = {
+  bottom: '64px',
+  right: 'unset',
+  left: '32px',
+  time: '0.5s',
+  mixColor: 'transparent',
+  backgroundColor: 'transparent',
+  buttonColorDark: '#100f2c',
+  buttonColorLight: '#fff',
+  saveInCookies: true,
+  label: '🌓',
+  autoMatchOsTheme: true
+}
+const darkmode = new Darkmode(options);
+window.darkmode = darkmode;
+darkmode.showWidget();
+</script>
+
+</body>
+</html>

