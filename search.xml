@@ -309,11 +309,13 @@
 
 <h2 id="依赖项"><a href="#依赖项" class="headerlink" title="依赖项"></a>依赖项</h2><p>通过 Readme 中描述，我们可以看到，需要的依赖项如下：</p>
 <p>To create the latest development build for your platform from this source repository:</p>
-<h5 id="Install-build-tools"><a href="#Install-build-tools" class="headerlink" title="Install build tools:"></a><a href="https://github.com/NationalSecurityAgency/Ghidra#install-build-tools">Install build tools:</a></h5><ul>
+<p><a href="https://github.com/NationalSecurityAgency/Ghidra#install-build-tools">Install build tools:</a></p>
+<ul>
 <li><a href="https://adoptium.net/temurin/releases">JDK 17 64-bit</a></li>
 <li><a href="https://gradle.org/releases/">Gradle 7.3+</a></li>
 <li>make, gcc, and g++ (Linux&#x2F;macOS-only)</li>
 </ul>
+<p>安装步骤依次介绍：</p>
 <h2 id="安装-JDK"><a href="#安装-JDK" class="headerlink" title="安装 JDK"></a>安装 JDK</h2><p>我采用的是 apt 在线安装，命令如下：</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt-get install openjdk-17-jdk</span><br></pre></td></tr></table></figure>
 
