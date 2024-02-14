@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.1.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"guoxb.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":true},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":false,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="第六章 物联网架构之物联网协议0x01 wifi协议1. 物联网组成物联网核心在人、机、云之间的信息互联，因此智能设备、云端、手机端会通过各种协议进行数据的交换。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="IoT安全入门06">
+<meta property="og:url" content="http://guoxb.top/2023/03/28/IoT/%E7%89%A9%E8%81%94%E7%BD%91%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A8/IoT%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A806/index.html">
+<meta property="og:site_name" content="GuoXB&#39;s Blog">
+<meta property="og:description" content="第六章 物联网架构之物联网协议0x01 wifi协议1. 物联网组成物联网核心在人、机、云之间的信息互联，因此智能设备、云端、手机端会通过各种协议进行数据的交换。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322110650647.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322110919655.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322112256750.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322112550392.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322112739464.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322114651331.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322115929807.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322120639552.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322121045052.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322123332815.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230321205130020.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230321205931492.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230321210917569.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230321212040804.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230321212950854.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230321213321605.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230321213506889.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322093312506.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322093431979.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322095928812.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322100925895.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322102759366.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322103114104.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220830224151830.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220830224333667.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220830224426312.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220830224611195.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220830224650335.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220830224720380.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220830225203258.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220830225307361.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220830225349170.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220830225536472.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220910222715883.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220910222848417.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220910223326412.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220910223713813.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220910223945130.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220910224107433.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220910224544640.png">
+<meta property="article:published_time" content="2023-03-28T14:04:00.000Z">
+<meta property="article:modified_time" content="2024-02-14T06:43:09.528Z">
+<meta property="article:author" content="郭小白QAQ">
+<meta property="article:tag" content="普通人">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322110650647.png">
+
+<link rel="canonical" href="http://guoxb.top/2023/03/28/IoT/%E7%89%A9%E8%81%94%E7%BD%91%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A8/IoT%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A806/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+<link rel="stylesheet" type="text/css" href="/css/injector/main.css" /><link rel="preload" as="style" href="/css/injector/light.css" /><link rel="preload" as="style" href="/css/injector/dark.css" />
+  <title>IoT安全入门06 | GuoXB's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">GuoXB's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2023/03/28/IoT/%E7%89%A9%E8%81%94%E7%BD%91%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A8/IoT%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A806/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+      <meta itemprop="name" content="郭小白QAQ">
+      <meta itemprop="description" content="精彩不亮丽，起落是无常">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GuoXB's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          IoT安全入门06
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-03-28 22:04:00" itemprop="dateCreated datePublished" datetime="2023-03-28T22:04:00+08:00">2023-03-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2024-02-14 14:43:09" itemprop="dateModified" datetime="2024-02-14T14:43:09+08:00">2024-02-14</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/IoT%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A8/" itemprop="url" rel="index"><span itemprop="name">IoT安全入门</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>14 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="第六章-物联网架构之物联网协议"><a href="#第六章-物联网架构之物联网协议" class="headerlink" title="第六章 物联网架构之物联网协议"></a>第六章 物联网架构之物联网协议</h1><h2 id="0x01-wifi协议"><a href="#0x01-wifi协议" class="headerlink" title="0x01 wifi协议"></a>0x01 wifi协议</h2><h3 id="1-物联网组成"><a href="#1-物联网组成" class="headerlink" title="1. 物联网组成"></a>1. 物联网组成</h3><p>物联网核心在人、机、云之间的信息互联，因此智能设备、云端、手机端会通过各种协议进行数据的交换。</p>
+<img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322110650647.png" alt="image-20230322110650647" style="zoom:80%;" />
+
+<span id="more"></span>
+
+<h3 id="2-物联网通信协议"><a href="#2-物联网通信协议" class="headerlink" title="2. 物联网通信协议"></a>2. 物联网通信协议</h3><p>通信协议分类：接入类协议；通信类协议</p>
+<p>接入类协议：一般负责子网内设备间的组网及通信，市场上常见的有Zigbee、蓝牙以及wifi协议。</p>
+<p>通信类协议：主要是运作在传统互联网TCP&#x2F;IP协议之上的设备远程通讯协议，负责设备通过互联网进行数据交换及通信，例如GPRS&#x2F;3G&#x2F;4G等。</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322110919655.png" alt="image-20230322110919655"></p>
+<h3 id="3-WLAN"><a href="#3-WLAN" class="headerlink" title="3. WLAN"></a>3. WLAN</h3><p>wlan指的是无线局域网络（Wireless Local Area Networks）。它是相当便利的数据传输系统，它利用射频（Radio Frequency；RF）的技术，使用电磁波来取代旧式的双绞铜线（Coaxial）所构成的局域网络，在空中进行通信连接；该技术的出现绝不是用来取代有线局域网络，而是用来弥补有线局域网络的不足，以达到网络延伸的目的，使得无线局域网络能利用简单的存取架构让用户透过它，实现无网线、无距离限制的通畅网络。</p>
+<h3 id="4-WIFI"><a href="#4-WIFI" class="headerlink" title="4. WIFI"></a>4. WIFI</h3><p>Wi-Fi在中文中又称作”行动热点”，是Wi-Fi联盟制造商的商标做为产品的品牌认证，是一个创建于IEEE 802.11标准的可以将个人电脑、手持设备（如pad、手机）等终端以无线方式互相连接的技术，事实上它也是一种高频无线电信号。</p>
+<h3 id="5-无线网-VS-有线网"><a href="#5-无线网-VS-有线网" class="headerlink" title="5. 无线网 VS 有线网"></a>5. 无线网 VS 有线网</h3><ul>
+<li>通信双方都是通过无线进行通信，所以通信之前需要建立连接；有线网络就直接用线缆连接。</li>
+<li>通信双方通信方式是半双工的通信方式；有线网络可以是全双工</li>
+<li>通信时在网络层一下出错的概率非常高；有线网络出错概率非常小</li>
+<li>数据是在无线环境下进行的，所以抓包非常容易，存在安全隐患</li>
+<li>收发无线信号，功耗较大</li>
+<li>相对有线网络吞吐量低</li>
+</ul>
+<h3 id="6-IEEE-802-11协议"><a href="#6-IEEE-802-11协议" class="headerlink" title="6. IEEE 802.11协议"></a>6. IEEE 802.11协议</h3><p>Ethenet和Wifi采用的协议都属于IEEE 802协议集。其中，Ethenet以802.3协议做为其网络层以下的协议；而Wifi以802.11做为其网络层以下的协议。网络层之上的部分二者一致。</p>
+<h4 id="802-11-工作方式"><a href="#802-11-工作方式" class="headerlink" title="802.11 工作方式"></a>802.11 工作方式</h4><p>802.11定义了两种类型的设备</p>
+<ul>
+<li>无线站（STA）eg：笔记本</li>
+<li>无线接入点（AP）eg：路由器F1，中转协议</li>
+</ul>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322112256750.png" alt="image-20230322112256750"></p>
+<h3 id="频谱划分"><a href="#频谱划分" class="headerlink" title="频谱划分"></a>频谱划分</h3><p>2.4gWiFi总共有14个信道</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322112550392.png" alt="image-20230322112550392"></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322112739464.png" alt="image-20230322112739464"></p>
+<h3 id="SSID和BSSID"><a href="#SSID和BSSID" class="headerlink" title="SSID和BSSID"></a>SSID和BSSID</h3><ol>
+<li><p>基本服务集（BSS）</p>
+<p>基本服务集是802.11 LAN的基本组成模块。能互相进行无线通信的STA可以组成一个BSS（Basic　Service Set）。如果一个站移出BSS的覆盖范围，它将不能再与BSS的其他成员通信。</p>
+</li>
+<li><p>拓展服务集（ESS）</p>
+<p>多个BSS可以构成一个拓展网络，称为拓展服务集（ESS）网络，一个ESS网络内部的STA可以互相通信，是采用相同的SSID的多个BSS形成的更大规模的虚拟BSS。连接BSS的组件称为分布式系统（Distribution System，DS）。</p>
+</li>
+</ol>
+<p><strong>SSID&#x2F;BSSID</strong></p>
+<p>服务集的标识，在同一SS内的所有STA和AP必须具有相同的SSID，否则无法通信</p>
+<ul>
+<li>SSID是一个ESS的网络标识（如：TP_Link1412）</li>
+<li>BSSID是一个BSS的标识（实际上就是AP的MAC地址）</li>
+</ul>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322114651331.png" alt="image-20230322114651331"></p>
+<h3 id="无线接入过程三个阶段"><a href="#无线接入过程三个阶段" class="headerlink" title="无线接入过程三个阶段"></a>无线接入过程三个阶段</h3><p>STA启动初始化、开始正式使用AP传送数据帧前，要经过三个阶段才能够接入：</p>
+<p>1）扫描阶段（SCAN）主动&#x2F;被动</p>
+<p>2）认证阶段（Authentication）WEP&#x2F;WPA</p>
+<p>3）关联（Association）</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322115929807.png" alt="image-20230322115929807"></p>
+<h3 id="认证连接方式"><a href="#认证连接方式" class="headerlink" title="认证连接方式"></a>认证连接方式</h3><ul>
+<li>无认证</li>
+<li>有认证<ul>
+<li>SSID–密码认证<ul>
+<li>wep</li>
+<li>wpa&#x2F;wpa2</li>
+</ul>
+</li>
+<li>WPS</li>
+</ul>
+</li>
+</ul>
+<p><strong>WEP</strong></p>
+<p>WEP是有线等效保密（Wired Equivalent Privacy）的简称，一种在链路层加密的方式来防止非法用户窃听或侵入无线网络。在2003年被WPA所淘汰。</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322120639552.png" alt="image-20230322120639552"></p>
+<p><strong>WPA&#x2F;WPA2</strong></p>
+<p>WPA主要采用的是临时密钥完整性协议（TKIP1）加密算法，TKIP旨在改进WEP，且无需依赖全新硬件来运行；WPA2则强制使用AES-CCMP算法来进行加密，比TKIP更强大、更坚固。</p>
+<p>WPA和WPA2支持两种身份验证机制：</p>
+<ul>
+<li>企业：基于EAP的身份验证</li>
+<li>个人：基于预共享密钥的身份验证（WPA-PSK）</li>
+</ul>
+<p><strong>WPA握手流程</strong></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322121045052.png" alt="image-20230322121045052"></p>
+<p><strong>WPA WIFI密码暴力破解</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">查看无线网卡名:iwconfig</span><br><span class="line">关掉影响的进程:airmon-ng check kill</span><br><span class="line">设置网卡为监听模式:airmon-ng start INTERFACE</span><br><span class="line">扫描附近的wifi:airodump-ng INTERFACE</span><br><span class="line">选定一个路由器，并监听其流量:airodump-ng -c CHANNEL --bssid AP_MAC -w FILENAME INTERFACE</span><br><span class="line">选定连接的一个客户端，进行攻击:aireplay-ng -0 50 -a AP_MAC [-c STA_AP] INTERFACE</span><br><span class="line">对抓取到的cap包进行暴力破解: aircrack-ng -w PASSWORD.txt FILENAME.cap</span><br></pre></td></tr></table></figure>
+
+<p>VMware虚拟机需要实体无线网卡</p>
+<p>具体内容参考对应视频讲解。</p>
+<p><strong>WPS的安全问题</strong></p>
+<p>WPS（Wi-Fi Protected Setup）是Wi-Fi保护设置的英文缩写，主要致力于简化无线局域网安装及安全性能的配置工作。在WPS认证中PIN码是网络设备间获得接入的唯一要求，不需要其他身份识别方式，这就让暴力破解变得可行。</p>
+<p>WPS PIN码的第八位数是一个校验和，因此暴力破解只需要算出前7位</p>
+<p>而在实施PIN的身份识别时，接入点实际上是要找出这个PIN的前四位和后三位是否分别正确</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322123332815.png" alt="image-20230322123332815"></p>
+<h2 id="0x02-Zigbee协议"><a href="#0x02-Zigbee协议" class="headerlink" title="0x02 Zigbee协议"></a>0x02 Zigbee协议</h2><h3 id="1-Zigbee协议简介"><a href="#1-Zigbee协议简介" class="headerlink" title="1. Zigbee协议简介"></a>1. Zigbee协议简介</h3><p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230321205130020.png" alt="image-20230321205130020"></p>
+<h4 id="1-1-Zigbee简介"><a href="#1-1-Zigbee简介" class="headerlink" title="1.1 Zigbee简介"></a>1.1 Zigbee简介</h4><p>Zigbee是IEEE 802.15.4标准的低功耗局域网协议，是一种短距离、低功耗的无线通信技术</p>
+<p>主要适用于自动控制和远程控制领域，可以嵌入各种设备</p>
+<p>组网快，安全性高，最大速度250kbps，主要用来传输一些控制命令以及传感器采集的一些数据等等，低功耗技术，可拓展性强，最大可达到65535个节点</p>
+<h4 id="1-2-节点类型"><a href="#1-2-节点类型" class="headerlink" title="1.2 节点类型"></a>1.2 节点类型</h4><p>ZigBee拓扑有三种功能节点：</p>
+<ul>
+<li>协调器（Coordinator）</li>
+<li>路由器（Router）</li>
+<li>终端设备（End Device）</li>
+</ul>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230321205931492.png" alt="image-20230321205931492"></p>
+<h4 id="1-3-Zigbee架构"><a href="#1-3-Zigbee架构" class="headerlink" title="1.3 Zigbee架构"></a>1.3 Zigbee架构</h4><p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230321210917569.png" alt="image-20230321210917569"></p>
+<p>相关博客推荐：</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/aixuexidexiaowan/article/details/126782590">https://blog.csdn.net/aixuexidexiaowan/article/details/126782590</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/aixuexidexiaowan/article/details/127017017">https://blog.csdn.net/aixuexidexiaowan/article/details/127017017</a></p>
+</blockquote>
+<h4 id="1-4-设备组网流程"><a href="#1-4-设备组网流程" class="headerlink" title="1.4 设备组网流程"></a>1.4 设备组网流程</h4><p>组建一个完整的Zigbee网状网络包括两个步骤：网络初始化、节点加入网络。</p>
+<p>其中节点加入网络又包括两个步骤：通过与协调器连接入网和通过已有父节点入网。</p>
+<p>网络初始化：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230321212040804.png" alt="image-20230321212040804"></p>
+<p>节点通过协调器加入网络：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230321212950854.png" alt="image-20230321212950854"></p>
+<h3 id="2-Zigbee安全性"><a href="#2-Zigbee安全性" class="headerlink" title="2. Zigbee安全性"></a>2. Zigbee安全性</h3><p>在Zigbee标准中使用三种类型的128位对称密钥</p>
+<ul>
+<li>主密钥</li>
+<li>网络密钥</li>
+<li>链接密钥</li>
+</ul>
+<p>默认信任中心连接密钥 </p>
+<p>0x5A 0x69 0x67 0x42 0x65 0x65 0x 41 0x6c 0x6c 0x69 0x61 0xe 0x63 0x65 0x 30 0x39</p>
+<p>Zigbee采用AES-CCM*和帧计数器来保证数据的完整性、机密性、真实性。</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230321213321605.png" alt="image-20230321213321605"></p>
+<p>参考书《物联网安全漏洞挖掘实战》第五章部分内容</p>
+<h3 id="3-Zigbee嗅探"><a href="#3-Zigbee嗅探" class="headerlink" title="3. Zigbee嗅探"></a>3. Zigbee嗅探</h3><p><strong>Zigbee数据抓包：</strong></p>
+<p>工具：CC2531 usb Dongle</p>
+<p>软件：ubiqua</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230321213506889.png" alt="image-20230321213506889"></p>
+<p>参考书《物联网安全漏洞挖掘实战》第五章部分内容</p>
+<h2 id="0x03-Bluetooth-BLE协议"><a href="#0x03-Bluetooth-BLE协议" class="headerlink" title="0x03 Bluetooth&#x2F;BLE协议"></a>0x03 Bluetooth&#x2F;BLE协议</h2><h3 id="1-蓝牙简介"><a href="#1-蓝牙简介" class="headerlink" title="1. 蓝牙简介"></a>1. 蓝牙简介</h3><p>一种无线个人局域网技术，用于在较小距离上交换数据，于1994年发明</p>
+<p>2.4GHz至2.485GHz（ISM）频段</p>
+<p>蓝牙网络称为微微网，互连微微网的形成散射网</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322093312506.png" alt="image-20230322093312506"></p>
+<h3 id="2-蓝牙协议简介"><a href="#2-蓝牙协议简介" class="headerlink" title="2. 蓝牙协议简介"></a>2. 蓝牙协议简介</h3><p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322093431979.png" alt="image-20230322093431979"></p>
+<p>Radio：射频层，主要作用是信号调制</p>
+<p>Baseband：基带层，负责各个蓝牙设备之间的连接，连接组成一个微微网</p>
+<p>Link Manage：链路管理层，负责蓝牙设备间建立连接，Mgmt APP就是上层管理的一些APP</p>
+<p>SDP：服务发现协议，可以查询到一些其他设备的详细信息</p>
+<p>Mgmt APP：通过链路对蓝牙设备之间进行管理，比如蓝牙配对，连接管理之类</p>
+<p>L2CAP层：将上层数据进行封装，打包传输给下层</p>
+<p>Audio&#x2F;Audio APP：音乐等音频信号直接通过基带传递给APP</p>
+<p>RF COMM：串口仿真层，将设备的蓝牙模拟为一个串口来传输一些无线数据，承载了一些其他协议和指令的集合</p>
+<p>OBEX：传递一些文件数据，通讯录等</p>
+<p>PPP&#x2F;BNEP：点对点&#x2F;蓝牙封装，将上层的TCP&#x2F;IP协议封装成蓝牙通过串口发送出去</p>
+<p>AT modem commends：电话指令集和，提供语音通话功能。</p>
+<h3 id="3-BLE简介"><a href="#3-BLE简介" class="headerlink" title="3. BLE简介"></a>3. BLE简介</h3><p>低功耗蓝牙BLE（Bluetooth Low Energy）是蓝牙技术联盟设计和销售的一种个人局域网技术，旨在用于医疗健康、安防娱乐等领域的新兴应用</p>
+<p>可与传统蓝牙保持同等通信范围的同时显著降低功耗和成本</p>
+<p>蓝牙4.0时被引入，也被称为Bluetooth Smart</p>
+<h3 id="4-蓝牙-BLE的比较"><a href="#4-蓝牙-BLE的比较" class="headerlink" title="4. 蓝牙 BLE的比较"></a>4. 蓝牙 BLE的比较</h3><table>
+<thead>
+<tr>
+<th align="left"></th>
+<th align="left">传统蓝牙</th>
+<th align="left">BLE</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">信道</td>
+<td align="left">79个信道</td>
+<td align="left">40个信道（37&#x2F;38&#x2F;39广播信道）</td>
+</tr>
+<tr>
+<td align="left">发现&#x2F;连接</td>
+<td align="left">查询</td>
+<td align="left">广播</td>
+</tr>
+<tr>
+<td align="left">连接延迟</td>
+<td align="left">100ms</td>
+<td align="left">6ms</td>
+</tr>
+<tr>
+<td align="left">最大数据率</td>
+<td align="left">1-3Mbps</td>
+<td align="left">1Mbps</td>
+</tr>
+<tr>
+<td align="left">工作距离</td>
+<td align="left">10米</td>
+<td align="left">最远100米</td>
+</tr>
+<tr>
+<td align="left">最大输出功率</td>
+<td align="left">100mW</td>
+<td align="left">10mW</td>
+</tr>
+<tr>
+<td align="left">主要应用</td>
+<td align="left">无线播放、控制器</td>
+<td align="left">智能家居、穿戴设备</td>
+</tr>
+</tbody></table>
+<h3 id="5-BLE协议简介"><a href="#5-BLE协议简介" class="headerlink" title="5. BLE协议简介"></a>5. BLE协议简介</h3><p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322095928812.png" alt="image-20230322095928812"></p>
+<p>各层参考《物联网安全漏洞挖掘实战》5.3章节部分</p>
+<h3 id="6-BLE连接过程"><a href="#6-BLE连接过程" class="headerlink" title="6. BLE连接过程"></a>6. BLE连接过程</h3><p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322100925895.png" alt="image-20230322100925895"></p>
+<p>传统蓝牙：跳频连接</p>
+<p>BLE：广播连接</p>
+<p>四种广播状态：</p>
+<ul>
+<li>ADV_IND：既允许被连接也允许被扫描</li>
+<li>ADV_NONCONN_IND：既不允许被连接也不允许被扫描</li>
+<li>ADV_SCAN_IND：只允许被扫描但不允许被连接</li>
+<li>ADV_DIRECT_IND：只允许特定设备来连接</li>
+</ul>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322102759366.png" alt="image-20230322102759366"></p>
+<h3 id="7-GATT简介"><a href="#7-GATT简介" class="headerlink" title="7. GATT简介"></a>7. GATT简介</h3><p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230322103114104.png" alt="image-20230322103114104"></p>
+<h2 id="0x04-RFID协议讲解"><a href="#0x04-RFID协议讲解" class="headerlink" title="0x04 RFID协议讲解"></a>0x04 RFID协议讲解</h2><h3 id="1-RFID简介"><a href="#1-RFID简介" class="headerlink" title="1. RFID简介"></a>1. RFID简介</h3><h4 id="1-1-什么是RFID？"><a href="#1-1-什么是RFID？" class="headerlink" title="1.1 什么是RFID？"></a>1.1 什么是RFID？</h4><p>RFID是射频识别(Radio Frequency Identification) 的缩写，利用无线射频<br>方式进行非接触双向数据通信,通过对记录媒体(电子标签)进行读写，从而达到识别目标和数据交换的目的。</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220830224151830.png" alt="image-20220830224151830"></p>
+<h4 id="1-2-RFID常见应用"><a href="#1-2-RFID常见应用" class="headerlink" title="1.2 RFID常见应用"></a>1.2 RFID常见应用</h4><p>由于RFID具有读写速度快，无需接触，设备简单等特点，在生活中被广泛使用，常见的应用有物流标签、公交门禁、购物就餐卡等</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220830224333667.png" alt="image-20220830224333667"></p>
+<h3 id="2-RFID组成"><a href="#2-RFID组成" class="headerlink" title="2. RFID组成"></a>2. RFID组成</h3><p>RFID由<strong>控制系统</strong>、<strong>阅读器</strong>和<strong>电子标签</strong>组成</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220830224426312.png" alt="image-20220830224426312"></p>
+<p><strong>阅读器</strong>(Reader) 通过天线与RFID电子标签进行无线通信，可以实现对<strong>标签识别码</strong>和<strong>内存数据</strong>的读出或写入操作。典型的阅读器包含有高频模块(发送器和接收器)、控制单元以及阅读器天线。</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220830224611195.png" alt="image-20220830224611195"></p>
+<p><strong>电子标签</strong>(Tag)由耦合元件及芯片组成，每个标签具有唯一的电子编码。当电子标签进入由阅读器产生的无线电射频信号区域时获得能量，然后向阅读器发送储存的信息及数据。有时也被称作射频卡。</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220830224650335.png" alt="image-20220830224650335"></p>
+<h3 id="3-RFID分类"><a href="#3-RFID分类" class="headerlink" title="3. RFID分类"></a>3. RFID分类</h3><p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220830224720380.png" alt="image-20220830224720380"></p>
+<h4 id="3-1-常见标签"><a href="#3-1-常见标签" class="headerlink" title="3.1 常见标签"></a>3.1 常见标签</h4><p><strong>高频卡</strong></p>
+<p>NXP Mifare S50 (M1 )高 频13.56MHz是最常见的射频卡。每张卡独一无二UID号，可存储、修改扇区数据(一卡通，门禁，电梯卡)。<br>NXP Mifare S70 Mi fare S70可容纳4KB数据，S50的卡类型(ATQA)是0004H<br>S70的卡类型(ATQA)是0002H。<br>NXP DESFire&#x2F;JCOP基于微处理器的芯片卡广 泛应用如银行与金融，移动通信，公共交通，访客访问和网络接入等领域。支持接触式、非接触式读写，JCOP版本内含操作系统，并提供40-80K字节EEPROM存储器。</p>
+<p><strong>低频卡</strong></p>
+<p>EM4100</p>
+<ul>
+<li>工作频率125kHz卡内只存储卡号且无法修改</li>
+<li>成本低广泛用于门禁、身份识别，安防医疗系统</li>
+</ul>
+<p>HID ProxCard II </p>
+<ul>
+<li>与EM4 系列卡片类似只存储卡号名片大小厚度较厚</li>
+</ul>
+<p>T5577卡</p>
+<ul>
+<li>可写入数据可设置密码的低频卡</li>
+<li>可用于复制ID和HID卡</li>
+<li>共有8个块，共可存储256b数据</li>
+</ul>
+<h4 id="3-2-示例"><a href="#3-2-示例" class="headerlink" title="3.2 示例"></a>3.2 示例</h4><p><strong>Mifare 1</strong></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220830225203258.png" alt="image-20220830225203258"></p>
+<p>Mifare 1变种</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220830225307361.png" alt="image-20220830225307361"></p>
+<p><strong>EM4100</strong></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220830225349170.png" alt="image-20220830225349170"></p>
+<p><strong>T5577</strong></p>
+<p>T5577结构</p>
+<ul>
+<li>共有8个块，每个块存32b数据</li>
+<li>第0块表示调制方式和卡片类型</li>
+<li>第7块表示加密的密码，无密则表示普通数据</li>
+</ul>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220830225536472.png" alt="image-20220830225536472"></p>
+<h2 id="0x05-MQTT等协议讲解"><a href="#0x05-MQTT等协议讲解" class="headerlink" title="0x05 MQTT等协议讲解"></a>0x05 MQTT等协议讲解</h2><h3 id="MQTT"><a href="#MQTT" class="headerlink" title="MQTT"></a>MQTT</h3><p>MQTT (Message Queuing Telemetry Transport,消息队列遥测传输协议)，是一种基于发布&#x2F;订阅(publish&#x2F;subscribe) 模式的”轻量级”通讯协议，该协议构建于TCP&#x2F;IP协议上，由IBM在1999年发布。</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220910222715883.png" alt="image-20220910222715883"></p>
+<h3 id="MQTT实现过程"><a href="#MQTT实现过程" class="headerlink" title="MQTT实现过程"></a>MQTT实现过程</h3><p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220910222848417.png" alt="image-20220910222848417"></p>
+<p>发布者和订阅者，两者的角色并不是绝对的，可以转换或者同时存在。</p>
+<h3 id="设计原则与特性"><a href="#设计原则与特性" class="headerlink" title="设计原则与特性"></a>设计原则与特性</h3><ul>
+<li>精简，把传输量降到最低</li>
+<li>发布&#x2F;订阅（Pub&#x2F;Sub）模式，提供一对多的消息发布，解除应用程序耦合</li>
+<li>允许用户动态创建主题</li>
+<li>把低带宽、高延迟、不稳定的网络因素考虑在内</li>
+<li>提供服务质量管理</li>
+<li>有三种消息发布质量（Qos）<ul>
+<li>至多一次</li>
+<li>至少一次</li>
+<li>只有一次</li>
+</ul>
+</li>
+<li>使用遗嘱（last will）特性通知有关各方客户端异常中断的机制</li>
+</ul>
+<h3 id="MQTT服务本地测试"><a href="#MQTT服务本地测试" class="headerlink" title="MQTT服务本地测试"></a>MQTT服务本地测试</h3><p>使用工具：mosquito</p>
+<p>服务端开启代理服务<code>mosquito [-p port]</code><br>客户端订阅主题<code>mosquito_sub -t topic [-p port -h host]</code><br>客户端发布消息<code>mosquito_pub -t topic -m message [-p port -h host]</code></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220910223326412.png" alt="image-20220910223326412"></p>
+<h3 id="消息报文格式"><a href="#消息报文格式" class="headerlink" title="消息报文格式"></a>消息报文格式</h3><p>MQTT协议是应用层协议，需要借助TCP&#x2F;IP协议进行传输，类似HTTP协议。MQTT协议也有自己的格式：</p>
+<center>固定头部＋可变头部＋消息载体
+
+
+<p>①固定头部：通过固定头部区分多种消息类型，如连接，发布，订阅等</p>
+<p>②可变头部：有些协议类型中存在，在有些协议中不存在</p>
+<p>③消息载体：消息的主要内容</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220910223713813.png" alt="image-20220910223713813"></p>
+<p><strong>固定头部格式</strong></p>
+<p>固定头部格式包含两部分内容，<strong>首字节</strong>+<strong>剩余消息报文长度</strong></p>
+<p><strong>首字节</strong>：首字节用于表示MQTT消息的报文类型以及某些类型的控制标记。</p>
+<p>高四位（bit7~bit4）表示协议类型</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220910223945130.png" alt="image-20220910223945130"></p>
+<p>低四位（bit3~bit0）用于表示某些报文类型的控制字段</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220910224107433.png" alt="image-20220910224107433"></p>
+<p>仅当报文类型为PUBLISH时，该字段才有意义。其中Qos不能为3，否则接收段会认为是一条非法的消息。</p>
+<p><strong>Connect可变头部</strong></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220910224544640.png" alt="image-20220910224544640"></p>
+<p><strong>MQTT报文格式文档：</strong><a target="_blank" rel="noopener" href="http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html">http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/03/28/IoT/%E7%89%A9%E8%81%94%E7%BD%91%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A8/IoT%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A805/" rel="prev" title="IoT安全入门05">
+      <i class="fa fa-chevron-left"></i> IoT安全入门05
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/03/28/IoT/%E7%89%A9%E8%81%94%E7%BD%91%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A8/IoT%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A807/" rel="next" title="IoT安全入门07">
+      IoT安全入门07 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AC%AC%E5%85%AD%E7%AB%A0-%E7%89%A9%E8%81%94%E7%BD%91%E6%9E%B6%E6%9E%84%E4%B9%8B%E7%89%A9%E8%81%94%E7%BD%91%E5%8D%8F%E8%AE%AE"><span class="nav-number">1.</span> <span class="nav-text">第六章 物联网架构之物联网协议</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-wifi%E5%8D%8F%E8%AE%AE"><span class="nav-number">1.1.</span> <span class="nav-text">0x01 wifi协议</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E7%89%A9%E8%81%94%E7%BD%91%E7%BB%84%E6%88%90"><span class="nav-number">1.1.1.</span> <span class="nav-text">1. 物联网组成</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E7%89%A9%E8%81%94%E7%BD%91%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE"><span class="nav-number">1.1.2.</span> <span class="nav-text">2. 物联网通信协议</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-WLAN"><span class="nav-number">1.1.3.</span> <span class="nav-text">3. WLAN</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-WIFI"><span class="nav-number">1.1.4.</span> <span class="nav-text">4. WIFI</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-%E6%97%A0%E7%BA%BF%E7%BD%91-VS-%E6%9C%89%E7%BA%BF%E7%BD%91"><span class="nav-number">1.1.5.</span> <span class="nav-text">5. 无线网 VS 有线网</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-IEEE-802-11%E5%8D%8F%E8%AE%AE"><span class="nav-number">1.1.6.</span> <span class="nav-text">6. IEEE 802.11协议</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#802-11-%E5%B7%A5%E4%BD%9C%E6%96%B9%E5%BC%8F"><span class="nav-number">1.1.6.1.</span> <span class="nav-text">802.11 工作方式</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A2%91%E8%B0%B1%E5%88%92%E5%88%86"><span class="nav-number">1.1.7.</span> <span class="nav-text">频谱划分</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SSID%E5%92%8CBSSID"><span class="nav-number">1.1.8.</span> <span class="nav-text">SSID和BSSID</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%A0%E7%BA%BF%E6%8E%A5%E5%85%A5%E8%BF%87%E7%A8%8B%E4%B8%89%E4%B8%AA%E9%98%B6%E6%AE%B5"><span class="nav-number">1.1.9.</span> <span class="nav-text">无线接入过程三个阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%A4%E8%AF%81%E8%BF%9E%E6%8E%A5%E6%96%B9%E5%BC%8F"><span class="nav-number">1.1.10.</span> <span class="nav-text">认证连接方式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x02-Zigbee%E5%8D%8F%E8%AE%AE"><span class="nav-number">1.2.</span> <span class="nav-text">0x02 Zigbee协议</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Zigbee%E5%8D%8F%E8%AE%AE%E7%AE%80%E4%BB%8B"><span class="nav-number">1.2.1.</span> <span class="nav-text">1. Zigbee协议简介</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-Zigbee%E7%AE%80%E4%BB%8B"><span class="nav-number">1.2.1.1.</span> <span class="nav-text">1.1 Zigbee简介</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-%E8%8A%82%E7%82%B9%E7%B1%BB%E5%9E%8B"><span class="nav-number">1.2.1.2.</span> <span class="nav-text">1.2 节点类型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-Zigbee%E6%9E%B6%E6%9E%84"><span class="nav-number">1.2.1.3.</span> <span class="nav-text">1.3 Zigbee架构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-4-%E8%AE%BE%E5%A4%87%E7%BB%84%E7%BD%91%E6%B5%81%E7%A8%8B"><span class="nav-number">1.2.1.4.</span> <span class="nav-text">1.4 设备组网流程</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Zigbee%E5%AE%89%E5%85%A8%E6%80%A7"><span class="nav-number">1.2.2.</span> <span class="nav-text">2. Zigbee安全性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-Zigbee%E5%97%85%E6%8E%A2"><span class="nav-number">1.2.3.</span> <span class="nav-text">3. Zigbee嗅探</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x03-Bluetooth-BLE%E5%8D%8F%E8%AE%AE"><span class="nav-number">1.3.</span> <span class="nav-text">0x03 Bluetooth&#x2F;BLE协议</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E8%93%9D%E7%89%99%E7%AE%80%E4%BB%8B"><span class="nav-number">1.3.1.</span> <span class="nav-text">1. 蓝牙简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E8%93%9D%E7%89%99%E5%8D%8F%E8%AE%AE%E7%AE%80%E4%BB%8B"><span class="nav-number">1.3.2.</span> <span class="nav-text">2. 蓝牙协议简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-BLE%E7%AE%80%E4%BB%8B"><span class="nav-number">1.3.3.</span> <span class="nav-text">3. BLE简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E8%93%9D%E7%89%99-BLE%E7%9A%84%E6%AF%94%E8%BE%83"><span class="nav-number">1.3.4.</span> <span class="nav-text">4. 蓝牙 BLE的比较</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-BLE%E5%8D%8F%E8%AE%AE%E7%AE%80%E4%BB%8B"><span class="nav-number">1.3.5.</span> <span class="nav-text">5. BLE协议简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-BLE%E8%BF%9E%E6%8E%A5%E8%BF%87%E7%A8%8B"><span class="nav-number">1.3.6.</span> <span class="nav-text">6. BLE连接过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-GATT%E7%AE%80%E4%BB%8B"><span class="nav-number">1.3.7.</span> <span class="nav-text">7. GATT简介</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x04-RFID%E5%8D%8F%E8%AE%AE%E8%AE%B2%E8%A7%A3"><span class="nav-number">1.4.</span> <span class="nav-text">0x04 RFID协议讲解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-RFID%E7%AE%80%E4%BB%8B"><span class="nav-number">1.4.1.</span> <span class="nav-text">1. RFID简介</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-%E4%BB%80%E4%B9%88%E6%98%AFRFID%EF%BC%9F"><span class="nav-number">1.4.1.1.</span> <span class="nav-text">1.1 什么是RFID？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-RFID%E5%B8%B8%E8%A7%81%E5%BA%94%E7%94%A8"><span class="nav-number">1.4.1.2.</span> <span class="nav-text">1.2 RFID常见应用</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-RFID%E7%BB%84%E6%88%90"><span class="nav-number">1.4.2.</span> <span class="nav-text">2. RFID组成</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-RFID%E5%88%86%E7%B1%BB"><span class="nav-number">1.4.3.</span> <span class="nav-text">3. RFID分类</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-%E5%B8%B8%E8%A7%81%E6%A0%87%E7%AD%BE"><span class="nav-number">1.4.3.1.</span> <span class="nav-text">3.1 常见标签</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-%E7%A4%BA%E4%BE%8B"><span class="nav-number">1.4.3.2.</span> <span class="nav-text">3.2 示例</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x05-MQTT%E7%AD%89%E5%8D%8F%E8%AE%AE%E8%AE%B2%E8%A7%A3"><span class="nav-number">1.5.</span> <span class="nav-text">0x05 MQTT等协议讲解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#MQTT"><span class="nav-number">1.5.1.</span> <span class="nav-text">MQTT</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MQTT%E5%AE%9E%E7%8E%B0%E8%BF%87%E7%A8%8B"><span class="nav-number">1.5.2.</span> <span class="nav-text">MQTT实现过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E4%B8%8E%E7%89%B9%E6%80%A7"><span class="nav-number">1.5.3.</span> <span class="nav-text">设计原则与特性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MQTT%E6%9C%8D%E5%8A%A1%E6%9C%AC%E5%9C%B0%E6%B5%8B%E8%AF%95"><span class="nav-number">1.5.4.</span> <span class="nav-text">MQTT服务本地测试</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E6%8A%A5%E6%96%87%E6%A0%BC%E5%BC%8F"><span class="nav-number">1.5.5.</span> <span class="nav-text">消息报文格式</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="郭小白QAQ"
+      src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+  <p class="site-author-name" itemprop="name">郭小白QAQ</p>
+  <div class="site-description" itemprop="description">精彩不亮丽，起落是无常</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">64</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/guoxb0_0@qq.com" title="E-Mail → guoxb0_0@qq.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">郭小白QAQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">122k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">7:24</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+<script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
+
+<script>
+var options = {
+  bottom: '64px',
+  right: 'unset',
+  left: '32px',
+  time: '0.5s',
+  mixColor: 'transparent',
+  backgroundColor: 'transparent',
+  buttonColorDark: '#100f2c',
+  buttonColorLight: '#fff',
+  saveInCookies: true,
+  label: '🌓',
+  autoMatchOsTheme: true
+}
+const darkmode = new Darkmode(options);
+window.darkmode = darkmode;
+darkmode.showWidget();
+</script>
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div id="moon-menu-item-back2bottom" class="moon-menu-item">
+      <i class='fas fa-chevron-down'></i>    </div>
+    
+    <div id="moon-menu-item-back2top" class="moon-menu-item">
+      <i class='fas fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button">
+    <svg class="moon-menu-bg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+    </svg>
+    <div class="moon-menu-content">
+      <div class="moon-menu-icon"><i class='fas fa-ellipsis-v'></i></div>
+      <div class="moon-menu-text"></div>
+    </div>
+  </div>
+</div><script src="/js/injector.js"></script>
+</body>
+</html>

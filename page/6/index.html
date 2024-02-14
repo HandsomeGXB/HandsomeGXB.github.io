@@ -189,6 +189,678 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2023/03/15/ROP_Emporium/Challenge3-callme/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+      <meta itemprop="name" content="郭小白QAQ">
+      <meta itemprop="description" content="精彩不亮丽，起落是无常">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GuoXB's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/03/15/ROP_Emporium/Challenge3-callme/" class="post-title-link" itemprop="url">Challenge3_callme</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-03-15 23:42:45" itemprop="dateCreated datePublished" datetime="2023-03-15T23:42:45+08:00">2023-03-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-03-28 21:59:47" itemprop="dateModified" datetime="2023-03-28T21:59:47+08:00">2023-03-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ROP-Emporium/" itemprop="url" rel="index"><span itemprop="name">ROP_Emporium</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>9 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="callme"><a href="#callme" class="headerlink" title="callme"></a>callme</h1><p>题目链接：<a target="_blank" rel="noopener" href="https://ropemporium.com/challenge/callme.html">https://ropemporium.com/challenge/callme.html</a></p>
+<h2 id="x86"><a href="#x86" class="headerlink" title="x86"></a>x86</h2><p>根据提示可以知道，这次需要我们构造一个连续调用函数的ROP链。我们需要注意在32位环境下<code>pop 3ret</code>这种情况，来进行堆栈平衡。提示中告诉我们要依次调用<code>call_one()</code>，<code>call_two()</code>，<code>call_three()</code>这三个函数，每一个函数的参数均为<code>0xdeadbeef, 0xcafebabe, 0xd00df00d</code>，eg.<code>call_one(0xdeadbeef, 0xcafebabe, 0xd00df00d)</code>我们需要构造一个依次调用这三个函数的ROP链。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/03/15/ROP_Emporium/Challenge3-callme/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2023/03/15/ROP_Emporium/Challenge2_split/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+      <meta itemprop="name" content="郭小白QAQ">
+      <meta itemprop="description" content="精彩不亮丽，起落是无常">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GuoXB's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/03/15/ROP_Emporium/Challenge2_split/" class="post-title-link" itemprop="url">Challenge2_split</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-03-15 23:41:10" itemprop="dateCreated datePublished" datetime="2023-03-15T23:41:10+08:00">2023-03-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-03-28 21:59:41" itemprop="dateModified" datetime="2023-03-28T21:59:41+08:00">2023-03-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ROP-Emporium/" itemprop="url" rel="index"><span itemprop="name">ROP_Emporium</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>848</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="split"><a href="#split" class="headerlink" title="split"></a>split</h1><p>题目链接：<a target="_blank" rel="noopener" href="https://ropemporium.com/challenge/split.html">https://ropemporium.com/challenge/split.html</a></p>
+<h2 id="x86"><a href="#x86" class="headerlink" title="x86"></a>x86</h2><p>根据题目描述，这个二进制程序中存在有用的字符串<code>/bin/cat flag.txt</code>，并且存在对<code>system</code>函数的调用。结合题目名字，猜测是将函数调用跟所需的参数分开了，需要我们自己去拼接起来。大致思路就是分别找到函数跟字符串的地址，然后拼成一个简单的ROP链即可。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/03/15/ROP_Emporium/Challenge2_split/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2023/03/15/ROP_Emporium/Challenge1_ret2win/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+      <meta itemprop="name" content="郭小白QAQ">
+      <meta itemprop="description" content="精彩不亮丽，起落是无常">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GuoXB's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/03/15/ROP_Emporium/Challenge1_ret2win/" class="post-title-link" itemprop="url">Challenge1_ret2win</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-03-15 23:30:10" itemprop="dateCreated datePublished" datetime="2023-03-15T23:30:10+08:00">2023-03-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-03-28 21:59:36" itemprop="dateModified" datetime="2023-03-28T21:59:36+08:00">2023-03-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ROP-Emporium/" itemprop="url" rel="index"><span itemprop="name">ROP_Emporium</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>736</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="ret2win"><a href="#ret2win" class="headerlink" title="ret2win"></a>ret2win</h1><p>题目链接：<a target="_blank" rel="noopener" href="https://ropemporium.com/challenge/ret2win.html">https://ropemporium.com/challenge/ret2win.html</a></p>
+<h2 id="x86"><a href="#x86" class="headerlink" title="x86"></a>x86</h2><p>首先检查下程序保护情况，（根据提示，此系列均开启了NX保护，主要来锻炼ROP技术）</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">checksec ret2win32</span></span><br><span class="line">[*]&#x27;/home/giantbranch/Desktop/rop_emporium_all_challenges/level1_ret2win/32/ret2win32&#x27;</span><br><span class="line">    Arch:     i386-32-little</span><br><span class="line">    RELRO:    Partial RELRO</span><br><span class="line">    Stack:    No canary found</span><br><span class="line">    NX:       NX enabled</span><br><span class="line">    PIE:      No PIE (0x8048000)</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/03/15/ROP_Emporium/Challenge1_ret2win/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2023/03/15/PWN-RE%E5%AD%A6%E4%B9%A0%E7%BD%91%E7%AB%99%E6%95%B4%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+      <meta itemprop="name" content="郭小白QAQ">
+      <meta itemprop="description" content="精彩不亮丽，起落是无常">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GuoXB's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/03/15/PWN-RE%E5%AD%A6%E4%B9%A0%E7%BD%91%E7%AB%99%E6%95%B4%E7%90%86/" class="post-title-link" itemprop="url">PWN&RE学习网站整理</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-03-15 20:48:12" itemprop="dateCreated datePublished" datetime="2023-03-15T20:48:12+08:00">2023-03-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2024-02-14 14:30:26" itemprop="dateModified" datetime="2024-02-14T14:30:26+08:00">2024-02-14</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%B5%84%E6%96%99%E6%95%B4%E7%90%86/" itemprop="url" rel="index"><span itemprop="name">资料整理</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>745</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>浅浅记录一下平时搜集到的一些网站</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/03/15/PWN-RE%E5%AD%A6%E4%B9%A0%E7%BD%91%E7%AB%99%E6%95%B4%E7%90%86/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2022/09/20/Linux/Linux%E5%92%8C%E5%91%BD%E4%BB%A4%E6%8F%90%E7%A4%BA%E7%AC%A6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+      <meta itemprop="name" content="郭小白QAQ">
+      <meta itemprop="description" content="精彩不亮丽，起落是无常">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GuoXB's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/09/20/Linux/Linux%E5%92%8C%E5%91%BD%E4%BB%A4%E6%8F%90%E7%A4%BA%E7%AC%A6/" class="post-title-link" itemprop="url">Linux和命令提示符</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-09-20 11:28:21" itemprop="dateCreated datePublished" datetime="2022-09-20T11:28:21+08:00">2022-09-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2024-02-14 14:35:57" itemprop="dateModified" datetime="2024-02-14T14:35:57+08:00">2024-02-14</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>54</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="什么是命令提示符（Commamd-Prompt）"><a href="#什么是命令提示符（Commamd-Prompt）" class="headerlink" title="什么是命令提示符（Commamd  Prompt）"></a>什么是命令提示符（Commamd  Prompt）</h1><ol>
+<li>Also called Terminal or Bash and is used to execute command.</li>
+<li>It is typically a black screen with white font and has a  very simple User Interface. You type in commands, and it interprets these commands and runs operations in the computer.</li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2022/08/17/Linux/Ubuntu%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%85%B1%E4%BA%AB%E4%B8%BB%E6%9C%BAVPN/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+      <meta itemprop="name" content="郭小白QAQ">
+      <meta itemprop="description" content="精彩不亮丽，起落是无常">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GuoXB's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/08/17/Linux/Ubuntu%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%85%B1%E4%BA%AB%E4%B8%BB%E6%9C%BAVPN/" class="post-title-link" itemprop="url">Ubuntu虚拟机共享主机VPN</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-08-17 19:11:34" itemprop="dateCreated datePublished" datetime="2022-08-17T19:11:34+08:00">2022-08-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2024-02-14 14:37:18" itemprop="dateModified" datetime="2024-02-14T14:37:18+08:00">2024-02-14</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>142</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>工作环境：VMware16、Ubuntu16.04（客户机）、Win10（主机）和Clash for Windows。</p>
+<p>VMware中虚拟机的网络设置选为NAT模式，步骤如下：</p>
+<ol>
+<li><p>将win10中clash打开Allow LAN选项，并查看代理端口（此处为：7890）</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220817191543525.png" alt="image-20220817191543525"></p>
+</li>
+<li><p>在Win10（主机）终端中执行<code>ipconfig</code>命令，查看VMware Network Adapter VMnet8的IPv4地址（此处为：192.160.220.1）</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220817191819717.png" alt="image-20220817191819717"></p>
+</li>
+<li><p>在Ubuntu16.04（客户机）中设置网络代理，路径为：系统设置-&gt;网络-&gt;网络代理，填写刚才查看的VMnet8的ipv4地址和代理端口号</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220817192048712.png" alt="image-20220817192048712"></p>
+</li>
+<li><p>应用到整个系统</p>
+</li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2022/06/25/EpubToPDF%E9%A1%B9%E7%9B%AE%E5%A4%8D%E7%8E%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+      <meta itemprop="name" content="郭小白QAQ">
+      <meta itemprop="description" content="精彩不亮丽，起落是无常">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GuoXB's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/06/25/EpubToPDF%E9%A1%B9%E7%9B%AE%E5%A4%8D%E7%8E%B0/" class="post-title-link" itemprop="url">EpubToPDF项目复现记录</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-06-25 16:54:19" itemprop="dateCreated datePublished" datetime="2022-06-25T16:54:19+08:00">2022-06-25</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2024-02-14 14:39:12" itemprop="dateModified" datetime="2024-02-14T14:39:12+08:00">2024-02-14</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>285</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p><strong>项目地址：</strong><a target="_blank" rel="noopener" href="https://github.com/HAKSOAT/EpubToPdf">https://github.com/HAKSOAT/EpubToPdf</a></p>
+<p><strong>报错记录：</strong>按照readme中安装好依赖库后，运行后报错。</p>
+<p>错误1：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x27;gbk&#x27; codec can&#x27;t decode byte 0xa2 in position 153: illegal multibyte sequence</span><br></pre></td></tr></table></figure>
+
+<p>“GBK”，一眼编码问题，根据报错提示找到代码中<code>open()</code>函数的位置，设置encoding参数即可。</p>
+<p>修改完后重新运行代码，报错。</p>
+<p>错误2：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">No wkhtmltopdf executable found: &quot;b&#x27;&#x27;&quot;</span><br><span class="line">If this file exists please check that this process can read it. Otherwise please install wkhtmltopdf - https://github.com/JazzCore/python-pdfkit/wiki/Installing-wkhtmltopdf</span><br></pre></td></tr></table></figure>
+
+<p>原因是未找到wkhtmltopdf这个程序，从<a target="_blank" rel="noopener" href="https://wkhtmltopdf.org/downloads.html">官网下载</a>安装，配置环境变量，重新运行，仍然报错，从网上查下解决办法，手动在代码中添加安装路径。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">path_wk = <span class="string">r&#x27;F:\Application Installation Files\wkhtmltopdf\bin\wkhtmltopdf.exe&#x27;</span> <span class="comment">#安装位置</span></span><br><span class="line">	config = pdfkit.configuration(wkhtmltopdf = path_wk)</span><br></pre></td></tr></table></figure>
+
+<p>在pdfpy.py文件的PdfEngine类中首行添加，因为main.py只import了这一个类，在类外边会无效。</p>
+<p>修改完后，重新运行代码，成功运行，如下：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(gxb) F:\Project Files\EpubToPdf-master&gt;python main.py x86汇编语言_从实模式到保护模式.epub</span><br><span class="line">--- Sections converted to pdf</span><br><span class="line">--- Epub to PDF conversion started</span><br><span class="line">--- Sections combined together <span class="keyword">in</span> a single pdf file</span><br><span class="line">--- Individual pdf files deleted from directory</span><br><span class="line">--- Epub to PDF conversion successful</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://guoxb.top/2022/03/17/docker/docker%E5%AD%A6%E4%B9%A0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -220,7 +892,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-03-28 22:39:24" itemprop="dateModified" datetime="2023-03-28T22:39:24+08:00">2023-03-28</time>
+                <time title="修改时间：2024-02-14 14:18:20" itemprop="dateModified" datetime="2024-02-14T14:18:20+08:00">2024-02-14</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -298,7 +970,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2021/11/28/16%E4%BD%8DCPU%E6%A0%87%E5%BF%97%E5%AF%84%E5%AD%98%E5%99%A8/">
+    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2021/11/28/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/16%E4%BD%8DCPU%E6%A0%87%E5%BF%97%E5%AF%84%E5%AD%98%E5%99%A8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
@@ -312,7 +984,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2021/11/28/16%E4%BD%8DCPU%E6%A0%87%E5%BF%97%E5%AF%84%E5%AD%98%E5%99%A8/" class="post-title-link" itemprop="url">16位CPU标志寄存器</a>
+            <a href="/2021/11/28/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/16%E4%BD%8DCPU%E6%A0%87%E5%BF%97%E5%AF%84%E5%AD%98%E5%99%A8/" class="post-title-link" itemprop="url">16位CPU标志寄存器</a>
         </h2>
 
         <div class="post-meta">
@@ -489,393 +1161,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2021/11/14/python/python%E6%96%B0%E5%BB%BA%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
-      <meta itemprop="name" content="郭小白QAQ">
-      <meta itemprop="description" content="精彩不亮丽，起落是无常">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GuoXB's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/11/14/python/python%E6%96%B0%E5%BB%BA%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83/" class="post-title-link" itemprop="url">python新建虚拟环境</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-11-14 16:39:42" itemprop="dateCreated datePublished" datetime="2021-11-14T16:39:42+08:00">2021-11-14</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-05-16 23:28:22" itemprop="dateModified" datetime="2023-05-16T23:28:22+08:00">2023-05-16</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>115</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="Python安装虚拟环境"><a href="#Python安装虚拟环境" class="headerlink" title="Python安装虚拟环境"></a>Python安装虚拟环境</h1><p>1.安装virtualenv包</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pip install virtualenv  </span><br><span class="line">version==<span class="number">20.0</span><span class="number">.31</span></span><br></pre></td></tr></table></figure>
-
-<p>2.创建放置虚拟环境的文件夹Python_virtual_environment</p>
-<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/leWgfk1tcXHyvbr.png" alt="image-20211114164151926.png"></p>
-<p>3.创建虚拟环境</p>
-<p>进入到上面的文件夹下，进入cmd命令框执行以下命令</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">python -m virtualenv “项目名”</span><br><span class="line"><span class="comment">#例如</span></span><br><span class="line">python -m virtualenv demo</span><br></pre></td></tr></table></figure>
-
-<p><img src="https://i.loli.net/2021/11/14/Jb8Ql5D4X3ywndu.png" alt="image-20211114164255605.png"></p>
-<p>4.激活虚拟环境</p>
-<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;<span class="built_in">cd</span> demo/Scripts</span><br><span class="line"></span><br><span class="line">&gt;&gt;activate</span><br></pre></td></tr></table></figure>
-
-<p>5.退出虚拟环境</p>
-<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;deactivate.bat</span><br></pre></td></tr></table></figure>
-
-<h2 id="pip临时源"><a href="#pip临时源" class="headerlink" title="pip临时源"></a>pip临时源</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install -i https://pypi.tuna.tsinghua.edu.cn/simple “包的名称”</span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2021/07/22/%E9%9A%8F%E7%AC%94/2021.07.20%E6%B2%B3%E5%8D%97%E6%9A%B4%E9%9B%A8--%E4%B8%AA%E4%BA%BA%E6%B5%81%E6%B0%B4%E8%B4%A6%E7%BA%AA%E5%BD%95/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
-      <meta itemprop="name" content="郭小白QAQ">
-      <meta itemprop="description" content="精彩不亮丽，起落是无常">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GuoXB's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/07/22/%E9%9A%8F%E7%AC%94/2021.07.20%E6%B2%B3%E5%8D%97%E6%9A%B4%E9%9B%A8--%E4%B8%AA%E4%BA%BA%E6%B5%81%E6%B0%B4%E8%B4%A6%E7%BA%AA%E5%BD%95/" class="post-title-link" itemprop="url">2021.07.20河南暴雨--个人流水账纪录</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-07-22 15:26:55" itemprop="dateCreated datePublished" datetime="2021-07-22T15:26:55+08:00">2021-07-22</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2024-02-05 17:35:04" itemprop="dateModified" datetime="2024-02-05T17:35:04+08:00">2024-02-05</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E9%9A%8F%E7%AC%94/" itemprop="url" rel="index"><span itemprop="name">随笔</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>1.8k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>7 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          当前不可公开的情报！
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2021/07/22/%E9%9A%8F%E7%AC%94/2021.07.20%E6%B2%B3%E5%8D%97%E6%9A%B4%E9%9B%A8--%E4%B8%AA%E4%BA%BA%E6%B5%81%E6%B0%B4%E8%B4%A6%E7%BA%AA%E5%BD%95/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2021/07/02/%E6%8E%A8%E5%85%8D/%E6%96%B0%E7%9A%84%E5%BC%80%E5%A7%8B/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
-      <meta itemprop="name" content="郭小白QAQ">
-      <meta itemprop="description" content="精彩不亮丽，起落是无常">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GuoXB's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/07/02/%E6%8E%A8%E5%85%8D/%E6%96%B0%E7%9A%84%E5%BC%80%E5%A7%8B/" class="post-title-link" itemprop="url">新的开始</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-07-02 16:30:37" itemprop="dateCreated datePublished" datetime="2021-07-02T16:30:37+08:00">2021-07-02</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-12-07 12:55:21" itemprop="dateModified" datetime="2023-12-07T12:55:21+08:00">2023-12-07</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%8E%A8%E5%85%8D/" itemprop="url" rel="index"><span itemprop="name">推免</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>522</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>2 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          当前不可公开的情报！
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2021/07/02/%E6%8E%A8%E5%85%8D/%E6%96%B0%E7%9A%84%E5%BC%80%E5%A7%8B/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2021/06/14/%E9%9A%8F%E7%AC%94/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E5%8D%9A%E5%AE%A2%E6%96%87%E7%AB%A0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
-      <meta itemprop="name" content="郭小白QAQ">
-      <meta itemprop="description" content="精彩不亮丽，起落是无常">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GuoXB's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/06/14/%E9%9A%8F%E7%AC%94/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E5%8D%9A%E5%AE%A2%E6%96%87%E7%AB%A0/" class="post-title-link" itemprop="url">我的第一篇博客文章</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-06-14 23:48:09" itemprop="dateCreated datePublished" datetime="2021-06-14T23:48:09+08:00">2021-06-14</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-07-02 16:22:19" itemprop="dateModified" datetime="2021-07-02T16:22:19+08:00">2021-07-02</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E9%9A%8F%E7%AC%94/" itemprop="url" rel="index"><span itemprop="name">随笔</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>220</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="我的第一篇博客"><a href="#我的第一篇博客" class="headerlink" title="我的第一篇博客"></a>我的第一篇博客</h1><p>自从大二上学期无意间听了一个学长的一句话，搭一个专属于自己的博客这个想法就一直存在脑海中，拖拖拉拉了一年多，总算是初步搭起了一个简陋的静态博客。在跟着教程搭的过程中，也是再一次的发现了自己的一个缺点，总是看的太多，想的太多，做的太少，不敢去尝试，总想把所有错误都考虑到，总想每个地方都一步到位的做到最优。也正是这种想法，当我在看到不少教程时，阻碍了我的尝试。也算是对自己的一个小反省吧，希望自己以后回过头来再看到这篇文章的时候，能够对比以前的自己，发现自己成长了。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/5/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span>
+    <a class="extend prev" rel="prev" href="/page/5/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/7/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -943,20 +1232,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">57</span>
+          <span class="site-state-item-count">64</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-count">20</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-count">18</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -997,12 +1286,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">105k</span>
+    <span title="站点总字数">122k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">6:21</span>
+    <span title="站点阅读时长">7:24</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>

@@ -189,6 +189,597 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2023/09/21/IoT/%E4%BD%BF%E7%94%A8QEMU%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%A8%A1%E5%BC%8F%E8%BF%9B%E8%A1%8C%E6%A8%A1%E6%8B%9F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+      <meta itemprop="name" content="郭小白QAQ">
+      <meta itemprop="description" content="精彩不亮丽，起落是无常">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GuoXB's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/09/21/IoT/%E4%BD%BF%E7%94%A8QEMU%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%A8%A1%E5%BC%8F%E8%BF%9B%E8%A1%8C%E6%A8%A1%E6%8B%9F/" class="post-title-link" itemprop="url">使用QEMU的系统模式进行模拟</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-09-21 16:45:48" itemprop="dateCreated datePublished" datetime="2023-09-21T16:45:48+08:00">2023-09-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2024-02-14 14:37:36" itemprop="dateModified" datetime="2024-02-14T14:37:36+08:00">2024-02-14</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/IoT/" itemprop="url" rel="index"><span itemprop="name">IoT</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/IoT/%E5%9B%BA%E4%BB%B6%E6%A8%A1%E6%8B%9F/" itemprop="url" rel="index"><span itemprop="name">固件模拟</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="使用QEMU的系统模式进行模拟"><a href="#使用QEMU的系统模式进行模拟" class="headerlink" title="使用QEMU的系统模式进行模拟"></a>使用QEMU的系统模式进行模拟</h1><p>当 QEMU 运行在系统模式下时，需要为 QEMU 指定内核镜像、IDE硬盘镜像、内核参数。这样一来，使用 QEMU 模拟的虚拟机才能正常运行。<a target="_blank" rel="noopener" href="https://people.debian.org/~aurel32/qemu">Debian 官网</a>提供了 QEMU 虚拟机各种平台架构的内核镜像、硬盘文件镜像文件的下载。</p>
+<p><del>备注：Debian官网的链接目前还是挂掉的状态，还好有大佬备份下来了arm架构和mips架构的镜像，贴一个网盘链接</del></p>
+<blockquote>
+<p>链接：<a target="_blank" rel="noopener" href="https://pan.baidu.com/s/1me2w5d5Qt31Fyi5jS-TKJg?pwd=brkp">https://pan.baidu.com/s/1me2w5d5Qt31Fyi5jS-TKJg?pwd=brkp</a><br>提取码：brkp</p>
+</blockquote>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/09/21/IoT/%E4%BD%BF%E7%94%A8QEMU%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%A8%A1%E5%BC%8F%E8%BF%9B%E8%A1%8C%E6%A8%A1%E6%8B%9F/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2023/09/20/Fuzz/AC15%E8%B7%AF%E7%94%B1%E5%99%A8%E6%A0%88%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9Eboofuzz%E6%B5%8B%E8%AF%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+      <meta itemprop="name" content="郭小白QAQ">
+      <meta itemprop="description" content="精彩不亮丽，起落是无常">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GuoXB's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/09/20/Fuzz/AC15%E8%B7%AF%E7%94%B1%E5%99%A8%E6%A0%88%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9Eboofuzz%E6%B5%8B%E8%AF%95/" class="post-title-link" itemprop="url">AC15路由器栈溢出漏洞boofuzz测试</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-09-20 14:47:59" itemprop="dateCreated datePublished" datetime="2023-09-20T14:47:59+08:00">2023-09-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2024-02-14 14:19:52" itemprop="dateModified" datetime="2024-02-14T14:19:52+08:00">2024-02-14</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/FUZZ/" itemprop="url" rel="index"><span itemprop="name">FUZZ</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>8 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="Tenda-AC15-CVE-2018-5767为例进行Fuzz测试"><a href="#Tenda-AC15-CVE-2018-5767为例进行Fuzz测试" class="headerlink" title="Tenda AC15 CVE-2018-5767为例进行Fuzz测试"></a>Tenda AC15 CVE-2018-5767为例进行Fuzz测试</h1><p>设备：Tenda AC15 路由器（可能包含其他系列路由器）</p>
+<p>固件版本：&lt;V15.03.05.18</p>
+<p>固件下载地址：官网已挂，在<a target="_blank" rel="noopener" href="https://drivers.softpedia.com/">此网站</a>内能找到，<a target="_blank" rel="noopener" href="https://us.softpedia-secure-download.com/dl/4315dd0547e6157d65b57e9c1fd2f509/64f68884/300482999/drivers/router/US_AC15V1.0BR_V15.03.1.16_multi_TD01.rar">US_AC15V1.0BR_V15.03.1.16_multi_TD01.rar</a></p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/09/20/Fuzz/AC15%E8%B7%AF%E7%94%B1%E5%99%A8%E6%A0%88%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9Eboofuzz%E6%B5%8B%E8%AF%95/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2023/09/18/Driller%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/Driller%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%9002/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+      <meta itemprop="name" content="郭小白QAQ">
+      <meta itemprop="description" content="精彩不亮丽，起落是无常">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GuoXB's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/09/18/Driller%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/Driller%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%9002/" class="post-title-link" itemprop="url">Driller源码分析02</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-09-18 23:33:41" itemprop="dateCreated datePublished" datetime="2023-09-18T23:33:41+08:00">2023-09-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2024-02-14 14:19:00" itemprop="dateModified" datetime="2024-02-14T14:19:00+08:00">2024-02-14</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Driller/" itemprop="url" rel="index"><span itemprop="name">Driller</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>7.4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>27 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="Driller-源码分析"><a href="#Driller-源码分析" class="headerlink" title="Driller 源码分析"></a>Driller 源码分析</h1><p>本篇从整体程序的执行流程来分析 Driller 工具的功能，并针对 use_techniques 方法进行了较为详细的解释，理清了 angr 是如何同时应用多个 exploration_techniques 来协同进行符号执行的。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/09/18/Driller%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/Driller%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%9002/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2023/09/17/python/python%20%E5%87%BD%E6%95%B0%E7%AD%BE%E5%90%8D/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+      <meta itemprop="name" content="郭小白QAQ">
+      <meta itemprop="description" content="精彩不亮丽，起落是无常">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GuoXB's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/09/17/python/python%20%E5%87%BD%E6%95%B0%E7%AD%BE%E5%90%8D/" class="post-title-link" itemprop="url">python-函数签名</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-09-17 14:42:57" itemprop="dateCreated datePublished" datetime="2023-09-17T14:42:57+08:00">2023-09-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2024-02-14 15:33:36" itemprop="dateModified" datetime="2024-02-14T15:33:36+08:00">2024-02-14</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>395</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="python-函数签名"><a href="#python-函数签名" class="headerlink" title="python 函数签名"></a>python 函数签名</h1><p>函数签名是指函数的声明部分，包括函数名、参数列表和返回类型注释（可选）。函数签名提供了函数的基本信息，用于描述函数的输入和输出。</p>
+<p>在Python中，函数签名可以使用以下格式表示：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">function_name</span>(<span class="params">parameter1: <span class="built_in">type</span>, parameter2: <span class="built_in">type</span>, ...</span>) -&gt; return_type:</span><br><span class="line">    <span class="comment"># 函数体</span></span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/09/17/python/python%20%E5%87%BD%E6%95%B0%E7%AD%BE%E5%90%8D/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2023/09/13/Linux/Ubuntu%E5%AE%89%E8%A3%85SSH/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+      <meta itemprop="name" content="郭小白QAQ">
+      <meta itemprop="description" content="精彩不亮丽，起落是无常">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GuoXB's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/09/13/Linux/Ubuntu%E5%AE%89%E8%A3%85SSH/" class="post-title-link" itemprop="url">Ubuntu安装SSH</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-09-13 22:43:15" itemprop="dateCreated datePublished" datetime="2023-09-13T22:43:15+08:00">2023-09-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2024-02-14 14:35:49" itemprop="dateModified" datetime="2024-02-14T14:35:49+08:00">2024-02-14</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>655</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="Ubunut-安装-SSH-服务"><a href="#Ubunut-安装-SSH-服务" class="headerlink" title="Ubunut 安装 SSH 服务"></a>Ubunut 安装 SSH 服务</h1><h2 id="1-安装所需要的包"><a href="#1-安装所需要的包" class="headerlink" title="1. 安装所需要的包"></a>1. 安装所需要的包</h2><p>运行 SSH 服务器的包由 OpensSSH 的 <code>openssh-server</code> 组件提供：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt update &amp;&amp; sudo apt upgrade</span><br><span class="line">sudo apt install openssh-server</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/09/13/Linux/Ubuntu%E5%AE%89%E8%A3%85SSH/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2023/09/12/Driller%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/Driller%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%9001/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+      <meta itemprop="name" content="郭小白QAQ">
+      <meta itemprop="description" content="精彩不亮丽，起落是无常">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GuoXB's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/09/12/Driller%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/Driller%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%9001/" class="post-title-link" itemprop="url">Driller源码分析01</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-09-12 09:58:20" itemprop="dateCreated datePublished" datetime="2023-09-12T09:58:20+08:00">2023-09-12</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2024-02-14 14:18:42" itemprop="dateModified" datetime="2024-02-14T14:18:42+08:00">2024-02-14</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Driller/" itemprop="url" rel="index"><span itemprop="name">Driller</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="Driller-项目搭建及测试"><a href="#Driller-项目搭建及测试" class="headerlink" title="Driller 项目搭建及测试"></a>Driller 项目搭建及测试</h1><p>由于年代久远，参考了好多搭建的博客都失败了,各种各样的问题，这里贴两个时间比较靠后的博客：</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://blog.grimm-co.com/2020/05/guided-fuzzing-with-driller.html">https://blog.grimm-co.com/2020/05/guided-fuzzing-with-driller.html</a></p>
+<p><a target="_blank" rel="noopener" href="https://n132.github.io/2020/03/04/Driller-Installation.html">https://n132.github.io/2020/03/04/Driller-Installation.html</a></p>
+</blockquote>
+<p>换了各种 Ubuntu 版本以及 python 的版本，忙活了一天最后也没搭成功。好在，无意间在 docker 仓库里发现了ZJUchenyuan大佬上传的 driller 的镜像，直接 pull 下来用了，测试能跑通！！！</p>
+<p>感谢 Docker，感谢 ZJU 的chenyuan大佬救我狗命Orz！！！</p>
+<p>安装好 docker 后直接运行下面的命令，拉取镜像就好了。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull zjuchenyuan/driller</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/09/12/Driller%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/Driller%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%9001/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://guoxb.top/2023/09/11/docker/docker%E5%AE%89%E8%A3%85/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -316,7 +907,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-10-10 23:40:05" itemprop="dateModified" datetime="2023-10-10T23:40:05+08:00">2023-10-10</time>
+                <time title="修改时间：2024-02-14 14:20:34" itemprop="dateModified" datetime="2024-02-14T14:20:34+08:00">2024-02-14</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -411,7 +1002,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-10-03 21:06:17" itemprop="dateModified" datetime="2023-10-03T21:06:17+08:00">2023-10-03</time>
+                <time title="修改时间：2024-02-14 14:21:59" itemprop="dateModified" datetime="2024-02-14T14:21:59+08:00">2024-02-14</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -475,7 +1066,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2023/08/02/%E9%9A%8F%E7%AC%94/%E5%9B%BD%E9%98%B2%E7%A7%91%E5%A4%A7%E6%9A%91%E6%9C%9F%E5%AD%A6%E6%A0%A1%E7%AE%80%E8%AE%B0/">
+    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2023/08/02/%E9%9A%8F%E7%AC%94/%E4%B8%AA%E4%BA%BA%E9%9A%8F%E7%AC%94/%E5%9B%BD%E9%98%B2%E7%A7%91%E5%A4%A7%E6%9A%91%E6%9C%9F%E5%AD%A6%E6%A0%A1%E7%AE%80%E8%AE%B0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
@@ -489,7 +1080,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2023/08/02/%E9%9A%8F%E7%AC%94/%E5%9B%BD%E9%98%B2%E7%A7%91%E5%A4%A7%E6%9A%91%E6%9C%9F%E5%AD%A6%E6%A0%A1%E7%AE%80%E8%AE%B0/" class="post-title-link" itemprop="url">国防科大暑期学校简记</a>
+            <a href="/2023/08/02/%E9%9A%8F%E7%AC%94/%E4%B8%AA%E4%BA%BA%E9%9A%8F%E7%AC%94/%E5%9B%BD%E9%98%B2%E7%A7%91%E5%A4%A7%E6%9A%91%E6%9C%9F%E5%AD%A6%E6%A0%A1%E7%AE%80%E8%AE%B0/" class="post-title-link" itemprop="url">国防科大暑期学校简记</a>
         </h2>
 
         <div class="post-meta">
@@ -506,7 +1097,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2024-02-05 20:34:08" itemprop="dateModified" datetime="2024-02-05T20:34:08+08:00">2024-02-05</time>
+                <time title="修改时间：2024-02-14 14:54:06" itemprop="dateModified" datetime="2024-02-14T14:54:06+08:00">2024-02-14</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -546,607 +1137,7 @@
           当前不可公开的情报！
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2023/08/02/%E9%9A%8F%E7%AC%94/%E5%9B%BD%E9%98%B2%E7%A7%91%E5%A4%A7%E6%9A%91%E6%9C%9F%E5%AD%A6%E6%A0%A1%E7%AE%80%E8%AE%B0/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2023/07/06/Fuzz/Fuzz%E6%BA%90%E7%A0%81%E7%90%86%E8%A7%A3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
-      <meta itemprop="name" content="郭小白QAQ">
-      <meta itemprop="description" content="精彩不亮丽，起落是无常">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GuoXB's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/07/06/Fuzz/Fuzz%E6%BA%90%E7%A0%81%E7%90%86%E8%A7%A3/" class="post-title-link" itemprop="url">Fuzz源码理解</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2023-07-06 20:59:34" itemprop="dateCreated datePublished" datetime="2023-07-06T20:59:34+08:00">2023-07-06</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-10-10 23:40:29" itemprop="dateModified" datetime="2023-10-10T23:40:29+08:00">2023-10-10</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/FUZZ/" itemprop="url" rel="index"><span itemprop="name">FUZZ</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>2k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>7 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>关于 AFL 与 AFLNet 中对代码功能的一些理解，未完。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2023/07/06/Fuzz/Fuzz%E6%BA%90%E7%A0%81%E7%90%86%E8%A7%A3/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2023/07/05/C-socket%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
-      <meta itemprop="name" content="郭小白QAQ">
-      <meta itemprop="description" content="精彩不亮丽，起落是无常">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GuoXB's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/07/05/C-socket%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1/" class="post-title-link" itemprop="url">C socket网络通信</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2023-07-05 19:55:52" itemprop="dateCreated datePublished" datetime="2023-07-05T19:55:52+08:00">2023-07-05</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-10-03 21:16:24" itemprop="dateModified" datetime="2023-10-03T21:16:24+08:00">2023-10-03</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/C%E8%AF%AD%E8%A8%80/" itemprop="url" rel="index"><span itemprop="name">C语言</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>2.4k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>9 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>在C语言Socket通信中，客户端和服务器端的流程如下：</p>
-<p><strong>服务器端流程</strong>：</p>
-<ol>
-<li>创建服务器套接字（socket）：使用<code>socket()</code>函数创建一个套接字，指定地址族（例如，<code>AF_INET</code>表示IPv4）和套接字类型（例如，<code>SOCK_STREAM</code>表示TCP套接字）。</li>
-<li>绑定套接字到指定地址和端口（bind）：使用<code>bind()</code>函数将套接字绑定到服务器的IP地址和监听端口上。</li>
-<li>监听连接请求（listen）：使用<code>listen()</code>函数监听指定端口上的连接请求。可以指定一个等待队列的最大长度。</li>
-<li>接受连接请求（accept）：使用<code>accept()</code>函数接受来自客户端的连接请求。它会阻塞程序，直到有客户端连接请求到达。返回一个新的套接字，用于与客户端进行通信。</li>
-<li>与客户端通信：使用新的套接字进行与客户端的通信。可以使用<code>read()</code>和<code>write()</code>函数从客户端接收数据和发送数据。</li>
-<li>关闭套接字（close）：通信结束后，使用<code>close()</code>函数关闭套接字。</li>
-</ol>
-<p><strong>客户端流程</strong>：</p>
-<ol>
-<li>创建客户端套接字（socket）：使用<code>socket()</code>函数创建一个套接字，指定地址族和套接字类型。</li>
-<li>设置服务器地址和端口：使用<code>struct sockaddr_in</code>结构设置服务器的IP地址和端口号。</li>
-<li>连接服务器（connect）：使用<code>connect()</code>函数连接到服务器。传入服务器的地址和端口号。</li>
-<li>与服务器通信：使用已连接的套接字进行与服务器的通信。可以使用<code>read()</code>和<code>write()</code>函数从服务器接收数据和发送数据。</li>
-<li>关闭套接字（close）：通信结束后，使用<code>close()</code>函数关闭套接字。</li>
-</ol>
-<p>这些是基本的流程，你可以根据具体需求在通信过程中进行数据的读取和写入。记得在错误处理方面进行适当的处理，例如检查函数返回值是否为负数来判断是否出现错误，并采取相应的措施。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2023/07/05/C-socket%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2023/07/03/Fuzz/fuzz-libmodbus-by-AFL/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
-      <meta itemprop="name" content="郭小白QAQ">
-      <meta itemprop="description" content="精彩不亮丽，起落是无常">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GuoXB's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/07/03/Fuzz/fuzz-libmodbus-by-AFL/" class="post-title-link" itemprop="url">fuzz libmodbus by AFL</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2023-07-03 21:52:14" itemprop="dateCreated datePublished" datetime="2023-07-03T21:52:14+08:00">2023-07-03</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-10-10 23:40:10" itemprop="dateModified" datetime="2023-10-10T23:40:10+08:00">2023-10-10</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/FUZZ/" itemprop="url" rel="index"><span itemprop="name">FUZZ</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>1.4k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>5 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="fuzz-libmodbus-by-AFL"><a href="#fuzz-libmodbus-by-AFL" class="headerlink" title="fuzz libmodbus by AFL"></a>fuzz libmodbus by AFL</h1><h2 id="下载编译libmodbus库"><a href="#下载编译libmodbus库" class="headerlink" title="下载编译libmodbus库"></a>下载编译libmodbus库</h2><p>libmodbus库源码可从<a target="_blank" rel="noopener" href="https://github.com/stephane/libmodbus/">github仓库</a>下载，命令如下：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/stephane/libmodbus/</span><br></pre></td></tr></table></figure>
-
-<p>下载好后进入源码文件夹，编译命令如下：</p>
-<p>需要注意的是：编译使用afl-gcc，而不使用默认的gcc</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cd libmodbus</span><br><span class="line">./autogen.sh</span><br><span class="line">CC=afl-gcc CXX=afl-g++ ./configure --enable-static</span><br><span class="line">make -j4</span><br></pre></td></tr></table></figure>
-
-<p><code>--enable-static</code>：用于生成静态库</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2023/07/03/Fuzz/fuzz-libmodbus-by-AFL/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2023/05/16/python/python%E5%AF%BC%E5%87%BA%E4%BE%9D%E8%B5%96%E5%8C%85/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
-      <meta itemprop="name" content="郭小白QAQ">
-      <meta itemprop="description" content="精彩不亮丽，起落是无常">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GuoXB's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/05/16/python/python%E5%AF%BC%E5%87%BA%E4%BE%9D%E8%B5%96%E5%8C%85/" class="post-title-link" itemprop="url">python导出依赖包</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2023-05-16 23:26:20 / 修改时间：23:39:49" itemprop="dateCreated datePublished" datetime="2023-05-16T23:26:20+08:00">2023-05-16</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>248</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="Python导出项目依赖包"><a href="#Python导出项目依赖包" class="headerlink" title="Python导出项目依赖包"></a>Python导出项目依赖包</h1><p>python项目开发完后，需要部署到生产或其他环境下，为了快速安装当前项目所需要的依赖包，常规的做法：</p>
-<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip freeze &gt; requirements.txt</span><br></pre></td></tr></table></figure>
-
-<p>此方法是导出pip安装的所有依赖包，而不仅仅是当前项目，这么做显然没有必要。</p>
-<p>python 提供了<strong>pipreqs</strong>包解决这个问题。</p>
-<h2 id="1-安装pipreqs"><a href="#1-安装pipreqs" class="headerlink" title="1.安装pipreqs"></a>1.安装pipreqs</h2><figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install pipreqs</span><br></pre></td></tr></table></figure>
-
-<h2 id="2-进入当前项目根目录下执行"><a href="#2-进入当前项目根目录下执行" class="headerlink" title="2.进入当前项目根目录下执行"></a>2.进入当前项目根目录下执行</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pipreqs . --encoding=utf8 --force</span><br></pre></td></tr></table></figure>
-
-<p>“.” 指的是将导出依赖包的文件放在当前目录下</p>
-<p>“–encoding&#x3D;utf8” 指的是存放文件的编码为utf-8,否则会报错</p>
-<p>“–force” –force 强制执行，当生成目录下的requirements.txt存在时强子覆盖</p>
-<h2 id="3-在新的环境下，进入项目根目录执行以下脚本完成所有依赖包的安装"><a href="#3-在新的环境下，进入项目根目录执行以下脚本完成所有依赖包的安装" class="headerlink" title="3.在新的环境下，进入项目根目录执行以下脚本完成所有依赖包的安装"></a>3.在新的环境下，进入项目根目录执行以下脚本完成所有依赖包的安装</h2><figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install <span class="literal">-r</span> requirements.txt</span><br></pre></td></tr></table></figure>
-
-<p>这样做的好处可以保证依赖包的版本跟开发环境一样，避免了很多坑。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2023/05/10/HowtoReadPaper/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
-      <meta itemprop="name" content="郭小白QAQ">
-      <meta itemprop="description" content="精彩不亮丽，起落是无常">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GuoXB's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/05/10/HowtoReadPaper/" class="post-title-link" itemprop="url">HowtoReadPaper</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2023-05-10 22:08:40 / 修改时间：22:16:37" itemprop="dateCreated datePublished" datetime="2023-05-10T22:08:40+08:00">2023-05-10</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">论文阅读</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>2.4k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>9 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="How-to-Read-a-Paper"><a href="#How-to-Read-a-Paper" class="headerlink" title="How to Read a Paper"></a>How to Read a Paper</h1><h2 id="ABSTRACT"><a href="#ABSTRACT" class="headerlink" title="ABSTRACT"></a>ABSTRACT</h2><p>研究人员花费大量时间阅读研究论文。然而，这项技能很少被教授，导致了许多不必要的努力。本文概述了一种实用且高效的三遍阅读研究论文的方法。同时，我还描述了如何使用这种方法进行文献调查</p>
-<h2 id="1-引言"><a href="#1-引言" class="headerlink" title="1. 引言"></a>1. 引言</h2><p>研究人员必须阅读论文的几个原因：为了为会议或课程审查论文，为了保持对其领域的了解，或者为了对新领域进行文献调查。一个研究人员可能每年会花费数百小时来阅读论文。</p>
-<p>高效阅读论文是一项至关重要但很少被教授的技能。因此，初入研究生阶段的学生必须自行通过试错来学习。这个过程中，学生会浪费很多精力，而且经常会感到沮丧。</p>
-<p>多年来，我一直使用一种简单的方法来高效阅读论文。本文介绍了“三遍阅读”的方法及其在进行文献调查中的应用。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2023/05/10/HowtoReadPaper/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2023/05/05/Web/TinyHttpd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
-      <meta itemprop="name" content="郭小白QAQ">
-      <meta itemprop="description" content="精彩不亮丽，起落是无常">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GuoXB's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/05/05/Web/TinyHttpd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" class="post-title-link" itemprop="url">TinyHttpd源码分析</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2023-05-05 23:13:21" itemprop="dateCreated datePublished" datetime="2023-05-05T23:13:21+08:00">2023-05-05</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-05-10 22:16:12" itemprop="dateModified" datetime="2023-05-10T22:16:12+08:00">2023-05-10</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/WEB/" itemprop="url" rel="index"><span itemprop="name">WEB</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/WEB/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" itemprop="url" rel="index"><span itemprop="name">源码分析</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>6.4k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>23 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="TinyHttpd源码分析"><a href="#TinyHttpd源码分析" class="headerlink" title="TinyHttpd源码分析"></a>TinyHttpd源码分析</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>最近在分析固件，逆向完后反编译得到的伪代码看到不是特别懂，自我感觉是对web服务器端的Http请求处理流程比较模糊，正好之前学习《IoT安全入门》课程的时候提到过一个比较轻量的服务端程序Tinyhttpd，俗话说的好”麻雀虽小，五脏俱全”，之前听课的时候没有好好学，特此来补课留档。</p>
-<h3 id="Tinyhttpd简介"><a href="#Tinyhttpd简介" class="headerlink" title="Tinyhttpd简介"></a>Tinyhttpd简介</h3><p>Tinyhttpd是J.David Blackstone在1999年写的一个不到500行的超轻量型Http服务端程序，通过阅读代码，可以帮助我们理解Web服务器程序的本质。</p>
-<p>Tinyhttpd主页地址：<a target="_blank" rel="noopener" href="https://tinyhttpd.sourceforge.net/">https://tinyhttpd.sourceforge.net/</a></p>
-<p><strong>注：</strong>分析该源码需要了解Http报文的相关知识，这里就先不介绍了（以后有空的话可能补上），大家可以自行百度、Google或者ChatGPT学习。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2023/05/05/Web/TinyHttpd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/#more" rel="contents">
+              <a class="btn" href="/2023/08/02/%E9%9A%8F%E7%AC%94/%E4%B8%AA%E4%BA%BA%E9%9A%8F%E7%AC%94/%E5%9B%BD%E9%98%B2%E7%A7%91%E5%A4%A7%E6%9A%91%E6%9C%9F%E5%AD%A6%E6%A0%A1%E7%AE%80%E8%AE%B0/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1169,7 +1160,7 @@
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1237,20 +1228,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">57</span>
+          <span class="site-state-item-count">64</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-count">20</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-count">18</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -1291,12 +1282,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">105k</span>
+    <span title="站点总字数">122k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">6:21</span>
+    <span title="站点阅读时长">7:24</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>

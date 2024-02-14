@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.1.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"guoxb.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":true},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":false,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Reverse Engineering 3201: Symbolic Analysis课程链接：https:&#x2F;&#x2F;p.ost2.fyi&#x2F;courses&#x2F;course-v1:OpenSecurityTraining2+RE3201_symexec+2021_V1&#x2F;course&#x2F;  Z3  VEX-Valgrind 文档  angr 文档   该套课程从Z3到SAT，再到angr，比较系统的介绍了符号执">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Reverse Engineering 3201-Symbolic Analysis">
+<meta property="og:url" content="http://guoxb.top/2024/02/14/%E7%AC%A6%E5%8F%B7%E6%89%A7%E8%A1%8C/RE3201%20Symbolic%20Analysis/index.html">
+<meta property="og:site_name" content="GuoXB&#39;s Blog">
+<meta property="og:description" content="Reverse Engineering 3201: Symbolic Analysis课程链接：https:&#x2F;&#x2F;p.ost2.fyi&#x2F;courses&#x2F;course-v1:OpenSecurityTraining2+RE3201_symexec+2021_V1&#x2F;course&#x2F;  Z3  VEX-Valgrind 文档  angr 文档   该套课程从Z3到SAT，再到angr，比较系统的介绍了符号执">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20231129203456418.png">
+<meta property="article:published_time" content="2024-02-14T07:09:48.059Z">
+<meta property="article:modified_time" content="2024-02-14T07:32:13.365Z">
+<meta property="article:author" content="郭小白QAQ">
+<meta property="article:tag" content="angr">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20231129203456418.png">
+
+<link rel="canonical" href="http://guoxb.top/2024/02/14/%E7%AC%A6%E5%8F%B7%E6%89%A7%E8%A1%8C/RE3201%20Symbolic%20Analysis/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+<link rel="stylesheet" type="text/css" href="/css/injector/main.css" /><link rel="preload" as="style" href="/css/injector/light.css" /><link rel="preload" as="style" href="/css/injector/dark.css" />
+  <title>Reverse Engineering 3201-Symbolic Analysis | GuoXB's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">GuoXB's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2024/02/14/%E7%AC%A6%E5%8F%B7%E6%89%A7%E8%A1%8C/RE3201%20Symbolic%20Analysis/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+      <meta itemprop="name" content="郭小白QAQ">
+      <meta itemprop="description" content="精彩不亮丽，起落是无常">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GuoXB's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Reverse Engineering 3201-Symbolic Analysis
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2024-02-14 15:09:48 / 修改时间：15:32:13" itemprop="dateCreated datePublished" datetime="2024-02-14T15:09:48+08:00">2024-02-14</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%AC%A6%E5%8F%B7%E6%89%A7%E8%A1%8C/" itemprop="url" rel="index"><span itemprop="name">符号执行</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>13 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Reverse-Engineering-3201-Symbolic-Analysis"><a href="#Reverse-Engineering-3201-Symbolic-Analysis" class="headerlink" title="Reverse Engineering 3201: Symbolic Analysis"></a>Reverse Engineering 3201: Symbolic Analysis</h1><p>课程链接：<a target="_blank" rel="noopener" href="https://p.ost2.fyi/courses/course-v1:OpenSecurityTraining2+RE3201_symexec+2021_V1/course/">https://p.ost2.fyi/courses/course-v1:OpenSecurityTraining2+RE3201_symexec+2021_V1/course/</a></p>
+<ul>
+<li><p>Z3</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://valgrind.org/docs/manual/writing-tools.html">VEX-Valgrind 文档</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://docs.angr.io/en/latest/index.html">angr 文档</a></p>
+</li>
+</ul>
+<p>该套课程从Z3到SAT，再到angr，比较系统的介绍了符号执行的大致发展和思想，但是相对来说比较简略，其习题设置需要一定的逆向基础，否则做起来会比较花时间去理解。主要内容是以 binary bomb 程序为例来讲解angr的各种基础用法。</p>
+<span id="more"></span>
+
+<h2 id="Binary-Bomb"><a href="#Binary-Bomb" class="headerlink" title="Binary Bomb"></a>Binary Bomb</h2><p>接下来通过对这个例子的讲解来简要介绍angr常见的一些基础用法：符号化寄存器、栈、内存等<br>首先看一下 bomb 程序的整体流程：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20231129203456418.png" alt="image-20231129203456418"></p>
+<p>binary 总共有6个阶段，每个阶段都需要单独来解，这里也侧面教了如何对一个程序中的片段做符号执行。</p>
+<h3 id="phase-1"><a href="#phase-1" class="headerlink" title="phase_1"></a>phase_1</h3><p>接下来我们先看 phase_1:</p>
+<p>![image-20231129203553171](D:\Program Files (x86)\Typora\typora-user-images\image-20231129203553171.png)</p>
+<p>可以看到，a1 是我们第一阶段的输入，通过逆向分析，可以看到 phase_1 通过 strings_not_equal 函数来判断我们的输入a1 和 “I am just a renegade hockey mom.” 这个字符串作比较：</p>
+<p>![image-20231129205541477](D:\Program Files (x86)\Typora\typora-user-images\image-20231129205541477.png)</p>
+<p>从上反编译后的代码可以看到，如果不相等则返回 1 从而在下面进入 explode_bomb() 函数引爆炸弹。我们要做的（整个过程）都是避免程序调用explode_bomb函数。</p>
+<p>phase_1 并不需要符号执行，我们能直接看到应该输入的字符串，但这里还是应用符号执行来做，我们首先通过反汇编代码来分析确定一下我们要开始符号执行的位置。</p>
+<p>phase_1：</p>
+<p>![image-20231129205844139](D:\Program Files (x86)\Typora\typora-user-images\image-20231129205844139.png)</p>
+<p>strings_not_equal：</p>
+<p>![image-20231129205820091](D:\Program Files (x86)\Typora\typora-user-images\image-20231129205820091.png)</p>
+<p>我们以 phase_1 函数的开头 <code>0x15a7</code> 作为符号分析的起始地址（也可以直接进入strings_not_equal函数，但这样的话就需要手动对函数参数做设置，比较麻烦），a1是我们的输入，从反编译的代码可以看到，strings_not_equal函数的第一个参数与phase_1的参数一样，而在x64中第一个参数都是用 <code>rdi</code> 来传递的，所以在反汇编里没有体现。<code>rdi</code> 存储的就是存放我们输入字符串的地址。接下来结合代码来解释：</p>
+<p>我们首先做一下全局变量设置：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> angr,claripy</span><br><span class="line">proj = angr.Project(<span class="string">&#x27;./bomb&#x27;</span>,auto_load_libs=<span class="literal">False</span>)</span><br><span class="line">BASE_ADDR = proj.loader.main_object.min_addr</span><br><span class="line">BOMB = BASE_ADDR + <span class="number">0x1be5</span></span><br></pre></td></tr></table></figure>
+
+<p>BASE_ADDR 是程序加载后的基地址，BOMB是我们要避免的函数地址。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># phase 1 </span></span><br><span class="line">phase_1 = BASE_ADDR + <span class="number">0x15a7</span> </span><br><span class="line"><span class="comment"># target_1 = BASE_ADDR + 0x15bf</span></span><br><span class="line">target_1 = BASE_ADDR + <span class="number">0x1b19</span></span><br><span class="line"></span><br><span class="line">state = proj.factory.blank_state(addr=phase_1)</span><br><span class="line">sim = proj.factory.simgr(state)</span><br><span class="line">sim.explore(find=target_1,avoid=BOMB)</span><br><span class="line"></span><br><span class="line">found = sim.found[<span class="number">0</span>]</span><br><span class="line">flag1_addr = found.regs.rbx</span><br><span class="line">mem_addr_1 = found.memory.load(flag1_addr, <span class="number">32</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(found.solver.<span class="built_in">eval</span>(mem_addr_1, cast_to=<span class="built_in">bytes</span>))</span><br></pre></td></tr></table></figure>
+
+<p>target_1 不能是上面 <code>0x15bf</code> 的原因是，如果到那里，ebx已经改变，edi也已经改变，已经没有寄存器能够指向我们的输入，就不能进行求解了。</p>
+<p>进行求解是内存是ebx所指向的内存，而不是最开始的edi，是因为在strings_not_equal函数开头，0x1AD9处将edi赋值给rbx，在0x1AE7处又将rbp赋值给rdi，此时rdi已经改变了，而且在后续都保持这个值，所以我们不能用这个。而ebx在target_1之前，始终保持指向我们的输入（在target之后会恢复原来的值），所以可以用。</p>
+<p>执行后可以得到phase_1阶段的结果：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">b&#x27;I am just a renegade hockey mom.&#x27;</span><br></pre></td></tr></table></figure>
+
+<h3 id="phase-2"><a href="#phase-2" class="headerlink" title="phase_2"></a>phase_2</h3><p>接下来看phase_2：</p>
+<p>![image-20231129212457797](D:\Program Files (x86)\Typora\typora-user-images\image-20231129212457797.png)</p>
+<p>同样，参数a1是我们的输入，read_six_numbers函数对我们的输入进行一些处理，具体为：</p>
+<p>![image-20231129212616442](D:\Program Files (x86)\Typora\typora-user-images\image-20231129212616442.png)</p>
+<p>从我们输入的字符串 a1 中，通过 sscanf 来获取 6 个int型整数。但由于涉及到比较复杂的sscanf函数，对输入做符号化比较麻烦，所以采用hook来简化其操作。</p>
+<p>反汇编代码如下：</p>
+<p>phase_2：</p>
+<p>![image-20231129212359884](D:\Program Files (x86)\Typora\typora-user-images\image-20231129212359884.png)</p>
+<p>首先对 read_six_numbers函数做一下hook：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">read_six_numbers</span>(angr.SimProcedure):</span><br><span class="line">    answer_inits = []</span><br><span class="line">    int_addrs = []</span><br><span class="line">    <span class="comment">#run函数的参数, 就是要hook的函数的参数，顺序和数量要一致。</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">run</span>(<span class="params">self, str_addr, int_addr</span>):</span><br><span class="line">        <span class="comment"># self.int_addrs.append(int_addr) //不知道干嘛用的，目前在phase2中没影响</span></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">6</span>):</span><br><span class="line">            bvs = self.state.solver.BVS(<span class="string">&quot;phase_2_int_%d&quot;</span> % i, <span class="number">32</span>)</span><br><span class="line">            self.answer_inits.append(bvs)</span><br><span class="line">            self.state.mem[int_addr].<span class="built_in">int</span>.array(<span class="number">6</span>)[i] = bvs</span><br><span class="line">        <span class="keyword">return</span> <span class="number">6</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># hook 函数</span></span><br><span class="line">READ_SIX_NUMBERS = BASE_ADDR + <span class="number">0x1c11</span></span><br><span class="line">proj.hook(READ_SIX_NUMBERS, read_six_numbers())</span><br></pre></td></tr></table></figure>
+
+<p>首先还是确定第二阶段符号分析的入口位置，同样选择函数入口处。但是在target地址的选择上，官方选择了不直接执行到结尾，而是在中间断开，分两部分进行，在这里并没有理解为什么要这么做，可能是为了避免状态爆炸？这个还不是很清楚。但其他部分并没有什么注意的，都是常规流程，代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">phase_2 = BASE_ADDR + <span class="number">0x15cb</span></span><br><span class="line">target_2_A = BASE_ADDR + <span class="number">0x15f3</span></span><br><span class="line">target_2_B = BASE_ADDR + <span class="number">0x1633</span></span><br><span class="line"></span><br><span class="line">state = proj.factory.blank_state(addr=phase_2, remove_options=&#123;angr.options.LAZY_SOLVES&#125;)</span><br><span class="line">sim = proj.factory.simulation_manager(state)</span><br><span class="line"><span class="keyword">while</span> <span class="built_in">len</span>(sim.active) &gt; <span class="number">0</span>:</span><br><span class="line">    sim.explore(find=target_2_A, avoid=BOMB)</span><br><span class="line"></span><br><span class="line">founds = sim.found</span><br><span class="line"><span class="keyword">for</span> found <span class="keyword">in</span> founds:</span><br><span class="line">    sim = proj.factory.simulation_manager(found)</span><br><span class="line">    sim.explore(find=target_2_B, avoid=BOMB)</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(sim.found) &gt; <span class="number">0</span>:</span><br><span class="line">        found = sim.found[<span class="number">0</span>]</span><br><span class="line">        <span class="keyword">break</span></span><br><span class="line">flag2 = <span class="string">&quot; &quot;</span>.join([<span class="built_in">str</span>(found.solver.<span class="built_in">eval</span>(i)) <span class="keyword">for</span> i <span class="keyword">in</span> read_six_numbers.answer_inits])</span><br><span class="line"><span class="built_in">print</span>(flag2)</span><br></pre></td></tr></table></figure>
+
+<h3 id="phase-3"><a href="#phase-3" class="headerlink" title="phase_3"></a>phase_3</h3><p>接下来看phase_3：</p>
+<p>![image-20231129214413724](D:\Program Files (x86)\Typora\typora-user-images\image-20231129214413724.png)</p>
+<p>同样，参数a1是我们输入的字符串，这里通过sscanf来从我们输入的字符串中提取两个整数，这里的sscanf并不复杂，其参数是存放在栈上的，所以我们选择对栈上的数据进行符号化处理。通过反编译对sscanf函数参数看的不清楚，我们通过汇编代码来看：</p>
+<p>![image-20231129214705410](D:\Program Files (x86)\Typora\typora-user-images\image-20231129214705410.png)</p>
+<p>可以看到，第一个参数rdi被省略了，因为rdi没有变化，第二个参数rsi为格式化字符串 <code>%d %d</code>，第三个字符串rdx就是取出的第一个整数的地址，等于rsp也就是在栈顶，第四个参数rcx为[rsp+18h-14h]刚好是栈顶下一个。这里注意下汇编指令，lea和mov，指令虽然不同，但最终都是传递的地址。</p>
+<p>对于sscanf稍微复杂些的函数，我们的起始位置就不能是开头了，如果还是开头，那么angr不能很好的处理sscanf得到的输入，所以我们把起始位置定位到sscanf下一条指令处 <code>0x1665</code>，<code>cmp eax,1</code>处，手动对sscanf参数（栈上的数据）做符号化处理。</p>
+<p>注：压栈时，要注意，x64 栈指针 rsp 一次减 8 的整数倍，所以不能通过压两入两个32位符号值来分别取这两个整数，而要压入一个64位的，之后再进行划分。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">phase_3 = BASE_ADDR + <span class="number">0x1665</span> <span class="comment">#在 sscanf 之后</span></span><br><span class="line">target_3 = BASE_ADDR + <span class="number">0x16cc</span> <span class="comment">#0x16d2也可以，因为我这里求解的时候用了变量名，所以跟堆栈位置无关，如果求解使用教程里的stack_pop(),那么就需要保证栈指针rsp不被破坏，即只能是0x16cc</span></span><br><span class="line">phase_3_flag = claripy.BVS(<span class="string">&#x27;phase_3_flag&#x27;</span>,<span class="number">64</span>) <span class="comment"># 这里不能用两个32位，因为64位栈 栈帧 rsp-8，否则会报错</span></span><br><span class="line">state = proj.factory.blank_state(addr=phase_3, remove_options=&#123;angr.options.LAZY_SOLVES&#125;)</span><br><span class="line"><span class="comment"># state.regs.rsp = state.regs.rbp</span></span><br><span class="line"><span class="comment"># state.regs.rsp -= 0x10</span></span><br><span class="line"><span class="comment"># 这里不对栈做处理也能成功得到结果，可能是因为刚好是参数刚好存放在栈顶吧，或者按照之前的思路对rsp和rbp做设置也可以得到结果。</span></span><br><span class="line"><span class="comment"># 将符号化变量压入栈</span></span><br><span class="line">state.stack_push(phase_3_flag)</span><br><span class="line">sim = proj.factory.simgr(state)</span><br><span class="line">sim.explore(find=target_3, avoid=BOMB, enable_veritesting=<span class="literal">True</span>) <span class="comment"># 不太明白这个veritesting是干嘛的，不加对于这个程序也能求解出结果</span></span><br><span class="line">found = sim.found[<span class="number">0</span>]</span><br><span class="line">flag3 = []</span><br><span class="line"><span class="comment"># temp = found.solver.eval(found.stack_pop())</span></span><br><span class="line">temp = found.solver.<span class="built_in">eval</span>(phase_3_flag)</span><br><span class="line"><span class="comment"># 将高位和低位分开</span></span><br><span class="line">low = temp &amp; <span class="number">0xffffffff</span></span><br><span class="line">flag3.append(<span class="built_in">str</span>(low))</span><br><span class="line">high = temp &gt;&gt; <span class="number">32</span> &amp; <span class="number">0xffffffff</span></span><br><span class="line">flag3.append(<span class="built_in">str</span>(high))</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot; &quot;</span>.join(flag3))</span><br></pre></td></tr></table></figure>
+
+<h3 id="phase-4"><a href="#phase-4" class="headerlink" title="phase_4"></a>phase_4</h3><p>接下来看phase_4：</p>
+<p>![image-20231129220051220](D:\Program Files (x86)\Typora\typora-user-images\image-20231129220051220.png)</p>
+<p>v2就是从我们输入字符串中提取的第一个整数，v3是第二个整数。同样，我们选择起始位置时跳过sscanf，在后面手动进行符号化值的设置。下面出现了func4，我们先来看看func4函数的内容：</p>
+<p>![image-20231129220358229](D:\Program Files (x86)\Typora\typora-user-images\image-20231129220358229.png)</p>
+<p>可以看到是一个递归函数，大概作用是从a2和a3之间找到a1（V2，也就是第一个整数）。而根据phase_4函数流程分析可以看到，第二个整数必须要等于10，随意我们只用对第一个值进行符号化即可。而第一个值对于func4来说是其第一个参数，通过rdi寄存器来传递，所以我们将起始位置定位到func4函数开头，手动为相应传参寄存器赋值来传递参数，并符号化rdi寄存器来获取第一个整数值。</p>
+<p>func4汇编代码如下：</p>
+<p>![image-20231129220925573](D:\Program Files (x86)\Typora\typora-user-images\image-20231129220925573.png)</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">phase_4 = BASE_ADDR + <span class="number">0x1715</span></span><br><span class="line">target_4 = BASE_ADDR + <span class="number">0x1732</span></span><br><span class="line"></span><br><span class="line">phase_4_flag = claripy.BVS(<span class="string">&#x27;phase_4_flag&#x27;</span>, <span class="number">32</span>)</span><br><span class="line">state = proj.factory.blank_state(addr=phase_4, remove_options=&#123;angr.options.LAZY_SOLVES&#125;)</span><br><span class="line">state.regs.edi = phase_4_flag</span><br><span class="line">state.regs.esi = <span class="number">0</span></span><br><span class="line">state.regs.edx = <span class="number">0x0e</span></span><br><span class="line"></span><br><span class="line">sim = proj.factory.simgr(state)</span><br><span class="line">sim.explore(find=target_4,avoid=BOMB)</span><br><span class="line">found = sim.found[<span class="number">0</span>]</span><br><span class="line">flag = <span class="number">10</span> - found.solver.<span class="built_in">eval</span>(phase_4_flag) <span class="comment">#结合程序分析，但是看不懂那个逆向后的程序算法</span></span><br><span class="line"><span class="built_in">print</span>(flag)</span><br></pre></td></tr></table></figure>
+
+<p>这里要注意的一点就是，func4函数返回值应该等于 10，但是符号执行求解得到的 7 其实就是直接让a1等于v3，并没有进行递归就推出了，此时func4的返回值是7而不是10，所以需要再做进一步处理，课程中的题解的方法是用 10 - 7，还不太能明白这么做的原理是什么，但是确实是对的，而且就算不是10，改成20和11也是对的，很神奇。猜测很算法有关，回头问问师弟。</p>
+<h3 id="phase-5"><a href="#phase-5" class="headerlink" title="phase_5"></a>phase_5</h3><p>接下来看phase_5：</p>
+<p>跟phase_3相似，所以直接放代码了：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">phase_5 = BASE_ADDR + <span class="number">0x17f5</span></span><br><span class="line">target_5 = BASE_ADDR + <span class="number">0x184E</span></span><br><span class="line">phase_5_flag = claripy.BVS(<span class="string">&#x27;phase_3_flag&#x27;</span>,<span class="number">64</span>)</span><br><span class="line"></span><br><span class="line">state = proj.factory.blank_state(addr=phase_5, remove_options=&#123;angr.options.LAZY_SOLVES&#125;)</span><br><span class="line">state.stack_push(phase_5_flag)</span><br><span class="line">sim = proj.factory.simgr(state)</span><br><span class="line">sim.explore(find=target_5, avoid=BOMB)</span><br><span class="line">found = sim.found[<span class="number">0</span>]</span><br><span class="line">flag5 = []</span><br><span class="line"><span class="comment"># temp = found.solver.eval(found.stack_pop())</span></span><br><span class="line">temp = found.solver.<span class="built_in">eval</span>(phase_5_flag)</span><br><span class="line"><span class="comment"># 将高位和低位分开</span></span><br><span class="line">low = temp &amp; <span class="number">0xffffffff</span></span><br><span class="line">flag5.append(<span class="built_in">str</span>(low))</span><br><span class="line">high = temp &gt;&gt; <span class="number">32</span> &amp; <span class="number">0xffffffff</span></span><br><span class="line">flag5.append(<span class="built_in">str</span>(high))</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot; &quot;</span>.join(flag5))</span><br></pre></td></tr></table></figure>
+
+<h3 id="phase-6"><a href="#phase-6" class="headerlink" title="phase_6"></a>phase_6</h3><p>接下来看phase_6：</p>
+<p>跟phase_2比较类似，但是比2更加复杂，做法是一样的，都是将符号执行分成两步完成，可能是为了防止路径爆炸导致内存不够吧。</p>
+<p>代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">phase_6 = BASE_ADDR + <span class="number">0x185B</span></span><br><span class="line">target_6_A = BASE_ADDR + <span class="number">0x1906</span></span><br><span class="line">target_6_B = BASE_ADDR + <span class="number">0x1971</span> <span class="comment"># add rsp, 60h</span></span><br><span class="line"></span><br><span class="line">READ_SIX_NUMBERS = BASE_ADDR + <span class="number">0x1c11</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">read_six_numbers</span>(angr.SimProcedure):</span><br><span class="line">    answer_inits = []</span><br><span class="line">    <span class="comment"># int_addrs = []</span></span><br><span class="line">    <span class="comment"># run函数的参数, 就是要hook的函数的参数，顺序和数量要一致。</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">run</span>(<span class="params">self, str_addr, int_addr</span>):</span><br><span class="line">        <span class="comment"># self.int_addrs.append(int_addr) # 不知道干嘛用的，目前在phase2中没影响</span></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">6</span>):</span><br><span class="line">            bvs = self.state.solver.BVS(<span class="string">&quot;phase_6_int_%d&quot;</span> % i, <span class="number">32</span>)</span><br><span class="line">            self.answer_inits.append(bvs)</span><br><span class="line">            self.state.mem[int_addr].<span class="built_in">int</span>.array(<span class="number">6</span>)[i] = bvs</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="number">6</span></span><br><span class="line">    </span><br><span class="line">proj.hook(READ_SIX_NUMBERS,read_six_numbers())</span><br><span class="line"></span><br><span class="line">state = proj.factory.blank_state(addr=phase_6, remove_options=&#123;angr.options.LAZY_SOLVES&#125;)</span><br><span class="line">sim = proj.factory.simgr(state)</span><br><span class="line"></span><br><span class="line"><span class="comment"># while len(sim.active)&gt;0:</span></span><br><span class="line">sim.explore(find=target_6_A,avoid=BOMB)</span><br><span class="line"><span class="built_in">print</span>(sim)</span><br><span class="line"><span class="comment"># print(sim.found)</span></span><br><span class="line">founds = sim.found</span><br><span class="line"><span class="keyword">for</span> found <span class="keyword">in</span> founds:</span><br><span class="line">    sim = proj.factory.simgr(found)</span><br><span class="line">    sim.explore(find=target_6_B, avoid=BOMB)</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(sim.found) &gt;<span class="number">0</span> :</span><br><span class="line">        found = sim.found[<span class="number">0</span>]</span><br><span class="line">        <span class="keyword">break</span></span><br><span class="line">flag6 = [<span class="built_in">str</span>(found.solver.<span class="built_in">eval</span>(i)) <span class="keyword">for</span> i <span class="keyword">in</span> read_six_numbers.answer_inits]</span><br><span class="line">flag6 = <span class="string">&quot; &quot;</span>.join(flag6)</span><br><span class="line"><span class="built_in">print</span>(flag6)</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>课程还是很好的，但是需要有一定的逆向基础，并且对汇编代码比较熟悉（甚至应该对angr有一些初步的了解，做过angr_CTF更好）。讲课的老师直接在反汇编得到的汇编代码上进行讲解，有些地方对汇编不熟悉的话，就需要取IDA中分析一下才能跟上老师的思路（IDA真好用），然后就是对于一些步骤仍然没有讲为什么要那么做，怎么发现的，可能是我的基础不好吧，自己探索了好一阵子。但总的来说课程还是可以的，尤其是bomb这个程序，综合联系了符号执行angr的一些常见基本操作，并且让我对<code>blank_state()</code>这个状态有了新的理解，也对如何进行复杂程序某一段指令的符号执行有了初步的认识。</p>
+<p>附 Binary Bomb 的完整解题代码，solution.py:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> angr,claripy</span><br><span class="line"></span><br><span class="line">proj = angr.Project(<span class="string">&#x27;./bomb&#x27;</span>,auto_load_libs=<span class="literal">False</span>)</span><br><span class="line"></span><br><span class="line">BASE_ADDR = proj.loader.main_object.min_addr</span><br><span class="line">BOMB = BASE_ADDR + <span class="number">0x1be5</span></span><br><span class="line"><span class="comment"># print(hex(BASE_ADDR))</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># phase 1 从寄存器中获取地址处的值</span></span><br><span class="line">phase_1 = BASE_ADDR + <span class="number">0x15a7</span></span><br><span class="line"><span class="comment"># target_1 = BASE_ADDR + 0x15bf</span></span><br><span class="line">target_1 = BASE_ADDR + <span class="number">0x1b19</span></span><br><span class="line"></span><br><span class="line">state = proj.factory.blank_state(addr=phase_1)</span><br><span class="line">sim = proj.factory.simgr(state)</span><br><span class="line">sim.explore(find=target_1,avoid=BOMB)</span><br><span class="line"></span><br><span class="line">found = sim.found[<span class="number">0</span>]</span><br><span class="line">flag1_addr = found.regs.rbx</span><br><span class="line">mem_addr_1 = found.memory.load(flag1_addr, <span class="number">32</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(found.solver.<span class="built_in">eval</span>(mem_addr_1, cast_to=<span class="built_in">bytes</span>))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># phase 2</span></span><br><span class="line"><span class="comment"># 如何 hook 函数</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># hook</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">read_six_numbers</span>(angr.SimProcedure):</span><br><span class="line">    answer_inits = []</span><br><span class="line">    int_addrs = []</span><br><span class="line">    <span class="comment">#run函数的参数, 就是要hook的函数的参数，顺序和数量要一致。</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">run</span>(<span class="params">self, str_addr, int_addr</span>):</span><br><span class="line">        <span class="comment"># self.int_addrs.append(int_addr) //不知道干嘛用的，目前在phase2中没影响</span></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">6</span>):</span><br><span class="line">            bvs = self.state.solver.BVS(<span class="string">&quot;phase_2_int_%d&quot;</span> % i, <span class="number">32</span>)</span><br><span class="line">            self.answer_inits.append(bvs)</span><br><span class="line">            self.state.mem[int_addr].<span class="built_in">int</span>.array(<span class="number">6</span>)[i] = bvs</span><br><span class="line">        <span class="keyword">return</span> <span class="number">6</span></span><br><span class="line"></span><br><span class="line">phase_2 = BASE_ADDR + <span class="number">0x15cb</span></span><br><span class="line">READ_SIX_NUMBERS = BASE_ADDR + <span class="number">0x1c11</span></span><br><span class="line">target_2_A = BASE_ADDR + <span class="number">0x15f3</span></span><br><span class="line">target_2_B = BASE_ADDR + <span class="number">0x1633</span></span><br><span class="line"><span class="comment"># hook 函数</span></span><br><span class="line">proj.hook(READ_SIX_NUMBERS, read_six_numbers())</span><br><span class="line"></span><br><span class="line">state = proj.factory.blank_state(addr=phase_2, remove_options=&#123;angr.options.LAZY_SOLVES&#125;)</span><br><span class="line">sim = proj.factory.simulation_manager(state)</span><br><span class="line"><span class="keyword">while</span> <span class="built_in">len</span>(sim.active) &gt; <span class="number">0</span>:</span><br><span class="line">    sim.explore(find=target_2_A, avoid=BOMB)</span><br><span class="line"><span class="built_in">print</span>(sim)</span><br><span class="line">founds = sim.found</span><br><span class="line"><span class="keyword">for</span> found <span class="keyword">in</span> founds:</span><br><span class="line">    sim = proj.factory.simulation_manager(found)</span><br><span class="line">    sim.explore(find=target_2_B, avoid=BOMB)</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(sim.found) &gt; <span class="number">0</span>:</span><br><span class="line">        found = sim.found[<span class="number">0</span>]</span><br><span class="line">        <span class="keyword">break</span></span><br><span class="line">flag2 = <span class="string">&quot; &quot;</span>.join([<span class="built_in">str</span>(found.solver.<span class="built_in">eval</span>(i)) <span class="keyword">for</span> i <span class="keyword">in</span> read_six_numbers.answer_inits])</span><br><span class="line"><span class="built_in">print</span>(flag2)</span><br><span class="line"></span><br><span class="line"><span class="comment"># phase 3</span></span><br><span class="line"><span class="comment"># 符号化栈上的数据</span></span><br><span class="line">phase_3 = BASE_ADDR + <span class="number">0x1665</span> <span class="comment">#在 sscanf 之后</span></span><br><span class="line">target_3 = BASE_ADDR + <span class="number">0x16cc</span> <span class="comment">#0x16d2也可以，因为我这里求解的时候用了变量名，所以跟堆栈位置无关，如果求解使用教程里的stack_pop(),那么就需要保证栈指针rsp不被破坏</span></span><br><span class="line">phase_3_flag = claripy.BVS(<span class="string">&#x27;phase_3_flag&#x27;</span>,<span class="number">64</span>) <span class="comment"># 这里不能用两个32位，因为64位栈 栈帧 rsp-8，否则会报错</span></span><br><span class="line">state = proj.factory.blank_state(addr=phase_3, remove_options=&#123;angr.options.LAZY_SOLVES&#125;)</span><br><span class="line"><span class="comment"># state.regs.rsp = state.regs.rbp</span></span><br><span class="line"><span class="comment"># state.regs.rsp -= 0x10</span></span><br><span class="line"><span class="comment"># 将符号化变量压入栈</span></span><br><span class="line">state.stack_push(phase_3_flag)</span><br><span class="line">sim = proj.factory.simgr(state)</span><br><span class="line">sim.explore(find=target_3, avoid=BOMB, enable_veritesting=<span class="literal">True</span>) <span class="comment"># 不太明白这个veritesting是干嘛的，不加对于这个程序也能求解出结果</span></span><br><span class="line">found = sim.found[<span class="number">0</span>]</span><br><span class="line">flag3 = []</span><br><span class="line"><span class="comment"># temp = found.solver.eval(found.stack_pop())</span></span><br><span class="line">temp = found.solver.<span class="built_in">eval</span>(phase_3_flag)</span><br><span class="line"><span class="comment"># 将高位和低位分开</span></span><br><span class="line">low = temp &amp; <span class="number">0xffffffff</span></span><br><span class="line">flag3.append(<span class="built_in">str</span>(low))</span><br><span class="line">high = temp &gt;&gt; <span class="number">32</span> &amp; <span class="number">0xffffffff</span></span><br><span class="line">flag3.append(<span class="built_in">str</span>(high))</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot; &quot;</span>.join(flag3))</span><br><span class="line"></span><br><span class="line"><span class="comment"># phase 4</span></span><br><span class="line"><span class="comment"># 配合程序理解，来符号化执行程序</span></span><br><span class="line">phase_4 = BASE_ADDR + <span class="number">0x1715</span></span><br><span class="line">target_4 = BASE_ADDR + <span class="number">0x1732</span></span><br><span class="line"></span><br><span class="line">phase_4_flag = claripy.BVS(<span class="string">&#x27;phase_4_flag&#x27;</span>, <span class="number">32</span>)</span><br><span class="line">state = proj.factory.blank_state(addr=phase_4, remove_options=&#123;angr.options.LAZY_SOLVES&#125;)</span><br><span class="line">state.regs.edi = phase_4_flag</span><br><span class="line">state.regs.esi = <span class="number">0</span></span><br><span class="line">state.regs.edx = <span class="number">0x0e</span></span><br><span class="line"></span><br><span class="line">sim = proj.factory.simgr(state)</span><br><span class="line">sim.explore(find=target_4,avoid=BOMB)</span><br><span class="line">found = sim.found[<span class="number">0</span>]</span><br><span class="line">flag = <span class="number">10</span> - found.solver.<span class="built_in">eval</span>(phase_4_flag) <span class="comment">#结合程序分析，但是看不懂那个逆向后的程序算法</span></span><br><span class="line"><span class="built_in">print</span>(flag)</span><br><span class="line"></span><br><span class="line"><span class="comment"># phase 5</span></span><br><span class="line">phase_5 = BASE_ADDR + <span class="number">0x17f5</span></span><br><span class="line">target_5 = BASE_ADDR + <span class="number">0x184E</span></span><br><span class="line">phase_5_flag = claripy.BVS(<span class="string">&#x27;phase_3_flag&#x27;</span>,<span class="number">64</span>)</span><br><span class="line"></span><br><span class="line">state = proj.factory.blank_state(addr=phase_5, remove_options=&#123;angr.options.LAZY_SOLVES&#125;)</span><br><span class="line">state.stack_push(phase_5_flag)</span><br><span class="line">sim = proj.factory.simgr(state)</span><br><span class="line">sim.explore(find=target_5, avoid=BOMB)</span><br><span class="line">found = sim.found[<span class="number">0</span>]</span><br><span class="line">flag5 = []</span><br><span class="line"><span class="comment"># temp = found.solver.eval(found.stack_pop())</span></span><br><span class="line">temp = found.solver.<span class="built_in">eval</span>(phase_5_flag)</span><br><span class="line"><span class="comment"># 将高位和低位分开</span></span><br><span class="line">low = temp &amp; <span class="number">0xffffffff</span></span><br><span class="line">flag5.append(<span class="built_in">str</span>(low))</span><br><span class="line">high = temp &gt;&gt; <span class="number">32</span> &amp; <span class="number">0xffffffff</span></span><br><span class="line">flag5.append(<span class="built_in">str</span>(high))</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot; &quot;</span>.join(flag5))</span><br><span class="line"></span><br><span class="line"><span class="comment"># phase 6</span></span><br><span class="line">phase_6 = BASE_ADDR + <span class="number">0x185B</span></span><br><span class="line">target_6_A = BASE_ADDR + <span class="number">0x1906</span></span><br><span class="line">target_6_B = BASE_ADDR + <span class="number">0x1971</span> <span class="comment"># add rsp, 60h</span></span><br><span class="line"></span><br><span class="line">READ_SIX_NUMBERS = BASE_ADDR + <span class="number">0x1c11</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">read_six_numbers</span>(angr.SimProcedure):</span><br><span class="line">    answer_inits = []</span><br><span class="line">    <span class="comment"># int_addrs = []</span></span><br><span class="line">    <span class="comment"># run函数的参数, 就是要hook的函数的参数，顺序和数量要一致。</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">run</span>(<span class="params">self, str_addr, int_addr</span>):</span><br><span class="line">        <span class="comment"># self.int_addrs.append(int_addr) # 不知道干嘛用的，目前在phase2中没影响</span></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">6</span>):</span><br><span class="line">            bvs = self.state.solver.BVS(<span class="string">&quot;phase_6_int_%d&quot;</span> % i, <span class="number">32</span>)</span><br><span class="line">            self.answer_inits.append(bvs)</span><br><span class="line">            self.state.mem[int_addr].<span class="built_in">int</span>.array(<span class="number">6</span>)[i] = bvs</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="number">6</span></span><br><span class="line">    </span><br><span class="line">proj.hook(READ_SIX_NUMBERS,read_six_numbers())</span><br><span class="line"></span><br><span class="line">state = proj.factory.blank_state(addr=phase_6, remove_options=&#123;angr.options.LAZY_SOLVES&#125;)</span><br><span class="line">sim = proj.factory.simgr(state)</span><br><span class="line"></span><br><span class="line"><span class="comment"># while len(sim.active)&gt;0:</span></span><br><span class="line">sim.explore(find=target_6_A,avoid=BOMB)</span><br><span class="line"><span class="built_in">print</span>(sim)</span><br><span class="line"><span class="comment"># print(sim.found)</span></span><br><span class="line">founds = sim.found</span><br><span class="line"><span class="keyword">for</span> found <span class="keyword">in</span> founds:</span><br><span class="line">    sim = proj.factory.simgr(found)</span><br><span class="line">    sim.explore(find=target_6_B, avoid=BOMB)</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(sim.found) &gt;<span class="number">0</span> :</span><br><span class="line">        found = sim.found[<span class="number">0</span>]</span><br><span class="line">        <span class="keyword">break</span></span><br><span class="line">flag6 = [<span class="built_in">str</span>(found.solver.<span class="built_in">eval</span>(i)) <span class="keyword">for</span> i <span class="keyword">in</span> read_six_numbers.answer_inits]</span><br><span class="line">flag6 = <span class="string">&quot; &quot;</span>.join(flag6)</span><br><span class="line"><span class="built_in">print</span>(flag6)</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/angr/" rel="tag"># angr</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/12/20/UEFI%E8%B0%83%E6%9F%A5%E5%AD%A6%E4%B9%A0/" rel="prev" title="UEFI调查学习">
+      <i class="fa fa-chevron-left"></i> UEFI调查学习
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Reverse-Engineering-3201-Symbolic-Analysis"><span class="nav-number">1.</span> <span class="nav-text">Reverse Engineering 3201: Symbolic Analysis</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Binary-Bomb"><span class="nav-number">1.1.</span> <span class="nav-text">Binary Bomb</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#phase-1"><span class="nav-number">1.1.1.</span> <span class="nav-text">phase_1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#phase-2"><span class="nav-number">1.1.2.</span> <span class="nav-text">phase_2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#phase-3"><span class="nav-number">1.1.3.</span> <span class="nav-text">phase_3</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#phase-4"><span class="nav-number">1.1.4.</span> <span class="nav-text">phase_4</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#phase-5"><span class="nav-number">1.1.5.</span> <span class="nav-text">phase_5</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#phase-6"><span class="nav-number">1.1.6.</span> <span class="nav-text">phase_6</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">1.2.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="郭小白QAQ"
+      src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+  <p class="site-author-name" itemprop="name">郭小白QAQ</p>
+  <div class="site-description" itemprop="description">精彩不亮丽，起落是无常</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">64</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/guoxb0_0@qq.com" title="E-Mail → guoxb0_0@qq.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">郭小白QAQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">122k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">7:24</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+<script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
+
+<script>
+var options = {
+  bottom: '64px',
+  right: 'unset',
+  left: '32px',
+  time: '0.5s',
+  mixColor: 'transparent',
+  backgroundColor: 'transparent',
+  buttonColorDark: '#100f2c',
+  buttonColorLight: '#fff',
+  saveInCookies: true,
+  label: '🌓',
+  autoMatchOsTheme: true
+}
+const darkmode = new Darkmode(options);
+window.darkmode = darkmode;
+darkmode.showWidget();
+</script>
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div id="moon-menu-item-back2bottom" class="moon-menu-item">
+      <i class='fas fa-chevron-down'></i>    </div>
+    
+    <div id="moon-menu-item-back2top" class="moon-menu-item">
+      <i class='fas fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button">
+    <svg class="moon-menu-bg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+    </svg>
+    <div class="moon-menu-content">
+      <div class="moon-menu-icon"><i class='fas fa-ellipsis-v'></i></div>
+      <div class="moon-menu-text"></div>
+    </div>
+  </div>
+</div><script src="/js/injector.js"></script>
+</body>
+</html>

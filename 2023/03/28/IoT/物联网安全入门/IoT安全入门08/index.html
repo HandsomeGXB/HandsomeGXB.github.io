@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.1.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"guoxb.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":true},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":false,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="第八章 物联网安全防护0x01 物联网各层防御措施讲解1. 硬件层的防御措施 使用独特的螺丝钉或使用其他方法将硬件的各个部分组合">
+<meta property="og:type" content="article">
+<meta property="og:title" content="IoT安全入门08">
+<meta property="og:url" content="http://guoxb.top/2023/03/28/IoT/%E7%89%A9%E8%81%94%E7%BD%91%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A8/IoT%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A808/index.html">
+<meta property="og:site_name" content="GuoXB&#39;s Blog">
+<meta property="og:description" content="第八章 物联网安全防护0x01 物联网各层防御措施讲解1. 硬件层的防御措施 使用独特的螺丝钉或使用其他方法将硬件的各个部分组合">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220830225934380.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220830230135190.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220830230306314.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220830230418950.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220830230527627.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316145332953.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316150011002.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316151102565.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316152609136.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316160738529.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316161114759.png">
+<meta property="article:published_time" content="2023-03-28T14:04:12.000Z">
+<meta property="article:modified_time" content="2024-02-14T06:43:23.040Z">
+<meta property="article:author" content="郭小白QAQ">
+<meta property="article:tag" content="普通人">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220830225934380.png">
+
+<link rel="canonical" href="http://guoxb.top/2023/03/28/IoT/%E7%89%A9%E8%81%94%E7%BD%91%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A8/IoT%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A808/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+<link rel="stylesheet" type="text/css" href="/css/injector/main.css" /><link rel="preload" as="style" href="/css/injector/light.css" /><link rel="preload" as="style" href="/css/injector/dark.css" />
+  <title>IoT安全入门08 | GuoXB's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">GuoXB's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2023/03/28/IoT/%E7%89%A9%E8%81%94%E7%BD%91%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A8/IoT%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A808/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+      <meta itemprop="name" content="郭小白QAQ">
+      <meta itemprop="description" content="精彩不亮丽，起落是无常">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GuoXB's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          IoT安全入门08
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-03-28 22:04:12" itemprop="dateCreated datePublished" datetime="2023-03-28T22:04:12+08:00">2023-03-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2024-02-14 14:43:23" itemprop="dateModified" datetime="2024-02-14T14:43:23+08:00">2024-02-14</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/IoT%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A8/" itemprop="url" rel="index"><span itemprop="name">IoT安全入门</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>7 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="第八章-物联网安全防护"><a href="#第八章-物联网安全防护" class="headerlink" title="第八章 物联网安全防护"></a>第八章 物联网安全防护</h1><h2 id="0x01-物联网各层防御措施讲解"><a href="#0x01-物联网各层防御措施讲解" class="headerlink" title="0x01 物联网各层防御措施讲解"></a>0x01 物联网各层防御措施讲解</h2><h3 id="1-硬件层的防御措施"><a href="#1-硬件层的防御措施" class="headerlink" title="1. 硬件层的防御措施"></a>1. 硬件层的防御措施</h3><ul>
+<li>使用独特的螺丝钉或使用其他方法将硬件的各个部分组合</li>
+</ul>
+<img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220830225934380.png" alt="image-20220830225934380" style="zoom:80%;" />
+
+<span id="more"></span>
+
+<ul>
+<li>隐藏主控芯片引脚和型号信息</li>
+</ul>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220830230135190.png" alt="image-20220830230135190"></p>
+<ul>
+<li>固件分离式存储</li>
+</ul>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220830230306314.png" alt="image-20220830230306314"></p>
+<ul>
+<li>隐藏调试接口</li>
+</ul>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220830230418950.png" alt="image-20220830230418950"></p>
+<ul>
+<li>防止侧信道攻击</li>
+</ul>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20220830230527627.png" alt="image-20220830230527627"></p>
+<h3 id="2-固件层的防御措施"><a href="#2-固件层的防御措施" class="headerlink" title="2. 固件层的防御措施"></a>2. 固件层的防御措施</h3><h4 id="2-1-为什么进行固件签名"><a href="#2-1-为什么进行固件签名" class="headerlink" title="2.1 为什么进行固件签名"></a>2.1 为什么进行固件签名</h4><ul>
+<li><p>攻击者在其他入侵系统尝试失败后可能利用的攻击媒介之一，是让系统拥有者安装更改过的应用、固件或者其他软件模块。修改后的软件可能包含具有特定用途的恶意代码。一个常见建议是不安装来源不完全信任的软件。</p>
+</li>
+<li><p>签名固件由软件供应商实施，它使用私钥（密码）来对固件映像进行签名。当固件附加有此签名时，设备将在安装前验证固件。如果设备侦测到固件完整性受损，固件升级将被拒绝。</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316145332953.png" alt="image-20230316145332953"></p>
+</li>
+</ul>
+<h4 id="2-2-固件加密"><a href="#2-2-固件加密" class="headerlink" title="2.2 固件加密"></a>2.2 固件加密</h4><p>　　设备的安全性分析是 IoT 安全审计中非常重要的部分。获取固件是分析中的众多挑战之一，你可以通过多种技术来做到这一点。拥有固件后，就可以对其进行更仔细的分析。供应商已开始以加密的形式在服务器上存储固件，因此，即使你获取了固件，在进行进一步分析之前仍然需要对其进行解密。</p>
+<h4 id="2-3-固件混淆"><a href="#2-3-固件混淆" class="headerlink" title="2.3 固件混淆"></a>2.3 固件混淆</h4><ul>
+<li>代码混淆（obfuscation）是将计算机程序的代码，转换成功能上等价，但是难于阅读和理解的形式的行为。</li>
+<li>代码混淆可以用于程序源代码，也可以用于程序编译而成的中间代码。执行代码混淆的程序被称为代码混淆器。目前已经存在许多种功能各异的代码混淆器。</li>
+</ul>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316150011002.png" alt="image-20230316150011002"></p>
+<h4 id="2-4-安全启动"><a href="#2-4-安全启动" class="headerlink" title="2.4 安全启动"></a>2.4 安全启动</h4><ul>
+<li>在传输期间能够物理访问设备的攻击者可能会执行攻击，例如：降低设备的启动分区，从而绕过固件完整性检查，以便在部署设备之前安装已更改的恶意固件。</li>
+<li>安全启动是一种由加密验证软件的完整（性）的链组成的引导过程，可从不可变的内存（引导ROM）开始。安全启动基于签名固件的使用，可确保设备仅能使用已授权的固件启动。</li>
+<li>启动ROM验证启动程序时启动引导过程。安全引导，然后以实时的方式验证从山村中加载的每个固件块的嵌入式签名。启动ROM时信任的根，仅在验证每个签名时，才会继续执行启动过程。链的每个部分都验证下一部分，导致已验证的Linux内核和经验证的根文件系统。</li>
+</ul>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316151102565.png" alt="image-20230316151102565"></p>
+<h4 id="2-5-TPM"><a href="#2-5-TPM" class="headerlink" title="2.5 TPM"></a>2.5 TPM</h4><ul>
+<li>传统上来讲，TPM是焊接到计算机主板的离散芯片。此类实现允许计算机的原始设备制造商（OEM）评估和认证独立于系统其他部分的TPM。尽管离散TPM实现仍然很常见，但他们对于较小或电源消耗低的集成设备可能有问题。某些较新的TPM实现将TPM功能集成到与其他平台组件相同的芯片集中，同时仍然提供类似于离散TPM芯片的逻辑分离。</li>
+<li>TPM是被动的：他们接收命令并返回相应。若要实现TPM的完整优势，OEM必须仔细地将系统硬件和固件与TPM集成，以向其发送命令，并对它的响应做出反应。</li>
+</ul>
+<h4 id="2-6-MCU"><a href="#2-6-MCU" class="headerlink" title="2.6 MCU"></a>2.6 MCU</h4><p>主要针对引导过程中的恶意代码</p>
+<ul>
+<li>对于从外部SPI闪存启动的操作系统，Microchip技术引入了其最新的加密微控制器（MCU），以防止rootkit和bootkit恶意软件，从而实现了安全引导，硬件根信任保护。</li>
+<li>使用硬件根信任的安全引导对于在系统中加载威胁之前保护系统免受威胁至关重要，并且只允许系统使用制造商信任的软件引导。</li>
+</ul>
+<h3 id="3-嵌入式WEB的防御措施"><a href="#3-嵌入式WEB的防御措施" class="headerlink" title="3. 嵌入式WEB的防御措施"></a>3. 嵌入式WEB的防御措施</h3><h4 id="3-1-及时升级更新固件"><a href="#3-1-及时升级更新固件" class="headerlink" title="3.1 及时升级更新固件"></a>3.1 及时升级更新固件</h4><p>　　设备固件应即使检测新版本，老旧的固件存在漏洞的概率是很大的，如果厂商通知旧版固件存在安全隐患，更应该立即更新或安装补丁，防止被恶意利用。</p>
+<p>　　固件开发人员应密切关注gohead lighttpd等webServer的漏洞发布并及时更新</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316152609136.png" alt="image-20230316152609136"></p>
+<h4 id="3-2-对传递的数据转义"><a href="#3-2-对传递的数据转义" class="headerlink" title="3.2 对传递的数据转义"></a>3.2 对传递的数据转义</h4><p>　　防xss是后端人员的责任，后端应该在所有用户提交数据的接口，对敏感特殊字符进行屏蔽或转义，才能进行下一步操作。</p>
+<p>　　所有要插入到页面上的数据，都要通过一个敏感字符过滤函数的转义，过滤掉通用的敏感字符后，才可以插入到页面中。</p>
+<h4 id="3-3-不预留后门"><a href="#3-3-不预留后门" class="headerlink" title="3.3 不预留后门"></a>3.3 不预留后门</h4><p>　　Cisco、TP-Link、Netgear、Tenda、D-link等主流网络设备生产厂商的多款路由器产品，均存在远程命令执行，超级用户权限等预置后门。</p>
+<p>　　虽然方便管理等其他用途，但是黑客可借此取得路由器的远程控制权，进而发起DNS劫持、窃取信息等攻击。</p>
+<p>　　如果发现厂商预留后门，应立即检测固件升级，或限制网络访问。</p>
+<h3 id="4-协议层的防御措施"><a href="#4-协议层的防御措施" class="headerlink" title="4. 协议层的防御措施"></a>4. 协议层的防御措施</h3><h4 id="4-1-wifi"><a href="#4-1-wifi" class="headerlink" title="4.1 wifi"></a>4.1 wifi</h4><ul>
+<li>wifi开发使用最新版协议栈，ap 使用 wpa&#x2F;wpa2 模式并且密码长度设置成16位以上，使用数字、字母、大小写、特殊符号混排形式。</li>
+<li>在设置WIFI时，如果禁用”允许SSID广播”功能，也会增加WIFI的安全性，防止恶意链接攻击设备。</li>
+</ul>
+<h4 id="4-2-Zigbee"><a href="#4-2-Zigbee" class="headerlink" title="4.2 Zigbee"></a>4.2 Zigbee</h4><ul>
+<li>Zigbee通信信任中心链接密钥不使用默认值</li>
+<li>使用高级安全模式，预安装密钥</li>
+<li>使用最新版本协议栈</li>
+</ul>
+<h4 id="4-3-BLE"><a href="#4-3-BLE" class="headerlink" title="4.3 BLE"></a>4.3 BLE</h4><ul>
+<li>通信连接不使用Just Work模式</li>
+<li>发现通报漏洞及时给设备升级固件</li>
+<li>在应用层对数据加密再进行传输</li>
+</ul>
+<h4 id="4-4-RFID-Mqtt"><a href="#4-4-RFID-Mqtt" class="headerlink" title="4.4 RFID&amp;Mqtt"></a>4.4 RFID&amp;Mqtt</h4><ul>
+<li>使用安全性更高的cpu卡</li>
+<li>对卡内数据进行加密存储</li>
+<li>及时对服务器内存储数据检查</li>
+<li>mqtt使用tls对数据加密通信</li>
+</ul>
+<h3 id="5-应用层的防御措施"><a href="#5-应用层的防御措施" class="headerlink" title="5.应用层的防御措施"></a>5.应用层的防御措施</h3><h4 id="5-1-签名验证"><a href="#5-1-签名验证" class="headerlink" title="5.1 签名验证"></a>5.1 签名验证</h4><p>为了防止自己的应用被反编译后重新打包，可以采取运行时进行签名校验。PackageManager类中提供查看当前程序签名的方法。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Signature[]=context.getPackageManager().getPackageInfo(packageName, PackageManager.GET_SIGNATURES).signatures</span><br></pre></td></tr></table></figure>
+
+<h4 id="5-2-应用加固"><a href="#5-2-应用加固" class="headerlink" title="5.2 应用加固"></a>5.2 应用加固</h4><p>可以使用360 爱加密等服务商提供的加壳服务，或对应用内程序以及资源以及字符串混淆与加密。</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316160738529.png" alt="image-20230316160738529"></p>
+<h4 id="5-3-SSL-Pinning"><a href="#5-3-SSL-Pinning" class="headerlink" title="5.3 SSL-Pinning"></a>5.3 SSL-Pinning</h4><p>在开发时就服务端证书一块打包到客户端里。在HTTPS建立时与服务端返回的证书比对一致性，如果识别出中间人攻击后直接在客户端侧中止连接。</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230316161114759.png" alt="image-20230316161114759"></p>
+<h4 id="5-4-发布release版本"><a href="#5-4-发布release版本" class="headerlink" title="5.4 发布release版本"></a>5.4 发布release版本</h4><p>在应用发布时编译为release版本，debug版本数据包防止外流</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">android:exported=false</span><br><span class="line">android:debugged=&quot;false&quot;</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/03/28/IoT/%E7%89%A9%E8%81%94%E7%BD%91%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A8/IoT%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A807/" rel="prev" title="IoT安全入门07">
+      <i class="fa fa-chevron-left"></i> IoT安全入门07
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/03/30/IoT/IoT%20%E8%AE%BE%E5%A4%87%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/Sapido%20RB-1732%E8%B7%AF%E7%94%B1%E5%99%A8%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E/" rel="next" title="Sapido RB-1732路由器命令执行漏洞">
+      Sapido RB-1732路由器命令执行漏洞 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AC%AC%E5%85%AB%E7%AB%A0-%E7%89%A9%E8%81%94%E7%BD%91%E5%AE%89%E5%85%A8%E9%98%B2%E6%8A%A4"><span class="nav-number">1.</span> <span class="nav-text">第八章 物联网安全防护</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-%E7%89%A9%E8%81%94%E7%BD%91%E5%90%84%E5%B1%82%E9%98%B2%E5%BE%A1%E6%8E%AA%E6%96%BD%E8%AE%B2%E8%A7%A3"><span class="nav-number">1.1.</span> <span class="nav-text">0x01 物联网各层防御措施讲解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E7%A1%AC%E4%BB%B6%E5%B1%82%E7%9A%84%E9%98%B2%E5%BE%A1%E6%8E%AA%E6%96%BD"><span class="nav-number">1.1.1.</span> <span class="nav-text">1. 硬件层的防御措施</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E5%9B%BA%E4%BB%B6%E5%B1%82%E7%9A%84%E9%98%B2%E5%BE%A1%E6%8E%AA%E6%96%BD"><span class="nav-number">1.1.2.</span> <span class="nav-text">2. 固件层的防御措施</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%9B%E8%A1%8C%E5%9B%BA%E4%BB%B6%E7%AD%BE%E5%90%8D"><span class="nav-number">1.1.2.1.</span> <span class="nav-text">2.1 为什么进行固件签名</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-%E5%9B%BA%E4%BB%B6%E5%8A%A0%E5%AF%86"><span class="nav-number">1.1.2.2.</span> <span class="nav-text">2.2 固件加密</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-%E5%9B%BA%E4%BB%B6%E6%B7%B7%E6%B7%86"><span class="nav-number">1.1.2.3.</span> <span class="nav-text">2.3 固件混淆</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-4-%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8"><span class="nav-number">1.1.2.4.</span> <span class="nav-text">2.4 安全启动</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-5-TPM"><span class="nav-number">1.1.2.5.</span> <span class="nav-text">2.5 TPM</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-6-MCU"><span class="nav-number">1.1.2.6.</span> <span class="nav-text">2.6 MCU</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E5%B5%8C%E5%85%A5%E5%BC%8FWEB%E7%9A%84%E9%98%B2%E5%BE%A1%E6%8E%AA%E6%96%BD"><span class="nav-number">1.1.3.</span> <span class="nav-text">3. 嵌入式WEB的防御措施</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-%E5%8F%8A%E6%97%B6%E5%8D%87%E7%BA%A7%E6%9B%B4%E6%96%B0%E5%9B%BA%E4%BB%B6"><span class="nav-number">1.1.3.1.</span> <span class="nav-text">3.1 及时升级更新固件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-%E5%AF%B9%E4%BC%A0%E9%80%92%E7%9A%84%E6%95%B0%E6%8D%AE%E8%BD%AC%E4%B9%89"><span class="nav-number">1.1.3.2.</span> <span class="nav-text">3.2 对传递的数据转义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-%E4%B8%8D%E9%A2%84%E7%95%99%E5%90%8E%E9%97%A8"><span class="nav-number">1.1.3.3.</span> <span class="nav-text">3.3 不预留后门</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E5%8D%8F%E8%AE%AE%E5%B1%82%E7%9A%84%E9%98%B2%E5%BE%A1%E6%8E%AA%E6%96%BD"><span class="nav-number">1.1.4.</span> <span class="nav-text">4. 协议层的防御措施</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1-wifi"><span class="nav-number">1.1.4.1.</span> <span class="nav-text">4.1 wifi</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2-Zigbee"><span class="nav-number">1.1.4.2.</span> <span class="nav-text">4.2 Zigbee</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-3-BLE"><span class="nav-number">1.1.4.3.</span> <span class="nav-text">4.3 BLE</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-4-RFID-Mqtt"><span class="nav-number">1.1.4.4.</span> <span class="nav-text">4.4 RFID&amp;Mqtt</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-%E5%BA%94%E7%94%A8%E5%B1%82%E7%9A%84%E9%98%B2%E5%BE%A1%E6%8E%AA%E6%96%BD"><span class="nav-number">1.1.5.</span> <span class="nav-text">5.应用层的防御措施</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#5-1-%E7%AD%BE%E5%90%8D%E9%AA%8C%E8%AF%81"><span class="nav-number">1.1.5.1.</span> <span class="nav-text">5.1 签名验证</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-2-%E5%BA%94%E7%94%A8%E5%8A%A0%E5%9B%BA"><span class="nav-number">1.1.5.2.</span> <span class="nav-text">5.2 应用加固</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-3-SSL-Pinning"><span class="nav-number">1.1.5.3.</span> <span class="nav-text">5.3 SSL-Pinning</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-4-%E5%8F%91%E5%B8%83release%E7%89%88%E6%9C%AC"><span class="nav-number">1.1.5.4.</span> <span class="nav-text">5.4 发布release版本</span></a></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="郭小白QAQ"
+      src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+  <p class="site-author-name" itemprop="name">郭小白QAQ</p>
+  <div class="site-description" itemprop="description">精彩不亮丽，起落是无常</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">64</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/guoxb0_0@qq.com" title="E-Mail → guoxb0_0@qq.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">郭小白QAQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">122k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">7:24</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+<script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
+
+<script>
+var options = {
+  bottom: '64px',
+  right: 'unset',
+  left: '32px',
+  time: '0.5s',
+  mixColor: 'transparent',
+  backgroundColor: 'transparent',
+  buttonColorDark: '#100f2c',
+  buttonColorLight: '#fff',
+  saveInCookies: true,
+  label: '🌓',
+  autoMatchOsTheme: true
+}
+const darkmode = new Darkmode(options);
+window.darkmode = darkmode;
+darkmode.showWidget();
+</script>
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div id="moon-menu-item-back2bottom" class="moon-menu-item">
+      <i class='fas fa-chevron-down'></i>    </div>
+    
+    <div id="moon-menu-item-back2top" class="moon-menu-item">
+      <i class='fas fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button">
+    <svg class="moon-menu-bg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+    </svg>
+    <div class="moon-menu-content">
+      <div class="moon-menu-icon"><i class='fas fa-ellipsis-v'></i></div>
+      <div class="moon-menu-text"></div>
+    </div>
+  </div>
+</div><script src="/js/injector.js"></script>
+</body>
+</html>

@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.1.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"guoxb.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":true},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":false,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="第七章 物联网渗透测试之移动应用0x01 安卓应用程序分析1. Android apk安装包分析1.1 AndroidAndroid是一个开源的，基于Linux的移动设备操作系统，如智能手机和平板电脑。它是由谷歌及其他一些公司带领的开放手机联盟发行和开发的。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="IoT安全入门07">
+<meta property="og:url" content="http://guoxb.top/2023/03/28/IoT/%E7%89%A9%E8%81%94%E7%BD%91%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A8/IoT%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A807/index.html">
+<meta property="og:site_name" content="GuoXB&#39;s Blog">
+<meta property="og:description" content="第七章 物联网渗透测试之移动应用0x01 安卓应用程序分析1. Android apk安装包分析1.1 AndroidAndroid是一个开源的，基于Linux的移动设备操作系统，如智能手机和平板电脑。它是由谷歌及其他一些公司带领的开放手机联盟发行和开发的。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230320123739350.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230320123939180.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230320125146214.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230320182754339.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230320183606467.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230320184338440.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230320184824932.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230320185521354.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230320185635950.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230320190042925.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230320204911577.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230320210545112.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230320211012277.png">
+<meta property="article:published_time" content="2023-03-28T14:04:03.000Z">
+<meta property="article:modified_time" content="2024-02-14T06:43:15.657Z">
+<meta property="article:author" content="郭小白QAQ">
+<meta property="article:tag" content="普通人">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230320123739350.png">
+
+<link rel="canonical" href="http://guoxb.top/2023/03/28/IoT/%E7%89%A9%E8%81%94%E7%BD%91%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A8/IoT%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A807/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+<link rel="stylesheet" type="text/css" href="/css/injector/main.css" /><link rel="preload" as="style" href="/css/injector/light.css" /><link rel="preload" as="style" href="/css/injector/dark.css" />
+  <title>IoT安全入门07 | GuoXB's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">GuoXB's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2023/03/28/IoT/%E7%89%A9%E8%81%94%E7%BD%91%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A8/IoT%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A807/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+      <meta itemprop="name" content="郭小白QAQ">
+      <meta itemprop="description" content="精彩不亮丽，起落是无常">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GuoXB's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          IoT安全入门07
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-03-28 22:04:03" itemprop="dateCreated datePublished" datetime="2023-03-28T22:04:03+08:00">2023-03-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2024-02-14 14:43:15" itemprop="dateModified" datetime="2024-02-14T14:43:15+08:00">2024-02-14</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/IoT%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A8/" itemprop="url" rel="index"><span itemprop="name">IoT安全入门</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="第七章-物联网渗透测试之移动应用"><a href="#第七章-物联网渗透测试之移动应用" class="headerlink" title="第七章 物联网渗透测试之移动应用"></a>第七章 物联网渗透测试之移动应用</h1><h2 id="0x01-安卓应用程序分析"><a href="#0x01-安卓应用程序分析" class="headerlink" title="0x01 安卓应用程序分析"></a>0x01 安卓应用程序分析</h2><h3 id="1-Android-apk安装包分析"><a href="#1-Android-apk安装包分析" class="headerlink" title="1. Android apk安装包分析"></a>1. Android apk安装包分析</h3><h4 id="1-1-Android"><a href="#1-1-Android" class="headerlink" title="1.1 Android"></a>1.1 Android</h4><p>Android是一个开源的，基于Linux的移动设备操作系统，如智能手机和平板电脑。它是由谷歌及其他一些公司带领的开放手机联盟发行和开发的。</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230320123739350.png" alt="image-20230320123739350"></p>
+<span id="more"></span>
+
+<h4 id="1-2-Android应用组件"><a href="#1-2-Android应用组件" class="headerlink" title="1.2 Android应用组件"></a>1.2 Android应用组件</h4><p>Android开发四大组件分别是：</p>
+<ul>
+<li>活动（Activity）最基础</li>
+<li>服务（Service）后台</li>
+<li>广播接收器（BroadcastReceiver）</li>
+<li>内容提供者（Content Provider）不同APP之间数据传递共享</li>
+</ul>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230320123939180.png" alt="image-20230320123939180"></p>
+<h4 id="1-3-Android安装包"><a href="#1-3-Android安装包" class="headerlink" title="1.3 Android安装包"></a>1.3 Android安装包</h4><p>一个Android应用程序的代码想要在Android设备上运行，必须先进行编译，然后被打包成为一个可被系统所能识别的文件</p>
+<p>Android设备可以识别的安装包是.APK(Android application package)格式，可用于分发和安装移动应用及中间件。</p>
+<p>一个APK安装包内包含：</p>
+<ul>
+<li><p>被编译的源代码文件</p>
+</li>
+<li><p>文件资源</p>
+</li>
+<li><p>原生资源文件</p>
+</li>
+<li><p>证书（签名）</p>
+</li>
+<li><p>清单文件</p>
+</li>
+</ul>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230320125146214.png" alt="image-20230320125146214"></p>
+<h3 id="2-静态反编译工具的使用"><a href="#2-静态反编译工具的使用" class="headerlink" title="2. 静态反编译工具的使用"></a>2. 静态反编译工具的使用</h3><h4 id="2-1-工具介绍"><a href="#2-1-工具介绍" class="headerlink" title="2.1 工具介绍"></a>2.1 工具介绍</h4><p>高级语言源程序经过编译变成可执行文件，反编译就是逆过程</p>
+<ul>
+<li><p>Apktool</p>
+<p>反编译资源和dex文件，并可以将反编译后的项目重新打包成apk</p>
+<p>github开源下载</p>
+</li>
+<li><p>apksigner</p>
+<p>apk签名&#x2F;验证 工具</p>
+</li>
+<li><p>dex2jar</p>
+<p>将dex转化为.jar</p>
+<p>github开源下载</p>
+</li>
+<li><p>jd-gui</p>
+<p>查看.jar源码</p>
+</li>
+<li><p>jadx</p>
+<p>一款功能强大的快速安卓反编译工具</p>
+</li>
+</ul>
+<h3 id="3-smali语法简介"><a href="#3-smali语法简介" class="headerlink" title="3. smali语法简介"></a>3. smali语法简介</h3><p>Dalvik VM是在Android系统上运行Android程序的虚拟机，其指令集是基于寄存器架构的，执行特有的文件格式（dex字节码）来完成对象生命周期管理、堆栈管理、线程管理、安全异常管理、垃圾回收等重要功能。</p>
+<p>Smali是用于Dalivk的反汇编程序的实现。Smali支持注解，调试信息，行数信息等基本Java的基本特征，很接近Java编译在JVM上的中间语言。</p>
+<p>从Dalvik VM和JVM的编译过程分析，他们的编译过程如下：</p>
+<p>JVM：.java -&gt; .class -&gt; .jar</p>
+<p>Dalvik VM：.java -&gt; .class -&gt;  .dex</p>
+<h4 id="3-1-smali的数据类型"><a href="#3-1-smali的数据类型" class="headerlink" title="3.1 smali的数据类型"></a>3.1 smali的数据类型</h4><p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230320182754339.png" alt="image-20230320182754339"></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230320183606467.png" alt="image-20230320183606467"></p>
+<h4 id="3-2-smali函数定义"><a href="#3-2-smali函数定义" class="headerlink" title="3.2 smali函数定义"></a>3.2 smali函数定义</h4><p>函数的定义一般为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">函数名（参数类型1 参数类型2...）返回值类型</span><br></pre></td></tr></table></figure>
+
+<p>基本数据类型的参数与参数之间没有任何分隔符，对象数据类型使用<code>;</code>结束</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230320184338440.png" alt="image-20230320184338440"></p>
+<h4 id="3-3-smali的寄存器"><a href="#3-3-smali的寄存器" class="headerlink" title="3.3 smali的寄存器"></a>3.3 smali的寄存器</h4><table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>v0</td>
+<td></td>
+<td>第一个本地寄存器</td>
+</tr>
+<tr>
+<td>v1</td>
+<td></td>
+<td>第二个本地寄存器</td>
+</tr>
+<tr>
+<td>v2</td>
+<td>p0</td>
+<td>第一个参数寄存器</td>
+</tr>
+<tr>
+<td>v3</td>
+<td>p1</td>
+<td>第二个参数寄存器</td>
+</tr>
+</tbody></table>
+<h4 id="3-4-smali代码举例"><a href="#3-4-smali代码举例" class="headerlink" title="3.4 smali代码举例"></a>3.4 smali代码举例</h4><p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230320184824932.png" alt="image-20230320184824932"></p>
+<h2 id="0x02-ios应用程序分析"><a href="#0x02-ios应用程序分析" class="headerlink" title="0x02 ios应用程序分析"></a>0x02 ios应用程序分析</h2><h3 id="IPA脱壳"><a href="#IPA脱壳" class="headerlink" title="IPA脱壳"></a>IPA脱壳</h3><p>从APPStore商店下载安装的APP默认都被苹果加了一层壳，加了壳后我们就无法正常查看程序的运行逻辑了</p>
+<p>需要工具：</p>
+<ul>
+<li>越狱的IOS设备</li>
+<li>Clutch：<a target="_blank" rel="noopener" href="https://github.com/KJCracks/Clutch/releases">https://github.com/KJCracks/Clutch/releases</a></li>
+</ul>
+<p>通过ssh远程连接</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230320185521354.png" alt="image-20230320185521354"></p>
+<p>显示当前应用：<code>Clutch -l</code></p>
+<p>选择指定应用进行脱壳：<code>Clutch -d packageName</code></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230320185635950.png" alt="image-20230320185635950"></p>
+<p>将脱壳后的安装包导出</p>
+<h3 id="MobSF"><a href="#MobSF" class="headerlink" title="MobSF"></a>MobSF</h3><p>MobSF是Mobile Security Framework的缩写，是一个移动端应用安全问题检出的框架和工具，支持Linux&#x2F;Windows&#x2F;Mac，能够执行动态和静态的恶意软件的分析和检测，支持Android和ios移动应用。</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230320190042925.png" alt="image-20230320190042925"></p>
+<p>GitHub仓库地址：<a target="_blank" rel="noopener" href="https://github.com/MobSF/Mobile-Security-Framework-MobSF.git">https://github.com/MobSF/Mobile-Security-Framework-MobSF.git</a></p>
+<h2 id="0x03-Android动态调试分析工具使用"><a href="#0x03-Android动态调试分析工具使用" class="headerlink" title="0x03 Android动态调试分析工具使用"></a>0x03 Android动态调试分析工具使用</h2><h3 id="1-adb调试命令"><a href="#1-adb调试命令" class="headerlink" title="1. adb调试命令"></a>1. adb调试命令</h3><h4 id="1-1-ADB"><a href="#1-1-ADB" class="headerlink" title="1.1 ADB"></a>1.1 ADB</h4><p>Android调试桥（adb）是一种功能多样的命令行工具，可以让你与设备进行通信。adb命令可用于执行各种设备操作（例如安装和调试应用），并针对Unix shell（可用来在设备上运行各种命令）的访问权限。</p>
+<p>它是一种客户端-服务器程序，包含以下三个组件：</p>
+<ul>
+<li>客户端：用于发送命令。客户端在开发计算机上运行，你可以通过发出adb命令从命令行终端调用客户端。</li>
+<li>守护程序（adbd）：用于在设备上运行命令。守护程序在每个设备上作为后台进程运行。</li>
+<li>服务器：用于管理客户端与守护程序之间的通信。服务器在开发机器上作为后台进程运行。</li>
+</ul>
+<p><strong>在设备上启用 adb 调试：</strong></p>
+<p>要在通过 USB 连接的设备上使用 adb，必须在设备的系统设置中启用 USB 调试（位于开发者选项下）。</p>
+<p>在搭载Android4.2及更高版本的设备上，”开发者选项” 屏幕默认情况下处于隐藏状态。如需将其显示出来，请依次转到 设置 &gt; 关于手机，然后点按版本号7次，返回上一屏幕，在底部可以找到开发者选项。具体请依照不同设备实际为准。</p>
+<h4 id="1-2-ADB常用命令"><a href="#1-2-ADB常用命令" class="headerlink" title="1.2 ADB常用命令"></a>1.2 ADB常用命令</h4><p>查看设备列表</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb devices</span><br></pre></td></tr></table></figure>
+
+<p>远程连接</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb connect ip:port</span><br></pre></td></tr></table></figure>
+
+<p>进入交互式shell模式</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell</span><br></pre></td></tr></table></figure>
+
+<p>查看进程pid号</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell &quot;ps | grep 包名&quot;</span><br></pre></td></tr></table></figure>
+
+<p>查看logcat日志</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb logcat</span><br></pre></td></tr></table></figure>
+
+<p>移动文件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb push/push</span><br></pre></td></tr></table></figure>
+
+<p>安装&#x2F;卸载 应用</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb install/uninstall</span><br></pre></td></tr></table></figure>
+
+<p>SHELL查看当前活动的Activity</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dumpsys activity top | grep ACTIVITY</span><br></pre></td></tr></table></figure>
+
+<p>SHELL启动指定Activity&#x2F;Service</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">am start/startservice -n 包名/完整类名[-d data]</span><br></pre></td></tr></table></figure>
+
+<p>端口转发</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb forward tcp:1234 tcp:1234</span><br></pre></td></tr></table></figure>
+
+<p>查看系统配置</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell getprop</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="2-调试环境搭建"><a href="#2-调试环境搭建" class="headerlink" title="2. 调试环境搭建"></a>2. 调试环境搭建</h3><p>设置为允许调试</p>
+<ol>
+<li>修改Manifest.xml文件的Application属性</li>
+<li>将设备属性ro.debuggable设置为1</li>
+</ol>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230320204911577.png" alt="image-20230320204911577"></p>
+<p><strong>app配置修改为允许调试：</strong></p>
+<p>反编译安装包AndroidManifest.xml，在application内修改或添加 android:debuggable&#x3D;”true”，并重打包签名。</p>
+<p><strong>系统修改为允许所有应用调试：</strong></p>
+<p>使用mprop工具来修改</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">adb push mprop /data/local/tmp/</span><br><span class="line">adb shell su</span><br><span class="line">chmod 755 /data/local/tmp/mprop</span><br><span class="line">data/local/tmp/mprop</span><br><span class="line">setprop ro.debuggable 1</span><br><span class="line">/data/local/tmp/mprop -r</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="3-Smalidea动态调试"><a href="#3-Smalidea动态调试" class="headerlink" title="3. Smalidea动态调试"></a>3. Smalidea动态调试</h3><h4 id="3-1-使用smalidea插件"><a href="#3-1-使用smalidea插件" class="headerlink" title="3.1 使用smalidea插件"></a>3.1 使用smalidea插件</h4><p>smalidea是一个Intellij IDEA&#x2F;Android Studio smali语法插件，可实现动态调试smali代码。支持14.1或以上版本的IDEA。</p>
+<p>下载地址：<a target="_blank" rel="noopener" href="https://github.com/JesusFreke/smali/wiki/smalidea">https://github.com/JesusFreke/smali/wiki/smalidea</a></p>
+<h2 id="0x04-安卓-ios应用-网络接口分析"><a href="#0x04-安卓-ios应用-网络接口分析" class="headerlink" title="0x04 安卓&#x2F;ios应用 网络接口分析"></a>0x04 安卓&#x2F;ios应用 网络接口分析</h2><h3 id="1-Https"><a href="#1-Https" class="headerlink" title="1. Https"></a>1. Https</h3><h4 id="1-1-https协议流程"><a href="#1-1-https协议流程" class="headerlink" title="1.1 https协议流程"></a>1.1 https协议流程</h4><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230320210545112.png" alt="image-20230320210545112" style="zoom: 67%;" />
+
+
+
+<h4 id="1-2-中间人攻击"><a href="#1-2-中间人攻击" class="headerlink" title="1.2 中间人攻击"></a>1.2 中间人攻击</h4><p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20230320211012277.png" alt="image-20230320211012277"></p>
+<h3 id="2-设备证书安装"><a href="#2-设备证书安装" class="headerlink" title="2. 设备证书安装"></a>2. 设备证书安装</h3><p>安装Burp suit的证书</p>
+<h3 id="3-Burp-suit使用"><a href="#3-Burp-suit使用" class="headerlink" title="3. Burp suit使用"></a>3. Burp suit使用</h3><p>可参考gitbook：<a target="_blank" rel="noopener" href="https://t0data.gitbooks.io/burpsuite/content/?q=">https://t0data.gitbooks.io/burpsuite/content/?q=</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/03/28/IoT/%E7%89%A9%E8%81%94%E7%BD%91%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A8/IoT%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A806/" rel="prev" title="IoT安全入门06">
+      <i class="fa fa-chevron-left"></i> IoT安全入门06
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/03/28/IoT/%E7%89%A9%E8%81%94%E7%BD%91%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A8/IoT%E5%AE%89%E5%85%A8%E5%85%A5%E9%97%A808/" rel="next" title="IoT安全入门08">
+      IoT安全入门08 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AC%AC%E4%B8%83%E7%AB%A0-%E7%89%A9%E8%81%94%E7%BD%91%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95%E4%B9%8B%E7%A7%BB%E5%8A%A8%E5%BA%94%E7%94%A8"><span class="nav-number">1.</span> <span class="nav-text">第七章 物联网渗透测试之移动应用</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-%E5%AE%89%E5%8D%93%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E5%88%86%E6%9E%90"><span class="nav-number">1.1.</span> <span class="nav-text">0x01 安卓应用程序分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Android-apk%E5%AE%89%E8%A3%85%E5%8C%85%E5%88%86%E6%9E%90"><span class="nav-number">1.1.1.</span> <span class="nav-text">1. Android apk安装包分析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-Android"><span class="nav-number">1.1.1.1.</span> <span class="nav-text">1.1 Android</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-Android%E5%BA%94%E7%94%A8%E7%BB%84%E4%BB%B6"><span class="nav-number">1.1.1.2.</span> <span class="nav-text">1.2 Android应用组件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-Android%E5%AE%89%E8%A3%85%E5%8C%85"><span class="nav-number">1.1.1.3.</span> <span class="nav-text">1.3 Android安装包</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E9%9D%99%E6%80%81%E5%8F%8D%E7%BC%96%E8%AF%91%E5%B7%A5%E5%85%B7%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="nav-number">1.1.2.</span> <span class="nav-text">2. 静态反编译工具的使用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-%E5%B7%A5%E5%85%B7%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.1.2.1.</span> <span class="nav-text">2.1 工具介绍</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-smali%E8%AF%AD%E6%B3%95%E7%AE%80%E4%BB%8B"><span class="nav-number">1.1.3.</span> <span class="nav-text">3. smali语法简介</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-smali%E7%9A%84%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B"><span class="nav-number">1.1.3.1.</span> <span class="nav-text">3.1 smali的数据类型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-smali%E5%87%BD%E6%95%B0%E5%AE%9A%E4%B9%89"><span class="nav-number">1.1.3.2.</span> <span class="nav-text">3.2 smali函数定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-smali%E7%9A%84%E5%AF%84%E5%AD%98%E5%99%A8"><span class="nav-number">1.1.3.3.</span> <span class="nav-text">3.3 smali的寄存器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-4-smali%E4%BB%A3%E7%A0%81%E4%B8%BE%E4%BE%8B"><span class="nav-number">1.1.3.4.</span> <span class="nav-text">3.4 smali代码举例</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x02-ios%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E5%88%86%E6%9E%90"><span class="nav-number">1.2.</span> <span class="nav-text">0x02 ios应用程序分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#IPA%E8%84%B1%E5%A3%B3"><span class="nav-number">1.2.1.</span> <span class="nav-text">IPA脱壳</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MobSF"><span class="nav-number">1.2.2.</span> <span class="nav-text">MobSF</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x03-Android%E5%8A%A8%E6%80%81%E8%B0%83%E8%AF%95%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8"><span class="nav-number">1.3.</span> <span class="nav-text">0x03 Android动态调试分析工具使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-adb%E8%B0%83%E8%AF%95%E5%91%BD%E4%BB%A4"><span class="nav-number">1.3.1.</span> <span class="nav-text">1. adb调试命令</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-ADB"><span class="nav-number">1.3.1.1.</span> <span class="nav-text">1.1 ADB</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-ADB%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4"><span class="nav-number">1.3.1.2.</span> <span class="nav-text">1.2 ADB常用命令</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E8%B0%83%E8%AF%95%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA"><span class="nav-number">1.3.2.</span> <span class="nav-text">2. 调试环境搭建</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-Smalidea%E5%8A%A8%E6%80%81%E8%B0%83%E8%AF%95"><span class="nav-number">1.3.3.</span> <span class="nav-text">3. Smalidea动态调试</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-%E4%BD%BF%E7%94%A8smalidea%E6%8F%92%E4%BB%B6"><span class="nav-number">1.3.3.1.</span> <span class="nav-text">3.1 使用smalidea插件</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x04-%E5%AE%89%E5%8D%93-ios%E5%BA%94%E7%94%A8-%E7%BD%91%E7%BB%9C%E6%8E%A5%E5%8F%A3%E5%88%86%E6%9E%90"><span class="nav-number">1.4.</span> <span class="nav-text">0x04 安卓&#x2F;ios应用 网络接口分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Https"><span class="nav-number">1.4.1.</span> <span class="nav-text">1. Https</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-https%E5%8D%8F%E8%AE%AE%E6%B5%81%E7%A8%8B"><span class="nav-number">1.4.1.1.</span> <span class="nav-text">1.1 https协议流程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-%E4%B8%AD%E9%97%B4%E4%BA%BA%E6%94%BB%E5%87%BB"><span class="nav-number">1.4.1.2.</span> <span class="nav-text">1.2 中间人攻击</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E8%AE%BE%E5%A4%87%E8%AF%81%E4%B9%A6%E5%AE%89%E8%A3%85"><span class="nav-number">1.4.2.</span> <span class="nav-text">2. 设备证书安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-Burp-suit%E4%BD%BF%E7%94%A8"><span class="nav-number">1.4.3.</span> <span class="nav-text">3. Burp suit使用</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="郭小白QAQ"
+      src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+  <p class="site-author-name" itemprop="name">郭小白QAQ</p>
+  <div class="site-description" itemprop="description">精彩不亮丽，起落是无常</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">64</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/guoxb0_0@qq.com" title="E-Mail → guoxb0_0@qq.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">郭小白QAQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">122k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">7:24</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+<script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
+
+<script>
+var options = {
+  bottom: '64px',
+  right: 'unset',
+  left: '32px',
+  time: '0.5s',
+  mixColor: 'transparent',
+  backgroundColor: 'transparent',
+  buttonColorDark: '#100f2c',
+  buttonColorLight: '#fff',
+  saveInCookies: true,
+  label: '🌓',
+  autoMatchOsTheme: true
+}
+const darkmode = new Darkmode(options);
+window.darkmode = darkmode;
+darkmode.showWidget();
+</script>
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div id="moon-menu-item-back2bottom" class="moon-menu-item">
+      <i class='fas fa-chevron-down'></i>    </div>
+    
+    <div id="moon-menu-item-back2top" class="moon-menu-item">
+      <i class='fas fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button">
+    <svg class="moon-menu-bg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+    </svg>
+    <div class="moon-menu-content">
+      <div class="moon-menu-icon"><i class='fas fa-ellipsis-v'></i></div>
+      <div class="moon-menu-text"></div>
+    </div>
+  </div>
+</div><script src="/js/injector.js"></script>
+</body>
+</html>
