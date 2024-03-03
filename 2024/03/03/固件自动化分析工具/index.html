@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.1.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/icon.jpg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.svg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.svg">
+  <link rel="mask-icon" href="/images/logo1.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"guoxb.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":true},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":false,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="介绍两款物联网固件自动化分析工具：  EMBA FACT-core">
+<meta property="og:type" content="article">
+<meta property="og:title" content="固件自动化分析工具">
+<meta property="og:url" content="http://guoxb.top/2024/03/03/%E5%9B%BA%E4%BB%B6%E8%87%AA%E5%8A%A8%E5%8C%96%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7/index.html">
+<meta property="og:site_name" content="GuoXB&#39;s Blog">
+<meta property="og:description" content="介绍两款物联网固件自动化分析工具：  EMBA FACT-core">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240218165408986.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240218192442723.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240222183810716.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240222183945112.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240222184144489.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240223191536578.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240223204636429.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240223204937354.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240224093424439.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240224093912290.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240224094056606.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240224092537436.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240224101234938.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240224101403101.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240224094351321.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240224094740299.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240224095134177.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240224095205361.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240224095317230.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240224095448881.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240224095958300.png">
+<meta property="og:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240224100145835.png">
+<meta property="article:published_time" content="2024-03-03T15:15:50.000Z">
+<meta property="article:modified_time" content="2024-03-03T15:56:49.860Z">
+<meta property="article:author" content="郭小白QAQ">
+<meta property="article:tag" content="普通人">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240218165408986.png">
+
+<link rel="canonical" href="http://guoxb.top/2024/03/03/%E5%9B%BA%E4%BB%B6%E8%87%AA%E5%8A%A8%E5%8C%96%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+<link rel="stylesheet" type="text/css" href="/css/injector/main.css" /><link rel="preload" as="style" href="/css/injector/light.css" /><link rel="preload" as="style" href="/css/injector/dark.css" />
+  <title>固件自动化分析工具 | GuoXB's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">GuoXB's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://guoxb.top/2024/03/03/%E5%9B%BA%E4%BB%B6%E8%87%AA%E5%8A%A8%E5%8C%96%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+      <meta itemprop="name" content="郭小白QAQ">
+      <meta itemprop="description" content="精彩不亮丽，起落是无常">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GuoXB's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          固件自动化分析工具
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2024-03-03 23:15:50 / 修改时间：23:56:49" itemprop="dateCreated datePublished" datetime="2024-03-03T23:15:50+08:00">2024-03-03</time>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>12 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>介绍两款物联网固件自动化分析工具：</p>
+<ul>
+<li>EMBA</li>
+<li>FACT-core</li>
+</ul>
+<span id="more"></span>
+
+<h2 id="EMBA"><a href="#EMBA" class="headerlink" title="EMBA"></a>EMBA</h2><p>EMBA 是一个针对嵌入式设备固件的安全分析工具。在 Github 上，官方的介绍如下：</p>
+<blockquote>
+<p>EMBA 被设计为渗透测试人员和产品安全团队的中央固件分析工具。 它支持完整的安全分析过程，从固件提取开始，通过仿真进行静态分析和动态分析，最后生成网络报告。 EMBA 自动发现固件中可能的弱点和漏洞。 例如不安全的二进制文件、旧的和过时的软件组件、潜在易受攻击的脚本或硬编码的密码。 EMBA 是一个命令行工具，可以生成易于使用的网络报告以供进一步分析。</p>
+<p>EMBA 协助渗透测试人员和产品安全团队识别固件映像中的弱点和漏洞。 EMBA 提供了尽可能多的有关固件的信息，测试人员可以决定重点领域并负责验证和解释结果。</p>
+</blockquote>
+<p>其视频演示链接为：<a target="_blank" rel="noopener" href="https://youtu.be/_dvdy3klFFY">https://youtu.be/_dvdy3klFFY</a></p>
+<p>官方EMBA-wiki链接：<a target="_blank" rel="noopener" href="https://github.com/e-m-b-a/emba/wiki">https://github.com/e-m-b-a/emba/wiki</a></p>
+<h3 id="1-安装"><a href="#1-安装" class="headerlink" title="1. 安装"></a>1. 安装</h3><p>测试安装环境：Ubuntu 22.04</p>
+<p>根据 Github 中 readme 里的安装命令直接 clone 下来安装即可。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/e-m-b-a/emba.git</span><br><span class="line">cd emba</span><br><span class="line">sudo ./installer.sh -d</span><br></pre></td></tr></table></figure>
+
+<p>注：Docker镜像较大，需要安装的依赖比较多，时间会有点长。</p>
+<p>安装好之后，就可以使用下面的命令来测试 EMBA 是否安装好了 ：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo ./emba</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240218165408986.png" alt="image-20240218165408986"></p>
+<h3 id="2-用法"><a href="#2-用法" class="headerlink" title="2. 用法"></a>2. 用法</h3><p><strong>静态固件测试</strong></p>
+<ul>
+<li><p>执行 EMBA 并设置参数（在 emba 目录下），例如：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo ./emba -l ./log -f ./firmware</span><br></pre></td></tr></table></figure>
+
+<p>必选参数：</p>
+<p><code>-l</code> 参数指定日志输出目录</p>
+<p><code>-f</code> 参数指定待分析固件路径</p>
+<p>可选参数：</p>
+<p>通过 <code>-h</code> 选项查看</p>
+</li>
+</ul>
+<p>执行上述格式命令后即可运行 emba，如下：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240218192442723.png" alt="image-20240218192442723"></p>
+<p>等待运行结束即可，运行时间很长，会按照顺序调用 modules 目录下各模块的脚本，对固件进行全方面的检测。生成的结果记录在指定的日志文件中，如下所示：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240222183810716.png" alt="image-20240222183810716"></p>
+<p>EMBA 还将结果生成html网页形式，在目录 html-report 下：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240222183945112.png" alt="image-20240222183945112"></p>
+<p>访问 index.html 页面即可查看固件分析结果：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240222184144489.png" alt="image-20240222184144489"></p>
+<h3 id="3-EMBA-文件简要分析"><a href="#3-EMBA-文件简要分析" class="headerlink" title="3. EMBA 文件简要分析"></a>3. EMBA 文件简要分析</h3><p>EMBA 项目采用纯Shell编写，主要由五个函数：<code>import_helper</code>、<code>import_module</code>、<code>sort_modules</code>、<code>run_modules</code>、<code>main</code> 组成，每个函数的大概功能如下：</p>
+<ul>
+<li><p><code>import_helper</code> 函数</p>
+<p>导入 &#x2F;emba&#x2F;helpers 目录下以 helpers_emba_ 开头的脚本文件。</p>
+</li>
+<li><p><code>import_module</code> 函数</p>
+<p>导入 &#x2F;emba&#x2F;modules 目录下的脚本</p>
+</li>
+<li><p><code>sort_modules</code> 函数</p>
+<p>根据 modules 目录中脚本的类型以及线程优先级来对脚本进行排序。</p>
+</li>
+<li><p><code>run_modules</code> 函数</p>
+<p>执行 modules 目录中的脚本，有三个参数：</p>
+<p>第一个参数指定 module 的模式类型，有[P, S, L, F, Q, D] </p>
+<p>第二个参数指定是否开启多线程模式</p>
+<p>第三个参数指定是否生成html文件</p>
+</li>
+<li><p><code>main</code> 函数</p>
+<p>调用上述函数，对固件进行自动化分析，主要包含以下几个模块。</p>
+</li>
+</ul>
+<h4 id="主要模块梳理"><a href="#主要模块梳理" class="headerlink" title="主要模块梳理"></a>主要模块梳理</h4><ol>
+<li><p>请求模块 （Quests， Q模块）</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Q02_openai_question.sh	# 面向容器的Openai提问模块</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>预检查模块（Pre-Check，P 模块）</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">P02_firmware_bin_file_check.sh	# 提供有关所提供的固件二进制文件的一些非常基本的信息。</span><br><span class="line">P05_patools_init.sh				# 用patools工具提取zip、tar、tgz</span><br><span class="line">P10_vmdk_extractor.sh			# 提取vmdk镜像</span><br><span class="line">P14_ext_mounter.sh				# 挂载并提取extX映像(目前binwalk会破坏权限和符号链接)</span><br><span class="line">P15_ubi_extractor.sh			# 提取ubi文件系统</span><br><span class="line">P17_gpg_decompress.sh			# 提取gpg压缩 (未加密) 固件映像</span><br><span class="line">P18_BMC_decryptor.sh			# 从Supermicro BMC解密并提取固件图像</span><br><span class="line">P19_bsd_ufs_mounter.sh			# 挂载和提取BSD UFS映像</span><br><span class="line">P20_foscam_decryptor.sh			# 从供应商Foscam提取加密的固件映像</span><br><span class="line">P21_buffalo_decryptor.sh		# 从供应商Buffalo提取加密的固件映像</span><br><span class="line">P22_Zyxel_zip_decrypt.sh		# 提取受密码保护的Zyxel固件映像</span><br><span class="line">P23_qemu_qcow_mounter.sh		# 挂载和提取Qemu QCOW2映像</span><br><span class="line">P25_android_ota.sh				# 提取Android OTA更新文件</span><br><span class="line">P35_UEFI_extractor.sh			# 使用BIOSUtilities提取UEFI映像</span><br><span class="line">P40_DJI_extractor.sh			# 提取DJI无人机固件</span><br><span class="line">P55_unblob_extractor.sh			# 将带有unblob的固件提取到模块日志目录。</span><br><span class="line">P60_deep_extractor.sh			# 使用unblob分析固件，检查熵并将固件提取到日志目录。</span><br><span class="line">P61_binwalk_extractor.sh		# 使用binwalk将固件提取到模块日志目录。</span><br><span class="line">P65_package_extractor.sh		# 识别和提取典型的软件包档案，如deb，apk，ipk</span><br><span class="line">P99_prepare_analyzer.sh			# 一些准备工作 (检查固件、架构检查等)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>差异检查模块（Diff mode， D 模块）</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">D02_firmware_diffing_bin_details.sh # 对两个固件进行一些基本检查</span><br><span class="line">D05_firmware_diffing_extractor.sh	# 该模块用于两个固件映像的提取</span><br><span class="line">D10_firmware_diffing.sh				# 进行主要的差异检查工作</span><br></pre></td></tr></table></figure>
+
+
+</li>
+<li><p>固件检查模块（Firmware-Check，S 模块）</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">S02_UEFI_FwHunt.sh					# 使用FwHunt识别可能的UEFI固件中的漏洞</span><br><span class="line">S03_firmware_bin_base_analyzer.sh	# 对所使用的操作系统的粗略猜测</span><br><span class="line">S05_firmware_details.sh				# 计算固件中文件和可执行文件的数量，并在日志文件中打印固件树。</span><br><span class="line">S06_distribution_identification.sh	# 识别主要的Linux发行版，如Kali Linux，Debian，Fedora或OpenWRT</span><br><span class="line">S07_bootloader_check.sh				# 扫描设备树blob、引导加载程序和启动文件，并检查默认运行级别。</span><br><span class="line">S08_package_mgmt_extractor.sh		# 搜索包管理信息的已知位置</span><br><span class="line">S09_firmware_base_version_check.sh	# 遍历具有所有可执行文件的版本详细信息的正则表达式标识符的列表，并检查这些是否适合固件中的二进制文件</span><br><span class="line">S100_command_inj_check.sh			# 在www等文件夹中查找基于web的文件，并在其中搜索代码执行</span><br><span class="line">S106_deep_key_search.sh				# 搜索内部具有指定字符串模式的文件</span><br><span class="line">S107_deep_password_search.sh		# 搜索内部具有指定密码模式的文件</span><br><span class="line">S108_stacs_password_search.sh		# 在固件中搜索密码模式</span><br><span class="line">S109_jtr_local_pw_cracking.sh		# 用jtr从S109 (STACS模块) 中破解密码哈希</span><br><span class="line">S10_binaries_basic_check.sh			# 识别使用弱函数的二进制文件</span><br><span class="line">S110_yara_check.sh					# 使用yara检查文件是否存在可疑模式</span><br><span class="line">S115_usermode_emulator.sh			# 使用qemu从固件模拟可执行文件以获取版本信息</span><br><span class="line">S116_qemu_version_detection.sh		# 从S115的结果中提取版本信息</span><br><span class="line">S118_busybox_verifier.sh			# 识别BusyBox，针对CVE数据库检查BusyBox的可能漏洞</span><br><span class="line">S12_binary_protection.sh			# 该模块通过checksec在二进制文件中查找保护机制。</span><br><span class="line">S13_weak_func_check.sh				# 识别使用弱函数的二进制文件（objdump）</span><br><span class="line">S14_weak_func_radare_check.sh		# 识别使用弱函数的二进制文件（radare）</span><br><span class="line">S15_radare_decompile_checks.sh		# 识别使用弱函数的二进制文件（r2dec）</span><br><span class="line">S17_cwe_checker.sh					# 在Ghidra上运行带有cwe-checker的Docker容器，以检查二进制文件中是否存在常见的错误类型</span><br><span class="line">S19_apk_check.sh					# 识别Android apk包并使用APKHunt执行静态漏洞测试</span><br><span class="line">S20_shell_check.sh					# 检查shell脚本中的错误</span><br><span class="line">S21_python_check.sh					# 检查python脚本中的错误</span><br><span class="line">S22_php_check.sh					# 检查php脚本中的错误</span><br><span class="line">S23_lua_check.sh					# 检查lua脚本中的错误</span><br><span class="line">S24_kernel_bin_identifier.sh		# 识别内核文件和init命令行</span><br><span class="line">S25_kernel_check.sh					# 确定内核版本和说明，并检查内核配置</span><br><span class="line">S26_kernel_vuln_verifier.sh			# 通过版本号识别漏洞并尝试验证CVEs</span><br><span class="line">S35_http_file_check.sh				# 搜索http和webserver (Apache，nginx，Lighttpd等) 相关文件，并检查php.ini。</span><br><span class="line">S36_lighttpd.sh						# 此模块测试确定感兴趣的区域的lighttpd配置文件</span><br><span class="line">S40_weak_perm_check.sh				# 检查系统用户相关配置、密码文件的风险</span><br><span class="line">S45_pass_file_check.sh				# 搜索与密码相关的文件并尝试提取密码和root帐户</span><br><span class="line">S50_authentication_check.sh			# 检查身份验证等</span><br><span class="line">S55_history_file_check.sh			# 搜索可能的历史文件，如bash_history</span><br><span class="line">S60_cert_file_check.sh				# 获取认证文件及其结束日期</span><br><span class="line">S65_config_file_check.sh			# 扫描系统的典型配置文件</span><br><span class="line">S75_network_check.sh				# 检查systemd网络配置文件</span><br><span class="line">S80_cronjob_check.sh				# 检查cronjob配置的所有文件</span><br><span class="line">S85_ssh_check.sh					# 查找ssh相关文件并检查squid配置</span><br><span class="line">S90_mail_check.sh					# 在/var/mail中搜索邮件文件</span><br><span class="line">S95_interesting_files_check.sh		# 显式搜索二进制文件</span><br><span class="line">S99_grepit.sh						# CRASS (代码审查审计脚本扫描器) great grepit工具的初步实现</span><br></pre></td></tr></table></figure>
+
+
+</li>
+<li><p>实时模拟模块（Live Emulation - Check，L 模块）</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">L10_system_emulation		# 文件夹</span><br><span class="line">L10_system_emulation.sh		# 构建和仿真Linux固件</span><br><span class="line">L15_emulated_checks_nmap.sh	# 测试在L10中构建并启动的仿真实时系统(实验模块)</span><br><span class="line">L20_snmp_checks.sh			# 同上</span><br><span class="line">L22_upnp_hnap_checks.sh		# 同上</span><br><span class="line">L23_vnc_checks.sh			# 同上</span><br><span class="line">L25_web_checks.sh			# 对在L10中构建并启动的仿真实时系统执行web服务器测试</span><br><span class="line">L30_routersploit.sh			# 测试在L10中构建并启动的仿真实时系统</span><br><span class="line">L35_metasploit_check.sh		# 使用Metasploit测试在L10中构建并启动的仿真实时系统</span><br><span class="line">L99_cleanup.sh				# 停止和清理仿真环境</span><br></pre></td></tr></table></figure>
+
+
+</li>
+<li><p>报告模块 （Reporting， F 模块）</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">F02_toolchain.sh		# 收集对构建/识别工作工具链有用的进一步详细信息</span><br><span class="line">F05_qs_resolver.sh		# 解决Q和S模块之间的所有依赖关系和链接</span><br><span class="line">F10_license_summary.sh	# 收集许可证详细信息，并提供包含二进制文件、标识版本和相应许可证 (如果可用) 的列表</span><br><span class="line">F20_vul_aggregator.sh	# 将S06、S08、S09、S25、S26、S115/S116和l15中找到的所有版本号聚合在一起。这些版本用于识别已知漏洞cve搜索，最后创建一个与cve匹配的漏洞列表</span><br><span class="line">F21_cyclonedx_sbom.sh	# 通过cyclonedx从已识别的软件清单生成最小json SBOM</span><br><span class="line">F50_base_aggregator.sh	# 生成所有模块的概述</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="4-参考博客"><a href="#4-参考博客" class="headerlink" title="4. 参考博客"></a>4. 参考博客</h3><blockquote>
+<p>1.<a target="_blank" rel="noopener" href="https://ylcao.top/2023/04/27/EMBA%E5%AE%89%E8%A3%85%E3%80%81%E4%BD%BF%E7%94%A8%E4%B8%8E%E6%BA%90%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90/#%E4%B8%BB%E6%96%87%E4%BB%B6emba%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90">https://ylcao.top/2023/04/27/EMBA%E5%AE%89%E8%A3%85%E3%80%81%E4%BD%BF%E7%94%A8%E4%B8%8E%E6%BA%90%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90/#%E4%B8%BB%E6%96%87%E4%BB%B6emba%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90</a></p>
+<p>2.<a target="_blank" rel="noopener" href="https://www.freebuf.com/articles/system/263517.html">https://www.freebuf.com/articles/system/263517.html</a></p>
+<p>3.<a target="_blank" rel="noopener" href="https://bbs.kanxue.com/thread-277053.htm">https://bbs.kanxue.com/thread-277053.htm</a></p>
+</blockquote>
+<h2 id="FACT-core"><a href="#FACT-core" class="headerlink" title="FACT-core"></a>FACT-core</h2><p>FACT（Firmware Analysis and Comparison Tool）是一款固件分析和比较工具 (以前称为Fraunhofer的固件分析框架 (FAF)) ，旨在自动执行固件安全分析。它解压缩任意固件文件并处理多个分析。此外，它可以比较多个映像或单个文件。其解包、分析和比较都基于插件，保证了最大的灵活性和可扩展性。</p>
+<p>官方wiki链接：<a target="_blank" rel="noopener" href="https://github.com/fkie-cad/FACT_core/wiki/">https://github.com/fkie-cad/FACT_core/wiki/</a></p>
+<h3 id="1-安装-1"><a href="#1-安装-1" class="headerlink" title="1. 安装"></a>1. 安装</h3><p>测试安装环境：Ubuntu 22.04</p>
+<p>官方推荐系统版本为：Ubuntu20.04、22.04 和 Debian 11，并提供了一键安装脚本。</p>
+<p>⭐强烈建议在虚拟 Python 环境中安装 FACT，以避免和系统 Python 包造成冲突，可以使用下面的命令创建并激活虚拟环境：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">python3 -m venv FACT-core</span><br><span class="line">source FACT-core/bin/activate</span><br></pre></td></tr></table></figure>
+
+<p>现在虚拟环境已经激活，执行下面的命令进行安装即可（非 root ！）：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo apt update &amp;&amp; sudo apt upgrade &amp;&amp; sudo apt install git</span><br><span class="line">git clone https://github.com/fkie-cad/FACT_core.git ~/FACT_core</span><br><span class="line">~/FACT_core/src/install/pre_install.sh &amp;&amp; sudo mkdir /media/data &amp;&amp; sudo chown -R $USER /media/data</span><br></pre></td></tr></table></figure>
+
+<p>安装完成后，会提示我们重启系统：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240223191536578.png" alt="image-20240223191536578"></p>
+<p>重启完之后，运行下面的命令安装依赖项（需要的时间也有点长~）（需要访问 Github 最好配置代理，不然可能会安装失败）</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~/FACT_core/src/install.py</span><br></pre></td></tr></table></figure>
+
+<p>注<sup>1</sup>：这里似乎有一个小坑，我在 FACT_core&#x2F;src&#x2F; 目录下运行 install.py 进行安装时会报如下所示错误：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240223204636429.png" alt="image-20240223204636429"></p>
+<p>查看下面的 Traceback 可以看到是目录路径出了问题，在 src 跟 install.py 之间多了一个 .&#x2F; </p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240223204937354.png" alt="image-20240223204937354"></p>
+<p>注<sup>2</sup>：安装过程中需要 docker build 命令，而 build 操作是在容器内进行的，与宿主机网络不通，在进行安装 user-and-passwords 插件时，会由于网络问题而 build 失败，如下：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240224093424439.png" alt="image-20240224093424439"></p>
+<p>解决办法是：配置 docker 的代理，或者配置 docker 的网络模式。这里我选择后一种办法，配置 docker 网络模式为 host ，就是让 container 使用宿主机的网络，相当于 container 在网络层面和宿主机不做隔离，使用这种网络模式执行 docker build，就不需要在 dockerfile 中添加 http_proxy 环境变量，container 可以直接读取宿主上的环境变量。</p>
+<p>查看 Traceback 中 运行 docker build 命令的代码位置：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240224093912290.png" alt="image-20240224093912290"></p>
+<p>在 src&#x2F;plugins&#x2F;installer.py 文件中第 109 行处，在 <code>docker build</code> 命令之后加上 <code>--network host</code> 即可。</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240224094056606.png" alt="image-20240224094056606"></p>
+<p>重新执行 src&#x2F;install.py 命令，等待安装好后如下图所示：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240224092537436.png" alt="image-20240224092537436"></p>
+<hr>
+<p>方法2：此外官方也说明可以通过 vagrant 安装，命令如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">1. install vagrant and virtualbox</span></span><br><span class="line">sudo apt install virtualbox vagrant</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">2. reboot your machine to ensure that the virtualbox dkms is loaded into the kernel</span></span><br><span class="line">sudo reboot now</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">3. create a new folder <span class="keyword">for</span> vagrant</span></span><br><span class="line">mkdir FACT-master</span><br><span class="line">cd FACT-master</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">4. create a FACT-master configuration</span></span><br><span class="line">vagrant init fact-cad/FACT-master</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">5. edit the Vagrantfile to your needs! an example can be found below.</span></span><br><span class="line">nano Vagrantfile</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">6. start the VM. The first time executing this <span class="built_in">command</span> will take some time, as the box is getting downloaded and imported. So better grab a coffee!</span></span><br><span class="line">vagrant up</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Bonus: <span class="keyword">if</span> you want to ssh into the vm, execute:</span></span><br><span class="line">vagrant ssh</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Bonus: <span class="keyword">if</span> you want to stop the vm, execute:</span></span><br><span class="line">vagrant halt</span><br></pre></td></tr></table></figure>
+
+<p>等待运行成功后，访问 <a target="_blank" rel="noopener" href="http://localhost:5000/">http://localhost:5000</a> 即可。</p>
+<p>注<sup>1</sup>：在 VMware 虚拟机 Ubuntu 22.04 中似乎不能再安装虚拟机，执行 vagrant up 后会出现如下报错：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240224101234938.png" alt="image-20240224101234938"></p>
+<p>通过以下命令进行检查：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install cpu-checker</span><br><span class="line">sudo kvm-ok</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240224101403101.png" alt="image-20240224101403101"></p>
+<p>可以看到不支持 KVM，由于对虚机化这方面不太了解，暂时没有通过这种方法安装成功。</p>
+<p>注<sup>2</sup>：示例 Vagrantfile 配置及其他事项可参考官方文档：FACT_core&#x2F;INSTALL.vagtant.md</p>
+<h3 id="2-用法-1"><a href="#2-用法-1" class="headerlink" title="2. 用法"></a>2. 用法</h3><p>运行下列命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~/FACT_core/start_all_installed_fact_components</span><br></pre></td></tr></table></figure>
+
+<p>等待几秒后，可以看到 Successfully started FACT Backend，说明启动成功。</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240224094351321.png" alt="image-20240224094351321"></p>
+<p>打开浏览器并转到 <a target="_blank" rel="noopener" href="http://localhost:5000/">http://localhost:5000</a> 可以看到 FACT 的前端页面：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240224094740299.png" alt="image-20240224094740299"></p>
+<p>点击菜单栏 Upload 上传固件，填写固件相关信息以及 Analysis Preset 之后提交即可。</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240224095134177.png" alt="image-20240224095134177"></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240224095205361.png" alt="image-20240224095205361"></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240224095317230.png" alt="image-20240224095317230"></p>
+<p>提交成功后，FACT 已经开始自动分析该固件。可以通过菜单栏 Info -&gt; system 来查看相关分析信息，如下：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240224095448881.png" alt="image-20240224095448881"></p>
+<p>可以点击该区域查看详细的分析结果，或者等待分析结束后从菜单栏 Database 处查看：</p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240224095958300.png" alt="image-20240224095958300"></p>
+<p><img src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/image-20240224100145835.png" alt="image-20240224100145835"></p>
+<h3 id="3-参考博客"><a href="#3-参考博客" class="headerlink" title="3. 参考博客"></a>3. 参考博客</h3><blockquote>
+<p>1.<a target="_blank" rel="noopener" href="https://simpleapples.com/2019/04/18/building-docker-image-behind-proxy">https://simpleapples.com/2019/04/18/building-docker-image-behind-proxy</a></p>
+<p>2.<a target="_blank" rel="noopener" href="https://askubuntu.com/questions/779277/when-using-vagrant-stderr-vboxmanage-error-vt-x-is-not-available-verr-vmx-no">https://askubuntu.com/questions/779277/when-using-vagrant-stderr-vboxmanage-error-vt-x-is-not-available-verr-vmx-no</a></p>
+</blockquote>
+<h2 id="Podding-shambles"><a href="#Podding-shambles" class="headerlink" title="Podding &amp; shambles"></a>Podding &amp; shambles</h2><p>申请不了账号，无法使用系统，暂时测试不了 &#96;(<em>&gt;﹏&lt;</em>)′</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2024/02/14/%E7%AC%A6%E5%8F%B7%E6%89%A7%E8%A1%8C/RE3201%20Symbolic%20Analysis/" rel="prev" title="Reverse Engineering 3201-Symbolic Analysis">
+      <i class="fa fa-chevron-left"></i> Reverse Engineering 3201-Symbolic Analysis
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#EMBA"><span class="nav-number">1.</span> <span class="nav-text">EMBA</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E5%AE%89%E8%A3%85"><span class="nav-number">1.1.</span> <span class="nav-text">1. 安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E7%94%A8%E6%B3%95"><span class="nav-number">1.2.</span> <span class="nav-text">2. 用法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-EMBA-%E6%96%87%E4%BB%B6%E7%AE%80%E8%A6%81%E5%88%86%E6%9E%90"><span class="nav-number">1.3.</span> <span class="nav-text">3. EMBA 文件简要分析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%BB%E8%A6%81%E6%A8%A1%E5%9D%97%E6%A2%B3%E7%90%86"><span class="nav-number">1.3.1.</span> <span class="nav-text">主要模块梳理</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E5%8F%82%E8%80%83%E5%8D%9A%E5%AE%A2"><span class="nav-number">1.4.</span> <span class="nav-text">4. 参考博客</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#FACT-core"><span class="nav-number">2.</span> <span class="nav-text">FACT-core</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E5%AE%89%E8%A3%85-1"><span class="nav-number">2.1.</span> <span class="nav-text">1. 安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E7%94%A8%E6%B3%95-1"><span class="nav-number">2.2.</span> <span class="nav-text">2. 用法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E5%8F%82%E8%80%83%E5%8D%9A%E5%AE%A2"><span class="nav-number">2.3.</span> <span class="nav-text">3. 参考博客</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Podding-shambles"><span class="nav-number">3.</span> <span class="nav-text">Podding &amp; shambles</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="郭小白QAQ"
+      src="https://guoxb.oss-cn-qingdao.aliyuncs.com/typora-imgs/202303122318253.jpg">
+  <p class="site-author-name" itemprop="name">郭小白QAQ</p>
+  <div class="site-description" itemprop="description">精彩不亮丽，起落是无常</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">65</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/guoxb0_0@qq.com" title="E-Mail → guoxb0_0@qq.com"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">郭小白QAQ</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">126k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">7:36</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+<script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
+
+<script>
+var options = {
+  bottom: '64px',
+  right: 'unset',
+  left: '32px',
+  time: '0.5s',
+  mixColor: 'transparent',
+  backgroundColor: 'transparent',
+  buttonColorDark: '#100f2c',
+  buttonColorLight: '#fff',
+  saveInCookies: true,
+  label: '🌓',
+  autoMatchOsTheme: true
+}
+const darkmode = new Darkmode(options);
+window.darkmode = darkmode;
+darkmode.showWidget();
+</script>
+<div class="moon-menu">
+  <div class="moon-menu-items">
+    
+    <div id="moon-menu-item-back2bottom" class="moon-menu-item">
+      <i class='fas fa-chevron-down'></i>    </div>
+    
+    <div id="moon-menu-item-back2top" class="moon-menu-item">
+      <i class='fas fa-chevron-up'></i>    </div>
+    
+  </div>
+  <div class="moon-menu-button">
+    <svg class="moon-menu-bg">
+      <circle class="moon-menu-cricle" cx="50%" cy="50%" r="44%"></circle>
+      <circle class="moon-menu-border" cx="50%" cy="50%" r="48%"></circle>
+    </svg>
+    <div class="moon-menu-content">
+      <div class="moon-menu-icon"><i class='fas fa-ellipsis-v'></i></div>
+      <div class="moon-menu-text"></div>
+    </div>
+  </div>
+</div><script src="/js/injector.js"></script>
+</body>
+</html>
